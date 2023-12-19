@@ -12,6 +12,13 @@ struct Response {
 #[get("/api/data")]
 fn api_data() -> Json<Response> {
     let response: Response = Response {
+        message: format!("API Data!"),
+    };
+    Json(response)
+}
+#[get("/")]
+fn index() -> Json<Response> {
+    let response: Response = Response {
         message: format!("Hello World!"),
     };
     Json(response)
@@ -19,5 +26,5 @@ fn api_data() -> Json<Response> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![api_data])
+    rocket::build().mount("/", routes![api_data, index])
 }
