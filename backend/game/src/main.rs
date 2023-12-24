@@ -12,7 +12,7 @@ struct Response {
 #[get("/api/data")]
 fn api_data() -> Json<Response> {
     let response: Response = Response {
-        message: format!("API Data!"),
+        message: format!("API data!"),
     };
     Json(response)
 }
