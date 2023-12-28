@@ -19,7 +19,7 @@ fn api_data() -> Json<Response> {
 #[get("/")]
 fn index() -> Json<Response> {
     let response: Response = Response {
-        message: format!("Hello World!!!"),
+        message: format!("Hello World!"),
     };
     Json(response)
 }
