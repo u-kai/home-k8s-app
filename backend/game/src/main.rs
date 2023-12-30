@@ -15,6 +15,13 @@ fn api_azure() -> Json<Response> {
     };
     Json(response)
 }
+#[get("/api/k8s")]
+fn api_k8s() -> Json<Response> {
+    let response: Response = Response {
+        message: format!("Next Step is Learn K8s"),
+    };
+    Json(response)
+}
 
 #[get("/api/data")]
 fn api_data() -> Json<Response> {
@@ -33,5 +40,5 @@ fn index() -> Json<Response> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![api_data, index, api_azure])
+    rocket::build().mount("/", routes![api_data, index, api_azure, api_k8s])
 }
