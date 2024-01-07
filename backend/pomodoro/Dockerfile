@@ -17,7 +17,7 @@ FROM debian:12-slim
 WORKDIR /app
 
 # copy the built app binary from the build-env.
-COPY --from=build-env /app/target/release/game ./app
+COPY --from=build-env /app/target/release/pomodoro ./app
 
 # set the environment variable.
 ENV ROCKET_ADDRESS=0.0.0.0
