@@ -16,7 +16,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn Kubernetes and Container And Azure!
+          Learn Kubernetes and Container And Azure and DataMesh!
         </a>
       </header>
     </div>
