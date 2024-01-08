@@ -5,7 +5,7 @@ FROM node:latest as build
 WORKDIR ${APP_HOME}
 
 COPY . ${APP_HOME}
-RUN npm install
+RUN npm install --loglevel verbose
 RUN npm run build
 
 # deploy stage
