@@ -1,5 +1,5 @@
 # build the app.
-FROM rust:1.71 AS build-env
+FROM arm64v8/rust:1.71 AS build-env
 
 # set the working dir.
 WORKDIR /app
