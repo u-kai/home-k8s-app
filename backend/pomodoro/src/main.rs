@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use chrono::Local;
+use chrono::{Datelike, Local, Timelike};
 use rocket::serde::json::Json;
 use rocket::serde::Serialize;
 
@@ -16,15 +16,24 @@ fn api_azure() -> Json<Response> {
     };
     Json(response)
 }
+
+#[derive(Serialize)]
+struct Date {
+    year: usize,
+    month: usize,
+    day: usize,
+    hour: usize,
+    minute: usize,
+}
 #[get("/api/timer")]
-fn api_timer() -> Json<Response> {
+fn api_timer() -> Json<Date> {
     let now = Local::now();
-    Json(Response {
-        message: format!(
-            "{} {}",
-            now.date_naive().to_string(),
-            now.time().to_string()
-        ),
+    Json(Date {
+        year: now.year() as usize,
+        month: now.month() as usize,
+        day: now.day() as usize,
+        hour: now.hour() as usize,
+        minute: now.minute() as usize,
     })
 }
 
