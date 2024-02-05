@@ -24,6 +24,7 @@ export const WordLine = (props: WordLineProps) => {
           <PlayCircleIcon onClick={() => speak(props.word)} />
         </Button>
       }
+      sx={{ padding: 0 }}
     >
       <VerticalContainer>
         <Pronunciation>{props.pronunciation}</Pronunciation>
