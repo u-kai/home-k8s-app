@@ -3,17 +3,17 @@ import "./App.css";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
+import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
 
 function App() {
-  const [text, setText] = React.useState("");
-
   return (
     <>
       <Header />
       <Search />
       <List></List>
-      <Footer></Footer>
+      <Registers></Registers>
+      <Footer />
     </>
   );
 }
