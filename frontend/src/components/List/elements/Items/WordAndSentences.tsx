@@ -20,15 +20,26 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography>
-          <WordLine word={props.word} pronunciation={props.pronunciation} />
+        <Typography sx={{ width: "100%", zIndex: 1 }}>
+          <WordLine
+            word={props.word}
+            pronunciation={props.pronunciation}
+            wordSize="large"
+          />
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          malesuada lacus ex, sit amet blandit leo lobortis eget.
-        </Typography>
+        {props.sentences.map((sentence, index) => {
+          return (
+            <li>
+              <ul>
+                <Typography key={index}>
+                  <WordLine word={sentence} wordSize="medium" />
+                </Typography>
+              </ul>
+            </li>
+          );
+        })}
       </AccordionDetails>
     </Accordion>
   );

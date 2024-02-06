@@ -7,7 +7,9 @@ import styled from "styled-components";
 export type WordLineProps = {
   pronunciation?: string;
   word: string;
+  wordSize?: WordSize;
 };
+type WordSize = "small" | "medium" | "large";
 
 const speak = (word: string) => {
   const synth = window.speechSynthesis;
@@ -15,6 +17,16 @@ const speak = (word: string) => {
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.voice = voice;
   synth.speak(utterance);
+};
+const wordSize = (size: WordSize): string => {
+  switch (size) {
+    case "small":
+      return "0.8em";
+    case "medium":
+      return "1.3em";
+    case "large":
+      return "1.8em";
+  }
 };
 export const WordLine = (props: WordLineProps) => {
   return (
@@ -28,7 +40,9 @@ export const WordLine = (props: WordLineProps) => {
     >
       <VerticalContainer>
         <Pronunciation>{props.pronunciation}</Pronunciation>
-        <Word>{props.word}</Word>
+        <Word fontSize={wordSize(props.wordSize ?? "medium")}>
+          {props.word}
+        </Word>
       </VerticalContainer>
     </ListItem>
   );
@@ -39,7 +53,7 @@ const VerticalContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   height: 100%;
-  padding: 10px;
+  padding: 1px;
   width: 100%;
 `;
 
@@ -49,8 +63,8 @@ const Pronunciation = styled.div`
   margin-left: 10px;
 `;
 
-const Word = styled.div`
-  font-size: 1.3em;
+const Word = styled.div<{ fontSize: string }>`
+  font-size: ${(props) => props.fontSize};
   width: 300px;
   overflow: hidden;
 `;
