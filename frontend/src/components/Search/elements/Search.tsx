@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useId } from "react";
 import Paper from "@mui/material/Paper";
 import InputBase from "@mui/material/InputBase";
 import Divider from "@mui/material/Divider";
@@ -6,6 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 
 export const SearchBar = () => {
+  const [value, setValue] = React.useState("");
   return (
     <Paper
       component="form"
@@ -15,6 +16,8 @@ export const SearchBar = () => {
         sx={{ ml: 1, flex: 1 }}
         placeholder="Search Words"
         inputProps={{ "aria-label": "search google maps" }}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
       />
       <IconButton type="submit" sx={{ p: "10px" }} aria-label="search">
         <SearchIcon />

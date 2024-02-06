@@ -8,9 +8,16 @@ import { styled } from "styled-components";
 export const AppFooter = () => {
   return (
     <Footer>
-      <AppBar component="footer" position="sticky">
+      <AppBar component="footer" position="sticky" sx={{ height: 50 }}>
         <Container maxWidth="md">
-          <Box sx={{ textAlign: "center" }}>
+          <Box
+            sx={{
+              textAlign: "center",
+              position: "absolute",
+              top: "25%",
+              left: "50%",
+            }}
+          >
             <Typography variant="caption">©2024 u-kai</Typography>
           </Box>
         </Container>
