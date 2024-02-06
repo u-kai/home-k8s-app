@@ -12,7 +12,7 @@ export const ListContainer = () => {
     >
       <Box
         sx={{
-          height: 400,
+          height: 500,
           overflowY: "scroll",
         }}
       >

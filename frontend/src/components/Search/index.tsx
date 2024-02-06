@@ -7,7 +7,6 @@ export const Search = () => {
     // component want to center position
     <Box
       sx={{
-        width: "100%",
         display: "flex",
         justifyContent: "center",
         height: 50,

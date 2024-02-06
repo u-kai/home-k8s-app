@@ -17,14 +17,16 @@ type WordAndSentencesProps = {
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
   return (
-    <Accordion>
+    <Accordion sx={{ zIndex: 0, position: "relative" }}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
         aria-controls="panel1a-content"
         id="panel1a-header"
-        sx={{ height: 80, zIndex: 1 }}
+        sx={{ height: 80, zIndex: 1, position: "relative" }}
       >
-        <Typography sx={{ width: "80%" }}>
+        <Typography
+          sx={{ width: "80%", position: "absolute", top: "0", zIndex: 4 }}
+        >
           <HorizontalContainer>
             <WordLine
               word={props.word}
@@ -61,4 +63,6 @@ const HorizontalContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  z-index: 4;
+  position: absolute;
 `;

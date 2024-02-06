@@ -1,7 +1,6 @@
 import { Button, ListItem, ListItemText } from "@mui/material";
 import React from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import { Rates } from "./Rates";
 import styled from "styled-components";
 
 export type WordLineProps = {
@@ -32,7 +31,7 @@ export const WordLine = (props: WordLineProps) => {
   return (
     <ListItem
       secondaryAction={
-        <Button sx={{ zIndex: 2 }}>
+        <Button>
           <PlayCircleIcon onClick={() => speak(props.word)} />
         </Button>
       }
