@@ -24,16 +24,18 @@ export const ListContainer = () => {
             return (
               <WordAndSentences
                 word={`Hello World ${i}`}
-                pronunciation={`こんにちは世界 ${1}`}
+                pronunciation={`ハローワールド ${1}`}
                 sentences={["Hi Hello World", "Humm Hello World"]}
+                meaning={"こんにちは世界"}
               />
             );
           })}
 
           <WordAndSentences
             word={`Hello Worlddddddddddddddddddddddddddddddddddddddddddddddddd `}
-            pronunciation={`こんにちは世界 `}
+            pronunciation={`ハローワールドドドドドドドドドドドドドドドドドドド`}
             sentences={["Hi Hello World", "Humm Hello World"]}
+            meaning={`こんにちは世界 `}
           />
         </List>
       </Box>
