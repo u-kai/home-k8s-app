@@ -6,7 +6,6 @@ import { WordAndSentences } from "./Items/WordAndSentences";
 export const ListContainer = () => {
   return (
     <Container
-      maxWidth="sm"
       sx={{
         padding: 5,
       }}
@@ -32,7 +31,7 @@ export const ListContainer = () => {
           })}
 
           <WordAndSentences
-            word={`Hello Worlddddddddddddddddddddddddddddddddddddddddddddddddd `}
+            word={`Hello Worldddddddddddddd `}
             pronunciation={`ハローワールドドドドドドドドドドドドドドドドドドド`}
             sentences={["Hi Hello World", "Humm Hello World"]}
             meaning={`こんにちは世界 `}

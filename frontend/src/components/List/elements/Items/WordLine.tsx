@@ -32,11 +32,11 @@ export const WordLine = (props: WordLineProps) => {
   return (
     <ListItem
       secondaryAction={
-        <Button>
+        <Button sx={{ zIndex: 2 }}>
           <PlayCircleIcon onClick={() => speak(props.word)} />
         </Button>
       }
-      sx={{ padding: 0 }}
+      sx={{ height: 80, zIndex: 1, width: "100%" }}
     >
       <VerticalContainer>
         <Pronunciation>{props.pronunciation}</Pronunciation>
@@ -55,6 +55,7 @@ const VerticalContainer = styled.div`
   height: 100%;
   padding: 1px;
   width: 100%;
+  overflow: hidden;
 `;
 
 const Pronunciation = styled.div`
@@ -65,6 +66,6 @@ const Pronunciation = styled.div`
 
 const Word = styled.div<{ fontSize: string }>`
   font-size: ${(props) => props.fontSize};
-  width: 300px;
-  overflow: hidden;
+  width: 80%;
+  white-space: nowrap;
 `;

@@ -5,6 +5,8 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { WordLine } from "./WordLine";
+import { styled } from "styled-components";
+import { Rates } from "./Rates";
 
 type WordAndSentencesProps = {
   word: string;
@@ -20,14 +22,17 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
         expandIcon={<ExpandMoreIcon />}
         aria-controls="panel1a-content"
         id="panel1a-header"
-        sx={{ height: 80 }}
+        sx={{ height: 80, zIndex: 1 }}
       >
-        <Typography sx={{ width: "100%", zIndex: 1 }}>
-          <WordLine
-            word={props.word}
-            pronunciation={props.pronunciation}
-            wordSize="large"
-          />
+        <Typography sx={{ width: "80%" }}>
+          <HorizontalContainer>
+            <WordLine
+              word={props.word}
+              pronunciation={props.pronunciation}
+              wordSize="large"
+            />
+            <Rates />
+          </HorizontalContainer>
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
@@ -49,3 +54,11 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
     </Accordion>
   );
 };
+
+const HorizontalContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
