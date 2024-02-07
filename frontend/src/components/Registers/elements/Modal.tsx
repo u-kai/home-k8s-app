@@ -63,6 +63,12 @@ export const RegisterModal = (props: ModalProps) => {
     setExampleSentences(newExampleSentences);
   };
 
+  const changeExampleSentenceMeaning = (index: number, meaning: string) => {
+    const newExampleSentencesMeaning = [...exampleSentencesMeaning];
+    newExampleSentencesMeaning[index] = meaning;
+    setExampleSentencesMeaning(newExampleSentencesMeaning);
+  };
+
   const onDeletePress = (index: number) => {
     if (exampleSentences.length === 1) {
       setExampleSentences([""]);
@@ -76,6 +82,13 @@ export const RegisterModal = (props: ModalProps) => {
     const newExampleSentencesMeaning = [...exampleSentencesMeaning];
     newExampleSentencesMeaning.splice(index, 1);
     setExampleSentencesMeaning(newExampleSentencesMeaning);
+  };
+  const allClear = () => {
+    setWord("");
+    setMeaning("");
+    setPronunciation("");
+    setExampleSentences([""]);
+    setExampleSentencesMeaning([""]);
   };
 
   const save = () => {
@@ -155,8 +168,10 @@ export const RegisterModal = (props: ModalProps) => {
                     decreaseSaveButtonPosition(PER_PUSH_BUTTON);
                   }
                 }}
-                onMeaningChange={() => {}}
-                meaning={""}
+                onMeaningChange={(value) =>
+                  changeExampleSentenceMeaning(index, value)
+                }
+                meaning={exampleSentencesMeaning[index]}
               />
             ))}
             <Button
@@ -181,7 +196,11 @@ export const RegisterModal = (props: ModalProps) => {
             variant="contained"
             endIcon={<SendIcon />}
             sx={{ position: "absolute", left: "82%", top: saveButtonPosition }}
-            onClick={save}
+            onClick={() => {
+              save();
+              props.handleClose();
+              allClear();
+            }}
           >
             保存する
           </Button>
