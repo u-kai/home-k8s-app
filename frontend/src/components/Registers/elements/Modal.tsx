@@ -151,7 +151,9 @@ export const RegisterModal = (props: ModalProps) => {
                 }
                 onDeletePress={() => {
                   onDeletePress(index);
-                  decreaseSaveButtonPosition(PER_PUSH_BUTTON);
+                  if (exampleSentences.length !== 1) {
+                    decreaseSaveButtonPosition(PER_PUSH_BUTTON);
+                  }
                 }}
                 onMeaningChange={() => {}}
                 meaning={""}
