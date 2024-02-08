@@ -17,7 +17,7 @@ func main() {
 	// Start the server
 	http.HandleFunc("/", translateHandler)
 	println("Server is running on port 8080")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {
