@@ -7,7 +7,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { WordLine } from "./WordLine";
 import { styled } from "styled-components";
 import { Rates } from "./Rates";
-
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
 type WordAndSentencesProps = {
   word: string;
   meaning: string;
@@ -34,6 +35,26 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
               wordSize="large"
             />
             <Rates />
+            <ModeEditOutlineIcon
+              fontSize="large"
+              sx={{
+                cursor: "pointer",
+                marginLeft: "20px",
+                ":hover": {
+                  opacity: 0.5,
+                },
+              }}
+            />
+            <DeleteForeverIcon
+              fontSize="large"
+              sx={{
+                cursor: "pointer",
+                marginLeft: "20px",
+                ":hover": {
+                  opacity: 0.5,
+                },
+              }}
+            />
           </HorizontalContainer>
         </Typography>
       </AccordionSummary>
