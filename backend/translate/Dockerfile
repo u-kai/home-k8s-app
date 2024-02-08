@@ -1,25 +1,22 @@
 FROM golang:1.20
 
-# 1
-ENV ROOT=/go/src/app
+WORKDIR /app
 
-WORKDIR ${ROOT}
-
-# 3
 COPY go.mod go.sum ./
 
-# 4
 RUN go mod download
 
 COPY . .
 
-RUN go build -o /bin/app ./main.go
+RUN go build -o main /app/main.go
 
 FROM alpine:3.12
 
-COPY --from=0 /bin/app /bin/app
+WORKDIR /app
+
+COPY --from=0 /app/main .
+
 
 EXPOSE 8080
 
-# 6
-CMD ["/bin/app"]
+CMD ["/app/main"]
