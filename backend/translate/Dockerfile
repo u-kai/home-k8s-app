@@ -16,6 +16,6 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-EXPOSE 8080
+CMD ["ls","/app/main"]
 
-CMD ["/app/main"]
+EXPOSE 8080
