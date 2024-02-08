@@ -6,7 +6,7 @@ if len(sys.argv) != 2:
 else:
     PORT = sys.argv[1]
 
-url = "http://localhost:" + str(PORT) + "/"
+url = "https://api.kaiandkai.com/translate"  # + str(PORT) + "/"
 
 data = {"target": "test"}
 
