@@ -63,8 +63,8 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
           <Typography>{props.meaning}</Typography>
           {props.sentences.map((sentence, index) => {
             return (
-              <li>
-                <ul>
+              <li key={index}>
+                <ul key={index}>
                   <Typography key={index}>
                     <WordLine word={sentence} wordSize="medium" />
                   </Typography>

@@ -8,6 +8,7 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
 import { ExampleSentenceField } from "./ExampleSentenceField";
+import { fetchJsonWithCors } from "../../../fetch";
 
 const style = {
   position: "absolute" as "absolute",
@@ -91,6 +92,19 @@ export const RegisterModal = (props: ModalProps) => {
     setExampleSentencesMeaning([""]);
   };
 
+  const translateRequest = async (word: string): Promise<string[]> => {
+    const url = "http://localhost:8080";
+    const body = { target: word };
+    const res = fetchJsonWithCors({
+      url: url,
+      method: "POST",
+      body,
+    }).catch((e) => {
+      console.error(e);
+    });
+    return (await res).results as string[];
+  };
+
   const save = () => {
     const payload: Payload = {
       word: word,
@@ -145,6 +159,13 @@ export const RegisterModal = (props: ModalProps) => {
               />
               <SupportAgentIcon
                 fontSize="large"
+                onClick={async () => {
+                  if (word.length === 0) {
+                    return;
+                  }
+                  const res = await translateRequest(word);
+                  setMeaning(res[0]);
+                }}
                 sx={{
                   position: "absolute",
                   top: 20,
@@ -158,6 +179,7 @@ export const RegisterModal = (props: ModalProps) => {
             </MeaningTextAndAiContainer>
             {exampleSentences.map((value, index) => (
               <ExampleSentenceField
+                key={index}
                 sentence={value}
                 onSentenceChange={(value) =>
                   changeExampleSentence(index, value)

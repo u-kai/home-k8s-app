@@ -22,6 +22,7 @@ export const ListContainer = () => {
           ].map((i) => {
             return (
               <WordAndSentences
+                key={i}
                 word={`Hello World ${i}`}
                 pronunciation={`ハローワールド ${1}`}
                 sentences={["Hi Hello World", "Humm Hello World"]}
