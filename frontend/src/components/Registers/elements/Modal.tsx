@@ -6,7 +6,6 @@ import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
-import AddIcon from "@mui/icons-material/Add";
 import { ExampleSentenceField } from "./ExampleSentenceField";
 import { fetchJsonWithCors } from "../../../fetch";
 
@@ -204,7 +203,7 @@ export const RegisterModal = (props: ModalProps) => {
                 position: "absolute",
                 left: "82%",
                 top: "65%",
-                marginn: "5px",
+                margin: "5px",
               }}
               onClick={() => {
                 addEmpty();
