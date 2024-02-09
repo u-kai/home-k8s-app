@@ -9,7 +9,7 @@ import (
 	"os"
 	"strconv"
 
-	"common/pkg"
+	"ele/common"
 
 	"cloud.google.com/go/translate"
 	"golang.org/x/text/language"
@@ -17,7 +17,7 @@ import (
 
 func main() {
 	// Start the server
-	server := pkg.DefaultELEServer()
+	server := common.DefaultELEServer()
 	server.RegisterHandler("/translate", translateHandler)
 	server.Start()
 }
