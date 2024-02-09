@@ -1,6 +1,9 @@
 package wordbook
 
-import "ele/user"
+import (
+	"ele/user"
+	"fmt"
+)
 
 type WordInfo struct {
 	user.UserId `json:"userId"`
@@ -12,10 +15,47 @@ type WordInfo struct {
 }
 
 type Word struct {
-	Value         string `json:"value"`
+	Value         WordValue `json:"value"`
 	Meaning       `json:"meaning"`
 	Sentences     []Sentence `json:"sentences"`
 	Pronunciation `json:"pronunciation"`
+}
+
+const WORD_MAX_LENGTH = 45
+
+type WordValue string
+
+func NewWordValue(value string) (WordValue, error) {
+	if value == "" {
+		return WordValue(""), ErrEmptyWord{}
+	}
+	if !containAlfabet(value) {
+		return WordValue(""), ErrInvalidWord{}
+	}
+	if len(value) > WORD_MAX_LENGTH {
+		return WordValue(""), NewTooManyWordLengthError(value)
+	}
+	return WordValue(value), nil
+}
+func (w WordValue) String() string {
+	return string(w)
+}
+
+type ErrInvalidWord struct{}
+
+func (e ErrInvalidWord) Error() string {
+	return "word is not a English word"
+}
+
+type TooManyWordLengthError struct {
+	Word string
+}
+
+func NewTooManyWordLengthError(word string) TooManyWordLengthError {
+	return TooManyWordLengthError{Word: word}
+}
+func (e TooManyWordLengthError) Error() string {
+	return fmt.Sprintf("word length is too many: %s...", e.Word[0:30])
 }
 
 // Meaning is always a Japanese word
