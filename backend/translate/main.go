@@ -9,40 +9,17 @@ import (
 	"os"
 	"strconv"
 
+	"common/pkg"
+
 	"cloud.google.com/go/translate"
 	"golang.org/x/text/language"
 )
 
 func main() {
 	// Start the server
-	http.HandleFunc("/", http.HandlerFunc(corsMiddleware(http.HandlerFunc(translateHandler)).ServeHTTP))
-	println("Server is running on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Set the CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", frontendHost())
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		// If this is a preflight request, stop here
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		// Serve the next handler
-		next.ServeHTTP(w, r)
-	})
-}
-
-func frontendHost() string {
-	if os.Getenv("FRONTEND_HOST") == "" {
-		return "http://localhost:3000"
-	}
-	return os.Getenv("FRONTEND_HOST")
+	server := pkg.DefaultELEServer()
+	server.RegisterHandler("/translate", translateHandler)
+	server.Start()
 }
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {
