@@ -2,15 +2,17 @@ import requests
 
 
 def words():
-    url = "http://localhost:8080/words"
+    url = "http://192.168.3.68/words"
 
-    response = requests.post(url, json={"userId": "test"})
-
-    print(response.json())
+    try:
+        response = requests.post(url, json={"userId": "test"})
+        print(response.json())
+    except Exception as e:
+        print(e)
 
 
 def registerWord():
-    url = "http://localhost:8080/registerWord"
+    url = "http://192.168.3.68/registerWord"
 
     response = requests.post(url, json={"userId": "test", "word": "test"})
 
@@ -18,7 +20,7 @@ def registerWord():
 
 
 def deleteWord():
-    url = "http://localhost:8080/deleteWord"
+    url = "http://192.168.3.68/deleteWord"
 
     response = requests.post(url, json={"userId": "test", "wordId": "test"})
 
@@ -26,7 +28,7 @@ def deleteWord():
 
 
 def updateWord():
-    url = "http://localhost:8080/updateWord"
+    url = "http://192.168.3.68/updateWord"
 
     response = requests.post(
         url, json={"userId": "test", "wordId": "test", "word": "test"}

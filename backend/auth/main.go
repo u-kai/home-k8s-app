@@ -56,5 +56,8 @@ func callback(w http.ResponseWriter, r *http.Request) {
 	println(tokenRes.Status)
 	b = []byte{}
 	b, err = io.ReadAll(tokenRes.Body)
-	println(string(b))
+	// redirect to the frontend
+	w.Header().Set("Location", fmt.Sprintf("http://localhost:3000?token=%s", string(b)))
+	w.WriteHeader(http.StatusFound)
+	w.Write(b)
 }
