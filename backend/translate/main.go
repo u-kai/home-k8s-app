@@ -18,7 +18,7 @@ import (
 func main() {
 	// Start the server
 	server := common.DefaultELEServer()
-	server.RegisterHandler("/translate", translateHandler)
+	server.RegisterHandler("/", translateHandler)
 	server.Start()
 }
 

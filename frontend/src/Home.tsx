@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { styled } from "styled-components";
 import "./App.css";
 import { Footer } from "./components/Footer";
@@ -6,8 +6,26 @@ import { Header } from "./components/Header";
 import { List } from "./components/List";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
+import { fetchJsonWithCors } from "./fetch";
 
 export const Home = () => {
+  useEffect(() => {
+    fetchJsonWithCors({
+      url: "https://api.kaiandkai.com/translate/translate",
+      body: {
+        target: "test",
+      },
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .catch((err) => {
+        console.log(err);
+        return { json: async () => err };
+      })
+      .then((data) => {
+        console.log(data);
+      });
+  }, []);
   return (
     <Wrapper>
       <Header />
