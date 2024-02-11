@@ -1,8 +1,71 @@
 import requests
+import random
+
+
+def register_and_fetch_update():
+    url = "http://localhost:8080/registerWord"
+
+    randWord = str(random.randint(0, 1000000))
+    userId = "test" + randWord
+    response = requests.post(
+        url,
+        json={
+            "userId": userId,
+            "word": "test" + randWord,
+            "sentences": [{"value": "this is test", "meaning": "これはテスト"}],
+        },
+    )
+
+    word_id = response.json()["wordId"]
+    sentenceId = response.json()["sentences"][0]["sentenceId"]
+    print("registerWord")
+    print(response.json())
+
+    url = "http://localhost:8080/words?userId=" + userId
+    response = requests.get(
+        url,
+    )
+
+    print("words")
+    for j in response.json():
+        print("*******************")
+        print(j)
+
+    url = "http://localhost:8080/updateWord"
+    response = requests.post(
+        url,
+        json={
+            "userId": userId,
+            "wordId": word_id,
+            "meaning": "これはテストでござる",
+            "pronunciation": "これはテストでござる!!!!",
+            "remarks": "忍者",
+            "sentences": [
+                {
+                    "sentenceId": sentenceId,
+                    "value": "this is test",
+                    "meaning": "これはテストでごわす",
+                },
+                {"value": "this is test", "meaning": "これはテストでやんす"},
+            ],
+        },
+    )
+    print("updateWord")
+    print(response.json())
+
+    url = "http://localhost:8080/words?userId=" + userId
+    response = requests.get(
+        url,
+    )
+
+    print("words2")
+    for j in response.json():
+        print("-------------------")
+        print(j)
 
 
 def words():
-    url = "http://192.168.3.68/words"
+    url = "http://localhost/words"
 
     try:
         response = requests.post(url, json={"userId": "test"})
@@ -12,7 +75,7 @@ def words():
 
 
 def registerWord():
-    url = "http://192.168.3.68/registerWord"
+    url = "http://localhost/registerWord"
 
     response = requests.post(url, json={"userId": "test", "word": "test"})
 
@@ -20,7 +83,7 @@ def registerWord():
 
 
 def deleteWord():
-    url = "http://192.168.3.68/deleteWord"
+    url = "http://localhost/deleteWord"
 
     response = requests.post(url, json={"userId": "test", "wordId": "test"})
 
@@ -28,7 +91,7 @@ def deleteWord():
 
 
 def updateWord():
-    url = "http://192.168.3.68/updateWord"
+    url = "http://localhost/updateWord"
 
     response = requests.post(
         url, json={"userId": "test", "wordId": "test", "word": "test"}
@@ -38,10 +101,7 @@ def updateWord():
 
 
 def main():
-    words()
-    registerWord()
-    deleteWord()
-    updateWord()
+    register_and_fetch_update()
 
 
 main()

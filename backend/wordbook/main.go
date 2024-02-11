@@ -104,13 +104,14 @@ type fetchWordInfoRequest struct {
 }
 
 func fetchWordInfoHandler(w http.ResponseWriter, r *http.Request) {
-	var req fetchWordInfoRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	//var req fetchWordInfoRequest
+	//if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	//	http.Error(w, err.Error(), http.StatusBadRequest)
+	//	return
+	//}
+	userId := user.UserId(r.URL.Query().Get("userId"))
 
-	wordInfo, err := wordbook.FetchWordInfo(req.UserId)
+	wordInfo, err := wordbook.FetchWordInfo(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

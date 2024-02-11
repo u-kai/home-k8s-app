@@ -2,9 +2,95 @@ package wordbook_test
 
 import (
 	wordbook "ele/wordbook/pkg"
+	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestUpdateWordProfile(t *testing.T) {
+	fakeWordId := func() wordbook.WordId {
+		return wordbook.WordId("fakeWordId")
+	}
+	fakeSentenceId := func() wordbook.SentenceId {
+		return wordbook.SentenceId("fakeSentenceId")
+	}
+	fakeNowOld := func() int64 {
+		return int64(1000)
+	}
+	fakeNowNew := func() int64 {
+		return int64(2000)
+	}
+	word := wordbook.NewWord(
+		wordbook.WordValue("word"),
+		wordbook.Meaning("meaning"),
+		wordbook.Pronunciation("pronunciation"),
+	)
+	missCount := wordbook.MissCount(0)
+	remarks := wordbook.Remarks("remarks")
+	likeRates := wordbook.DefaultLikeRates()
+	for _, tt := range []struct {
+		name      string
+		old       wordbook.WordProfile
+		updateReq wordbook.UpdatedWordProfile
+		expected  wordbook.WordProfile
+	}{
+		{
+			"add sentences from empty",
+			wordbook.WordProfile{
+				WordId:    fakeWordId(),
+				Word:      word,
+				MissCount: missCount,
+				Remarks:   remarks,
+				LikeRates: likeRates,
+				CreatedAt: fakeNowOld(),
+				UpdatedAt: fakeNowOld(),
+				Sentences: []wordbook.SentenceProfile{},
+			},
+			wordbook.UpdatedWordProfile{
+				Word:      word,
+				Remarks:   remarks,
+				LikeRates: likeRates,
+				Sentences: wordbook.UpdatedSentencesProfile{
+					News: []wordbook.NewSentence{
+						{
+							Value:         wordbook.SentenceValue("sentence"),
+							Meaning:       wordbook.Meaning("meaning"),
+							Pronunciation: wordbook.Pronunciation("pronunciation"),
+						},
+					},
+				},
+			},
+			wordbook.WordProfile{
+				WordId:    fakeWordId(),
+				Word:      word,
+				MissCount: missCount,
+				Remarks:   remarks,
+				LikeRates: likeRates,
+				CreatedAt: fakeNowOld(),
+				UpdatedAt: fakeNowNew(),
+				Sentences: []wordbook.SentenceProfile{
+					{
+						SentenceId: fakeSentenceId(),
+						Sentence: wordbook.Sentence{
+							Value:         wordbook.SentenceValue("sentence"),
+							Meaning:       wordbook.Meaning("meaning"),
+							Pronunciation: wordbook.Pronunciation("pronunciation"),
+						},
+						CreatedAt: fakeNowNew(),
+						UpdatedAt: fakeNowNew(),
+					},
+				},
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.old.NewProfile(tt.updateReq, fakeSentenceId, fakeNowNew)
+			if !reflect.DeepEqual(tt.expected, got) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
 
 func TestWord(t *testing.T) {
 	for _, tt := range []struct {
