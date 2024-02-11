@@ -51,6 +51,12 @@ func corsMiddleware(next http.Handler, frontendHost string) http.Handler {
 	})
 }
 
+func logMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+	})
+}
+
 func frontendHostFromEnv() string {
 	if os.Getenv("FRONTEND_HOST") == "" {
 		return "http://localhost:3000"
