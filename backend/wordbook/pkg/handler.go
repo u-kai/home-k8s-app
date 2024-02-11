@@ -6,7 +6,6 @@ import (
 )
 
 type registerWordProfile func(user.UserId, WordProfile) (WordProfile, error)
-type registerSentencesProfile func([]SentenceProfile) (SentenceProfile, error)
 
 func RegisterWordProfile(
 	userId user.UserId,
@@ -16,14 +15,9 @@ func RegisterWordProfile(
 	sentences []SentenceProfile,
 	remarks Remarks,
 	registerWordProfile registerWordProfile,
-	registerSentenceProfile registerSentencesProfile,
 ) (WordProfile, error) {
 	new := NewWordProfile(word, newId, now, sentences, remarks)
 	_, err := registerWordProfile(userId, new)
-	if err != nil {
-		return WordProfile{}, err
-	}
-	_, err = registerSentenceProfile(sentences)
 	if err != nil {
 		return WordProfile{}, err
 	}
@@ -31,13 +25,14 @@ func RegisterWordProfile(
 }
 
 type fetchWordProfileByWordId func(WordId) (WordProfile, error)
+
 type updateWordProfile func(WordProfile) error
 
 func UpdateWordProfile(
 	wordId WordId,
 	updatedProfile UpdatedWordProfile,
 	fetchFn fetchWordProfileByWordId,
-	updateFn updateWordProfile,
+	updateWordProfileFn updateWordProfile,
 	newId func() SentenceId,
 	now common.NowFunc,
 ) (WordProfile, error) {
@@ -46,7 +41,7 @@ func UpdateWordProfile(
 		return WordProfile{}, err
 	}
 	new := old.NewProfile(updatedProfile, newId, now)
-	err = updateFn(new)
+	err = updateWordProfileFn(new)
 	if err != nil {
 		return WordProfile{}, err
 	}
