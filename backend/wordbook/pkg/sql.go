@@ -73,7 +73,7 @@ func insertSentenceProfileSql(wordId WordId, sentence SentenceProfile) (
 	int64,
 	int64,
 ) {
-	sql := fmt.Sprintf("INSERT INTO  %s (word_id, sentence_id, value, meaning, pronunciation, created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?)", SENTENCE_TABLE_NAME)
+	sql := fmt.Sprintf("INSERT INTO  %s (word_id, sentence_id, value, meaning, pronunciation, created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)", SENTENCE_TABLE_NAME)
 	return SQL(sql), wordId, sentence.SentenceId, sentence.Value, sentence.Meaning, sentence.Pronunciation, sentence.CreatedAt, sentence.UpdatedAt
 }
 
@@ -102,4 +102,16 @@ func updateSentenceProfileSql(sentence SentenceProfile) (
 ) {
 	sql := fmt.Sprintf("UPDATE %s SET value=?, meaning=?, pronunciation=?, updated_at=? WHERE sentence_id=?", SENTENCE_TABLE_NAME)
 	return SQL(sql), sentence.Value, sentence.Meaning, sentence.Pronunciation, sentence.UpdatedAt, sentence.SentenceId
+}
+
+func deleteWordProfileSql(wordId WordId) (SQL, WordId) {
+	sql := fmt.Sprintf("DELETE FROM %s WHERE word_id=?", WORD_TABLE_NAME)
+	return SQL(sql), wordId
+}
+
+// TODO: FIX ME
+func deleteSentenceProfileSql(sentenceId SentenceId) (SQL, SentenceId) {
+	// delete all sentences by one query
+	sql := fmt.Sprintf("DELETE FROM %s WHERE sentence_id = ?", SENTENCE_TABLE_NAME)
+	return SQL(sql), sentenceId
 }

@@ -12,6 +12,9 @@ def register_and_fetch_update():
         json={
             "userId": userId,
             "word": "test" + randWord,
+            "meaning": "試験",
+            "pronunciation": "てすと",
+            "remarks": "テストって嫌だよね",
             "sentences": [{"value": "this is test", "meaning": "これはテスト"}],
         },
     )
@@ -38,6 +41,8 @@ def register_and_fetch_update():
             "userId": userId,
             "wordId": word_id,
             "meaning": "これはテストでござる",
+            "word": "test",
+            "likeRates": "normal",
             "pronunciation": "これはテストでござる!!!!",
             "remarks": "忍者",
             "sentences": [
