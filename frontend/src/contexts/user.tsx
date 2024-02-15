@@ -3,6 +3,7 @@ import React, { createContext, ReactNode, useState } from "react";
 type User = {
   id: string;
   name: string;
+  email?: string;
 };
 
 export type UserContextType = {
@@ -16,7 +17,7 @@ export const UserContext = createContext<UserContextType>(
   {} as UserContextType
 );
 export const UserContextProvider: React.FC<ParentProps> = ({ children }) => {
-  const [user, setUser] = useState({
+  const [user, setUser] = useState<User>({
     id: "",
     name: "",
   });

@@ -10,12 +10,17 @@ export const SearchBar = () => {
   return (
     <Paper
       component="form"
-      sx={{ p: "2px 4px", display: "flex", alignItems: "center", width: 500 }}
+      sx={{
+        p: "2px 4px",
+        display: "flex",
+        alignItems: "center",
+        width: 500,
+        height: 50,
+      }}
     >
       <InputBase
         sx={{ ml: 1, flex: 1 }}
         placeholder="Search Words"
-        inputProps={{ "aria-label": "search google maps" }}
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

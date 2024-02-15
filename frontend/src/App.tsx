@@ -1,6 +1,7 @@
 import React from "react";
-import { Router } from "./Router";
-
+import { AuthProvider } from "./AuthProvider";
+import { UserContextProvider } from "./contexts/user";
+import { Home } from "./Home";
 export const App = () => {
-  return <Router></Router>;
+  return <AuthProvider />;
 };

@@ -203,20 +203,28 @@ export const RegisterModal = (props: ModalProps) => {
                 position: "absolute",
                 left: "82%",
                 top: "65%",
-                margin: "5px",
+                padding: "10px",
+                width: "100px",
               }}
               onClick={() => {
                 addEmpty();
                 increaseSaveButtonPosition(PER_PUSH_BUTTON);
               }}
             >
-              例文を追加
+              <span>例文を追加</span>
             </Button>
           </TextFieldContainer>
           <Button
             variant="contained"
             endIcon={<SendIcon />}
-            sx={{ position: "absolute", left: "82%", top: saveButtonPosition }}
+            sx={{
+              position: "absolute",
+              left: "82%",
+              top: saveButtonPosition,
+              paddingX: "3px",
+              paddingY: "10px",
+              width: "100px",
+            }}
             onClick={() => {
               save();
               props.handleClose();

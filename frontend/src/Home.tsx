@@ -1,6 +1,6 @@
+import { useAuthenticator } from "@aws-amplify/ui-react";
 import React, { useEffect } from "react";
 import { styled } from "styled-components";
-import "./App.css";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
@@ -8,7 +8,11 @@ import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
 import { fetchJsonWithCors } from "./fetch";
 
-export const Home = () => {
+type Props = {
+  logout: () => Promise<void>;
+};
+
+export const Home = (props: Props) => {
   useEffect(() => {
     fetchJsonWithCors({
       url: "https://api.kaiandkai.com/translate/translate",
@@ -27,8 +31,8 @@ export const Home = () => {
       });
   }, []);
   return (
-    <Wrapper>
-      <Header />
+    <Wrapper id="main">
+      <Header logout={props.logout} />
       <UpperContainer>
         <Search />
         <RegisterButtonContainer>
