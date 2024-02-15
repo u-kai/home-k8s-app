@@ -10,6 +10,7 @@ import { Rates } from "./Rates";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
 import { Sentence } from "../../../../contexts/wordbook";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
 type WordAndSentencesProps = {
   word: string;
   meaning: string;
@@ -19,6 +20,7 @@ type WordAndSentencesProps = {
 };
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
+  const [deletePushed, setDeletePushed] = React.useState(false);
   return (
     <Accordion sx={{ zIndex: 0, position: "relative" }}>
       <AccordionSummary
@@ -56,8 +58,16 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
                   opacity: 0.5,
                 },
               }}
-              onClick={async () => props.deleteWord()}
+              onClick={() => {
+                setDeletePushed(true);
+              }}
             />
+            <DeleteConfirmModal
+              deleteHandler={props.deleteWord}
+              word={props.word}
+              open={deletePushed}
+              setOpen={setDeletePushed}
+            ></DeleteConfirmModal>
           </HorizontalContainer>
         </Typography>
       </AccordionSummary>
