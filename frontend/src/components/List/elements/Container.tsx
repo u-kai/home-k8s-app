@@ -1,9 +1,22 @@
 import { List } from "@mui/material";
 import { Box, Container } from "@mui/system";
-import React from "react";
+import React, { useEffect } from "react";
+import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
 import { WordAndSentences } from "./Items/WordAndSentences";
 
 export const ListContainer = () => {
+  const userId = "test-user";
+  const { wordbook, fetchAll } = useWordBook();
+  useEffect(() => {
+    (async () => {
+      const result = await fetchAll(userId);
+      if (isSuccessful(result)) {
+        console.log("success", result);
+        return;
+      }
+      console.error("error", result);
+    })();
+  }, []);
   return (
     <Container
       sx={{
@@ -17,26 +30,21 @@ export const ListContainer = () => {
         }}
       >
         <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-          {[
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-          ].map((i) => {
-            return (
-              <WordAndSentences
-                key={i}
-                word={`Hello World ${i}`}
-                pronunciation={`ハローワールド ${1}`}
-                sentences={["Hi Hello World", "Humm Hello World"]}
-                meaning={"こんにちは世界"}
-              />
-            );
-          })}
-
-          <WordAndSentences
-            word={`Hello Worldddddddddddddd `}
-            pronunciation={`ハローワールドドドドドドドドドドドドドドドドドドド`}
-            sentences={["Hi Hello World", "Humm Hello World"]}
-            meaning={`こんにちは世界 `}
-          />
+          {wordbook !== undefined ? (
+            <>
+              {wordbook.map((wordProfile, i) => (
+                <WordAndSentences
+                  key={i}
+                  word={wordProfile.word.value}
+                  pronunciation={wordProfile.word.pronunciation}
+                  sentences={wordProfile.sentences.map(
+                    (sentence) => sentence.sentence.value
+                  )}
+                  meaning={wordProfile.word.meaning}
+                />
+              ))}
+            </>
+          ) : null}
         </List>
       </Box>
     </Container>

@@ -23,3 +23,10 @@ export const wordbookUrl = (path: string) => {
   }
   return `http://localhost:8080${path}`;
 };
+
+export const translateUrl = () => {
+  if (import.meta.env.PROD) {
+    return "TODO";
+  }
+  return `http://localhost:8080/translate`;
+};

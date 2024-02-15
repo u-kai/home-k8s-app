@@ -70,6 +70,7 @@ type SaveResult = Response | Error;
 
 export const RegisterModal = (props: ModalProps) => {
   const { user } = useContext(UserContext);
+  const userId = "test-user";
   const [word, setWord] = useState<string>("");
   const [meaning, setMeaning] = useState<string>("");
   const [pronunciation, setPronunciation] = useState<string>("");
@@ -152,7 +153,7 @@ export const RegisterModal = (props: ModalProps) => {
           };
         })
         .filter((sentence) => sentence.value !== "" && sentence.meaning !== ""),
-      userId: "test-user", //user.id,
+      userId, //user.id,
     };
     console.log(payload);
     return fetchJsonWithCors({
