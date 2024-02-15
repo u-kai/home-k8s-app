@@ -1,4 +1,4 @@
-import { Modal } from "@mui/base";
+import Modal from "@mui/material/Modal";
 import { TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useContext, useState } from "react";
@@ -18,9 +18,9 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 600,
+  height: 440,
   bgcolor: "white",
   border: "1px solid #000",
-  height: 440,
   overflowY: "scroll",
   p: 4,
 };
@@ -102,7 +102,7 @@ export const RegisterModal = (props: ModalProps) => {
   };
 
   return (
-    <div style={{ height: 500 }}>
+    <div>
       <Modal
         open={props.open}
         onClose={props.handleClose}
