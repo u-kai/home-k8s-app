@@ -44,6 +44,23 @@ export const useWordBook = () => {
     setWordBook(sorted);
   };
 
+  const deleteWordProfile = async (req: {
+    userId: string;
+    wordId: string;
+  }): Promise<RequestResult<void>> => {
+    try {
+      const response = await fetchJsonWithCors({
+        url: wordbookUrl("/deleteWord"),
+        method: "POST",
+        body: req,
+      });
+      const newWordBook = wordbook.filter((word) => word.wordId !== req.wordId);
+      setWordBook(newWordBook);
+    } catch (e: any) {
+      return new Error(e.toString());
+    }
+  };
+
   const registerWordProfile = async (
     req: RegisterWordRequest
   ): Promise<RequestResult<void>> => {
@@ -64,5 +81,6 @@ export const useWordBook = () => {
     fetchAll,
     sortByCreatedAt,
     registerWordProfile,
+    deleteWordProfile,
   };
 };

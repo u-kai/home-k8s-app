@@ -290,18 +290,15 @@ func deleteWordProfileByDB(db *sql.DB) deleteWordProfile {
 		if err != nil {
 			return err
 		}
-		sql, wordId := deleteWordProfileSql(wordId)
-		_, err = db.Exec(sql.String(), wordId)
-		if err != nil {
-			return err
-		}
 		for _, sentence := range wordProfile.Sentences {
-			sql, sentenceId := deleteSentenceProfileSql(sentence.SentenceId)
-			_, err := db.Exec(sql.String(), sentenceId)
+			sql, wordId, sentenceId := deleteSentenceProfileSql(wordId, sentence.SentenceId)
+			_, err := db.Exec(sql.String(), wordId, sentenceId)
 			if err != nil {
 				return err
 			}
 		}
+		sql, wordId := deleteWordProfileSql(wordId)
+		_, err = db.Exec(sql.String(), wordId)
 		if err != nil {
 			return err
 		}

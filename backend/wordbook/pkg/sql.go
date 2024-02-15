@@ -110,8 +110,8 @@ func deleteWordProfileSql(wordId WordId) (SQL, WordId) {
 }
 
 // TODO: FIX ME
-func deleteSentenceProfileSql(sentenceId SentenceId) (SQL, SentenceId) {
+func deleteSentenceProfileSql(wordId WordId, sentenceId SentenceId) (SQL, WordId, SentenceId) {
 	// delete all sentences by one query
-	sql := fmt.Sprintf("DELETE FROM %s WHERE sentence_id = ?", SENTENCE_TABLE_NAME)
-	return SQL(sql), sentenceId
+	sql := fmt.Sprintf("DELETE FROM %s WHERE word_id = ? and sentence_id = ?", SENTENCE_TABLE_NAME)
+	return SQL(sql), wordId, sentenceId
 }

@@ -6,7 +6,7 @@ import { WordAndSentences } from "./Items/WordAndSentences";
 
 export const ListContainer = () => {
   const userId = "test-user";
-  const { wordbook, fetchAll } = useWordBook();
+  const { wordbook, fetchAll, deleteWordProfile } = useWordBook();
   useEffect(() => {
     (async () => {
       const result = await fetchAll(userId);
@@ -18,6 +18,7 @@ export const ListContainer = () => {
       console.error("error", result);
     })();
   }, []);
+
   return (
     <Container
       sx={{
@@ -46,6 +47,17 @@ export const ListContainer = () => {
                     };
                   })}
                   meaning={wordProfile.word.meaning}
+                  deleteWord={async () => {
+                    const result = await deleteWordProfile({
+                      userId,
+                      wordId: wordProfile.wordId,
+                    });
+                    if (isSuccessful(result)) {
+                      console.log("success", result);
+                      return;
+                    }
+                    console.error("error", result);
+                  }}
                 />
               ))}
             </>

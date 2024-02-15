@@ -15,6 +15,7 @@ type WordAndSentencesProps = {
   meaning: string;
   pronunciation?: string;
   sentences: Sentence[];
+  deleteWord: () => Promise<void>;
 };
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
@@ -55,6 +56,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
                   opacity: 0.5,
                 },
               }}
+              onClick={async () => props.deleteWord()}
             />
           </HorizontalContainer>
         </Typography>
