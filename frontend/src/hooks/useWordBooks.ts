@@ -1,11 +1,25 @@
 import { useContext } from "react";
-import { WordBookContext, WordProfile } from "../contexts/wordbook";
+import {
+  Sentence,
+  Word,
+  WordBookContext,
+  WordProfile,
+} from "../contexts/wordbook";
 import { fetchJsonWithCors, wordbookUrl } from "../fetch";
 
 type RequestResult<T> = T | Error;
 
 export const isSuccessful = <T>(result: RequestResult<T>): result is T => {
   return !(result instanceof Error);
+};
+
+export type RegisterWordRequest = {
+  userId: string;
+  word: string;
+  meaning: string;
+  pronunciation?: string;
+  remarks: string;
+  sentences: Sentence[];
 };
 
 export const useWordBook = () => {
@@ -22,5 +36,32 @@ export const useWordBook = () => {
       return new Error(e.toString());
     }
   };
-  return { wordbook, fetchAll };
+  const sortByCreatedAt = () => {
+    const sorted = wordbook.slice().sort((a, b) => {
+      return b.createdAt - a.createdAt;
+    });
+    setWordBook(sorted);
+  };
+
+  const registerWordProfile = async (
+    req: RegisterWordRequest
+  ): Promise<RequestResult<void>> => {
+    try {
+      const response = await fetchJsonWithCors({
+        url: wordbookUrl("/registerWord"),
+        method: "POST",
+        body: req,
+      });
+      setWordBook([...wordbook, response]);
+    } catch (e: any) {
+      return new Error(e.toString());
+    }
+  };
+
+  return {
+    wordbook,
+    fetchAll,
+    sortByCreatedAt,
+    registerWordProfile,
+  };
 };

@@ -11,18 +11,18 @@ export type WordProfile = {
   updatedAt: number;
   sentences: SentenceProfile[];
 };
-type Word = {
+export type Word = {
   value: string;
   meaning: string;
   pronunciation: string;
 };
-type SentenceProfile = {
+export type SentenceProfile = {
   sentenceId: string;
   sentence: Sentence;
   createdAt: number;
   updatedAt: number;
 };
-type Sentence = {
+export type Sentence = {
   value: string;
   meaning: string;
   pronunciation: string;

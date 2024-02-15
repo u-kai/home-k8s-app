@@ -9,6 +9,8 @@ import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
 import { fetchJsonWithCors, wordbookUrl } from "../../../fetch";
 import { UserContext } from "../../../contexts/user";
+import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
+import { Sentence } from "../../../contexts/wordbook";
 
 const style = {
   position: "absolute" as "absolute",
@@ -27,51 +29,11 @@ type ModalProps = {
   open: boolean;
   handleClose: () => void;
 };
-type Sentence = {
-  value: string;
-  meaning: string;
-  pronunciation?: string;
-};
-
-type Payload = {
-  userId: string;
-  word: string;
-  meaning: string;
-  pronunciation: string;
-  remarks: string;
-  sentences: Sentence[];
-};
-type Response = {
-  wordId: string;
-  word: string;
-  meaning: string;
-  pronunciation: string;
-  missCount: number;
-  remarks: string;
-  createdAt: number;
-  updatedAt: number;
-  sentences: {
-    sentenceId: string;
-    sentence: {
-      value: string;
-      meaning: string;
-      pronunciation: string;
-    };
-    createdAt: number;
-    updatedAt: number;
-  }[];
-};
-
-const isSuccessful = (result: SaveResult): result is Response => {
-  return (result as Response).wordId !== undefined;
-};
-
-type SaveResult = Response | Error;
 
 export const RegisterModal = (props: ModalProps) => {
   const { user } = useContext(UserContext);
   const userId = "test-user";
-  const [word, setWord] = useState<string>("");
+  const [wordValue, setWordValue] = useState<string>("");
   const [meaning, setMeaning] = useState<string>("");
   const [pronunciation, setPronunciation] = useState<string>("");
   const [exampleSentences, setExampleSentences] = useState<string[]>([""]);
@@ -79,6 +41,7 @@ export const RegisterModal = (props: ModalProps) => {
     string[]
   >([""]);
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(380);
+  const { registerWordProfile } = useWordBook();
   const addEmpty = () => {
     setExampleSentences([...exampleSentences, ""]);
   };
@@ -118,7 +81,7 @@ export const RegisterModal = (props: ModalProps) => {
     setExampleSentencesMeaning(newExampleSentencesMeaning);
   };
   const allClear = () => {
-    setWord("");
+    setWordValue("");
     setMeaning("");
     setPronunciation("");
     setExampleSentences([""]);
@@ -138,32 +101,6 @@ export const RegisterModal = (props: ModalProps) => {
     return (await res).results as string[];
   };
 
-  const save = async (): Promise<SaveResult> => {
-    const payload: Payload = {
-      word: word,
-      meaning: meaning,
-      pronunciation: pronunciation,
-      remarks: "",
-      sentences: exampleSentences
-        .map((sentence, index) => {
-          return {
-            value: sentence,
-            meaning: exampleSentencesMeaning[index],
-            pronunciation: "",
-          };
-        })
-        .filter((sentence) => sentence.value !== "" && sentence.meaning !== ""),
-      userId, //user.id,
-    };
-    console.log(payload);
-    return fetchJsonWithCors({
-      url: wordbookUrl("/registerWord"),
-      method: "POST",
-      body: payload,
-    })
-      .then((json: Response): Response => json)
-      .catch((e) => new Error(e));
-  };
   return (
     <div style={{ height: 500 }}>
       <Modal
@@ -184,8 +121,8 @@ export const RegisterModal = (props: ModalProps) => {
               id="standard-required"
               label="New Word"
               variant="standard"
-              value={word}
-              onChange={(e) => setWord(e.target.value)}
+              value={wordValue}
+              onChange={(e) => setWordValue(e.target.value)}
             />
             <TextField
               sx={textFieldStyle}
@@ -208,10 +145,10 @@ export const RegisterModal = (props: ModalProps) => {
               <SupportAgentIcon
                 fontSize="large"
                 onClick={async () => {
-                  if (word.length === 0) {
+                  if (wordValue.length === 0) {
                     return;
                   }
-                  const res = await translateRequest(word);
+                  const res = await translateRequest(wordValue);
                   setMeaning(res[0]);
                 }}
                 sx={{
@@ -275,7 +212,24 @@ export const RegisterModal = (props: ModalProps) => {
               width: "100px",
             }}
             onClick={async () => {
-              const result = await save();
+              const sentences: Sentence[] = exampleSentences
+                .map((value, index) => {
+                  return {
+                    value: value,
+                    meaning: exampleSentencesMeaning[index],
+                    pronunciation: "",
+                  };
+                })
+                .filter((value) => value.value.length > 0);
+
+              const result = await registerWordProfile({
+                userId: userId,
+                word: wordValue,
+                meaning: meaning,
+                pronunciation: pronunciation,
+                remarks: "",
+                sentences,
+              });
               if (isSuccessful(result)) {
                 props.handleClose();
                 allClear();
