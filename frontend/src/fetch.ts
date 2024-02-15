@@ -1,3 +1,5 @@
+import process from "process";
+
 type Method = "GET" | "POST" | "PUT" | "DELETE";
 type FetchProps<T> = {
   url: string;
@@ -13,4 +15,11 @@ export const fetchJsonWithCors = async <T>(props: FetchProps<T>) => {
     body: JSON.stringify(body),
   });
   return response.json();
+};
+
+export const wordbookUrl = (path: string) => {
+  if (import.meta.env.PROD) {
+    return "TODO";
+  }
+  return `http://localhost:8080${path}`;
 };

@@ -118,7 +118,6 @@ func toUpdatedSentenceProfileSource(sentences []updateSentenceProfileApiSchema) 
 
 type RegisterWordProfileApiSchema struct {
 	UserId        string                             `json:"userId"`
-	WordId        string                             `json:"wordId"`
 	Word          string                             `json:"word"`
 	Meaning       string                             `json:"meaning"`
 	Pronunciation string                             `json:"pronunciation"`
@@ -153,6 +152,7 @@ func (s RegisterWordProfileApiSchema) ToRegisterWordProfileSource() (RegisterWor
 			Pronunciation: pronunciation,
 		})
 	}
+	println(s.Word, s.Meaning, s.Pronunciation, s.Remarks, s.UserId, sentences)
 	value, err := NewWordValue(s.Word)
 	if err != nil {
 		return RegisterWordProfileSource{}, err

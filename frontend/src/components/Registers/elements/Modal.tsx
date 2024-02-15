@@ -1,13 +1,14 @@
 import { Modal } from "@mui/base";
 import { TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
-import { fetchJsonWithCors } from "../../../fetch";
+import { fetchJsonWithCors, wordbookUrl } from "../../../fetch";
+import { UserContext } from "../../../contexts/user";
 
 const style = {
   position: "absolute" as "absolute",
@@ -16,9 +17,8 @@ const style = {
   transform: "translate(-50%, -50%)",
   width: 600,
   bgcolor: "white",
-  //border: "2px solid #000",
-  boxShadow: 24,
-  height: 390,
+  border: "1px solid #000",
+  height: 440,
   overflowY: "scroll",
   p: 4,
 };
@@ -27,16 +27,49 @@ type ModalProps = {
   open: boolean;
   handleClose: () => void;
 };
+type Sentence = {
+  value: string;
+  meaning: string;
+  pronunciation?: string;
+};
 
 type Payload = {
+  userId: string;
   word: string;
   meaning: string;
   pronunciation: string;
-  examples: { sentence: string; meaning: string }[];
-  timestamp: number;
+  remarks: string;
+  sentences: Sentence[];
+};
+type Response = {
+  wordId: string;
+  word: string;
+  meaning: string;
+  pronunciation: string;
+  missCount: number;
+  remarks: string;
+  createdAt: number;
+  updatedAt: number;
+  sentences: {
+    sentenceId: string;
+    sentence: {
+      value: string;
+      meaning: string;
+      pronunciation: string;
+    };
+    createdAt: number;
+    updatedAt: number;
+  }[];
 };
 
+const isSuccessful = (result: SaveResult): result is Response => {
+  return (result as Response).wordId !== undefined;
+};
+
+type SaveResult = Response | Error;
+
 export const RegisterModal = (props: ModalProps) => {
+  const { user } = useContext(UserContext);
   const [word, setWord] = useState<string>("");
   const [meaning, setMeaning] = useState<string>("");
   const [pronunciation, setPronunciation] = useState<string>("");
@@ -104,25 +137,40 @@ export const RegisterModal = (props: ModalProps) => {
     return (await res).results as string[];
   };
 
-  const save = () => {
+  const save = async (): Promise<SaveResult> => {
     const payload: Payload = {
       word: word,
       meaning: meaning,
       pronunciation: pronunciation,
-      examples: exampleSentences.map((sentence, index) => {
-        return { sentence: sentence, meaning: exampleSentencesMeaning[index] };
-      }),
-      timestamp: Date.now(),
+      remarks: "",
+      sentences: exampleSentences
+        .map((sentence, index) => {
+          return {
+            value: sentence,
+            meaning: exampleSentencesMeaning[index],
+            pronunciation: "",
+          };
+        })
+        .filter((sentence) => sentence.value !== "" && sentence.meaning !== ""),
+      userId: "test-user", //user.id,
     };
-    alert(JSON.stringify(payload));
+    console.log(payload);
+    return fetchJsonWithCors({
+      url: wordbookUrl("/registerWord"),
+      method: "POST",
+      body: payload,
+    })
+      .then((json: Response): Response => json)
+      .catch((e) => new Error(e));
   };
   return (
-    <div>
+    <div style={{ height: 500 }}>
       <Modal
         open={props.open}
         onClose={props.handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
+        style={{ height: "100%" }}
       >
         <Box sx={style}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
@@ -211,7 +259,7 @@ export const RegisterModal = (props: ModalProps) => {
                 increaseSaveButtonPosition(PER_PUSH_BUTTON);
               }}
             >
-              <span>例文を追加</span>
+              例文を追加
             </Button>
           </TextFieldContainer>
           <Button
@@ -225,10 +273,17 @@ export const RegisterModal = (props: ModalProps) => {
               paddingY: "10px",
               width: "100px",
             }}
-            onClick={() => {
-              save();
-              props.handleClose();
-              allClear();
+            onClick={async () => {
+              const result = await save();
+              if (isSuccessful(result)) {
+                props.handleClose();
+                allClear();
+                console.log("success");
+                console.log(result);
+                return;
+              }
+              console.error(result);
+              console.log("failed");
             }}
           >
             保存する

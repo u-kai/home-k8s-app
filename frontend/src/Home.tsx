@@ -13,25 +13,9 @@ type Props = {
 };
 
 export const Home = (props: Props) => {
-  useEffect(() => {
-    fetchJsonWithCors({
-      url: "https://api.kaiandkai.com/translate/translate",
-      body: {
-        target: "test",
-      },
-      method: "POST",
-    })
-      .then((res) => res.json())
-      .catch((err) => {
-        console.log(err);
-        return { json: async () => err };
-      })
-      .then((data) => {
-        console.log(data);
-      });
-  }, []);
+  //
   return (
-    <Wrapper id="main">
+    <Wrapper>
       <Header logout={props.logout} />
       <UpperContainer>
         <Search />

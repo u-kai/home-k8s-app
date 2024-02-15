@@ -103,7 +103,7 @@ func registerWordHandler(logger *slog.Logger) http.HandlerFunc {
 		}
 		src, err := req.ToRegisterWordProfileSource()
 		if err != nil {
-			logger.Error(err.Error(), "reason", "failed to convert to register word profile source", "api", "registerWordHandler", "src", src)
+			logger.Error(err.Error(), "reason", "failed to convert to register word profile source", "api", "registerWordHandler", "src", src, "req", req, "req.Word")
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

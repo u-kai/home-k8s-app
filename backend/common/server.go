@@ -59,7 +59,7 @@ func logMiddleware(next http.Handler) http.Handler {
 
 func frontendHostFromEnv() string {
 	if os.Getenv("FRONTEND_HOST") == "" {
-		return "http://localhost:3000"
+		return "http://localhost:5173"
 	}
 	return os.Getenv("FRONTEND_HOST")
 }
