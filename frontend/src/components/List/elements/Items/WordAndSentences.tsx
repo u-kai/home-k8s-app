@@ -9,11 +9,12 @@ import { styled } from "styled-components";
 import { Rates } from "./Rates";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
+import { Sentence } from "../../../../contexts/wordbook";
 type WordAndSentencesProps = {
   word: string;
   meaning: string;
   pronunciation?: string;
-  sentences: string[];
+  sentences: Sentence[];
 };
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
@@ -66,7 +67,12 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
               <li key={index}>
                 <ul key={index}>
                   <Typography key={index}>
-                    <WordLine word={sentence} wordSize="medium" />
+                    <WordLine
+                      word={sentence.value}
+                      pronunciation={sentence.pronunciation}
+                      wordSize="medium"
+                    />
+                    <Typography>{sentence.meaning}</Typography>
                   </Typography>
                 </ul>
               </li>

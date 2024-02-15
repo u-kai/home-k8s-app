@@ -37,6 +37,7 @@ func fetchWordInfoHandler(logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 		wordInfo, err := wordbook.FetchWordProfileFromDBByUserId(db, userId)
+		logger.Info("wordInfo", wordInfo)
 		if err != nil {
 			logger.Error(err.Error(), "reason", "failed to fetch word info", "api", "fetchWordInfoHandler")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -94,6 +95,7 @@ func registerWordHandler(logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		logger.Info("registerWordHandler", "req", req)
 		db, err := common.FromEnv().Open()
 		defer db.Close()
 		if err != nil {

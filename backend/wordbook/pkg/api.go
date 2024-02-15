@@ -152,7 +152,6 @@ func (s RegisterWordProfileApiSchema) ToRegisterWordProfileSource() (RegisterWor
 			Pronunciation: pronunciation,
 		})
 	}
-	println(s.Word, s.Meaning, s.Pronunciation, s.Remarks, s.UserId, sentences)
 	value, err := NewWordValue(s.Word)
 	if err != nil {
 		return RegisterWordProfileSource{}, err

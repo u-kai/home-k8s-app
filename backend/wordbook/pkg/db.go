@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"ele/user"
 	"fmt"
+	"log/slog"
 )
 
 type fetchWordProfileFromUserId func(user.UserId) ([]WordProfile, error)
@@ -13,7 +14,10 @@ type fetchSentencesFromWordId func(WordId) ([]SentenceProfile, error)
 func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
 	return func(wordId WordId) ([]SentenceProfile, error) {
 		sql, wordId := selectSentenceProfileByWordIdSql(wordId)
+		slog.Info("sql", sql.String())
+		slog.Info("wordId", wordId)
 		rows, err := db.Query(sql.String(), wordId)
+		slog.Info("rows", rows)
 		if err != nil {
 			return nil, fmt.Errorf("failed to select sentences query: %w", err)
 		}
@@ -85,8 +89,8 @@ func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
 		// like_rates TEXT,
 		result := []WordProfile{}
 		for rows.Next() {
-			var userId string
 			var wordId string
+			var userId string
 			var value string
 			var meaning string
 			var pronunciation string
@@ -95,7 +99,7 @@ func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
 			var missCount int
 			var remarks string
 			var likeRates string
-			err = rows.Scan(&userId, &wordId, &value, &meaning, &pronunciation, &createdAt, &updatedAt, &missCount, &remarks, &likeRates)
+			err = rows.Scan(&wordId, &userId, &value, &meaning, &pronunciation, &createdAt, &updatedAt, &missCount, &remarks, &likeRates)
 			if err != nil {
 				return nil, fmt.Errorf("failed to word scan: %w", err)
 			}

@@ -14,7 +14,8 @@ export const fetchJsonWithCors = async <T>(props: FetchProps<T>) => {
     method,
     body: JSON.stringify(body),
   });
-  return response.json();
+  const json = await response.json();
+  return json;
 };
 
 export const wordbookUrl = (path: string) => {

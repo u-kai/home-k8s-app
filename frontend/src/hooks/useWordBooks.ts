@@ -31,6 +31,7 @@ export const useWordBook = () => {
         url: wordbookUrl("/words?userId=" + userId),
         method: "GET",
       });
+      console.log("words response:", response);
       setWordBook(response);
     } catch (e: any) {
       return new Error(e.toString());

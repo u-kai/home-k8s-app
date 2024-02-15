@@ -12,6 +12,7 @@ export const ListContainer = () => {
       const result = await fetchAll(userId);
       if (isSuccessful(result)) {
         console.log("success", result);
+        console.log("wordbook", wordbook);
         return;
       }
       console.error("error", result);
@@ -37,9 +38,13 @@ export const ListContainer = () => {
                   key={i}
                   word={wordProfile.word.value}
                   pronunciation={wordProfile.word.pronunciation}
-                  sentences={wordProfile.sentences.map(
-                    (sentence) => sentence.sentence.value
-                  )}
+                  sentences={wordProfile.sentences.map((sentenceProfile) => {
+                    return {
+                      value: sentenceProfile.sentence.value,
+                      meaning: sentenceProfile.sentence.meaning,
+                      pronunciation: sentenceProfile.sentence.pronunciation,
+                    };
+                  })}
                   meaning={wordProfile.word.meaning}
                 />
               ))}
