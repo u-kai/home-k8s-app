@@ -21,10 +21,15 @@ type WordAndSentencesProps = {
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
   const [deletePushed, setDeletePushed] = React.useState(false);
+  const [expanded, setExpanded] = React.useState<boolean>(false);
   return (
-    <Accordion sx={{ zIndex: 0, position: "relative" }}>
+    <Accordion sx={{ zIndex: 0, position: "relative" }} expanded={expanded}>
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
+        expandIcon={
+          <div onClick={() => setExpanded(!expanded)}>
+            <ExpandMoreIcon />
+          </div>
+        }
         aria-controls="panel1a-content"
         id="panel1a-header"
         sx={{ height: 80, zIndex: 1, position: "relative" }}
