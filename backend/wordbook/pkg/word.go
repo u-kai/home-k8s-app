@@ -64,8 +64,19 @@ func (e ErrInvalidMeaning) Error() string {
 	return "meaning is not a Japanese word"
 }
 
+type TooManyMeaningLengthError struct {
+	Meaning string
+}
+
+func NewTooManyMeaningLengthError(word string) TooManyMeaningLengthError {
+	return TooManyMeaningLengthError{Meaning: word}
+}
+func (e TooManyMeaningLengthError) Error() string {
+	return fmt.Sprintf("meaning length is too many: %s...", e.Meaning[0:30])
+}
+
 func NewMeaning(value string) (Meaning, error) {
-	const MAX_LENGTH = 100
+	const MAX_LENGTH = 500
 	if value == "" {
 		return Meaning(""), ErrEmptyWord{}
 	}
@@ -73,7 +84,7 @@ func NewMeaning(value string) (Meaning, error) {
 		return Meaning(""), ErrInvalidMeaning{}
 	}
 	if len(value) > MAX_LENGTH {
-		return Meaning(""), NewTooManyWordLengthError(value)
+		return Meaning(""), NewTooManyMeaningLengthError(value)
 	}
 	return Meaning(value), nil
 }
@@ -183,8 +194,19 @@ func (e ErrInvalidSentence) Error() string {
 	return fmt.Sprintf("sentence is not a English sentence: %s", e.invalid)
 }
 
+type TooManySentenceLengthError struct {
+	Sentence string
+}
+
+func NewTooManySentenceLengthError(word string) TooManySentenceLengthError {
+	return TooManySentenceLengthError{Sentence: word}
+}
+func (e TooManySentenceLengthError) Error() string {
+	return fmt.Sprintf("sentence length is too many: %s...", e.Sentence[0:30])
+}
+
 func NewSentenceValue(value string) (SentenceValue, error) {
-	const MAX_LENGTH = 100
+	const MAX_LENGTH = 500
 	if value == "" {
 		return SentenceValue(""), ErrEmptyWord{}
 	}

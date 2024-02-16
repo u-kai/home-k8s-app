@@ -64,7 +64,17 @@ func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createSentence(source string) sentence {
-	return sentence{Sentence: source, Meaning: "meaning"}
+	prompt := fmt.Sprintf("「%s」を使った例文を作ってください。そしてその意味を日本語で教えて下さい。そして返答としては、jsonで返してほしくて、{\"sentence\":\"作成した例文\",\"meaning\":\"日本語翻訳\"}でお願いします。", source)
+	res, err := gptRequest(prompt)
+	if err != nil {
+		slog.Error("Failed to request to GPT-3: %s", err.Error())
+	}
+	result := new(sentence)
+	err = json.Unmarshal([]byte(res), result)
+	if err != nil {
+		slog.Error("Failed to unmarshal response: %s", err.Error())
+	}
+	return *result
 }
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {
@@ -169,19 +179,19 @@ type GptResponse struct {
 	} `json:"choices"`
 }
 
-func TranslateByGPT(toLang, text string) (string, error) {
+func gptRequest(prompt string) (string, error) {
 	gptKey := os.Getenv("OPENAI_API_KEY")
 	client := &http.Client{}
 	url := "https://api.openai.com/v1/chat/completions"
 	b, err := json.Marshal(GptRequest{
-		Model: "gpt-4",
+		Model: "gpt-3.5-turbo",
 		Messages: []struct {
 			Role    string `json:"role"`
 			Content string `json:"content"`
 		}{
 			{
 				Role:    "user",
-				Content: fmt.Sprintf("「%s」という単語を%sに翻訳して.返答の形式としては、略した単語のみにしてください.", text, toLang),
+				Content: prompt,
 			},
 		},
 	})
@@ -204,8 +214,16 @@ func TranslateByGPT(toLang, text string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("%v", gptResp)
 	return gptResp.Choices[0].Message.Content, nil
+}
+
+func TranslateByGPT(toLang, text string) (string, error) {
+	content := fmt.Sprintf("「%s」という単語を%sに翻訳して.返答の形式としては、略した単語のみにしてください.", text, toLang)
+	result, err := gptRequest(content)
+	if err != nil {
+		return "", err
+	}
+	return result, nil
 }
 
 func Translate(fromLang, toLang, text string) ([]string, error) {
