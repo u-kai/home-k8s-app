@@ -9,19 +9,21 @@ import { styled } from "styled-components";
 import { Rates } from "./Rates";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
-import { Sentence } from "../../../../contexts/wordbook";
+import { Sentence, WordProfile } from "../../../../contexts/wordbook";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { UpdateWordProfileModal } from "./UpdateWordProfileModal";
 type WordAndSentencesProps = {
-  word: string;
-  meaning: string;
-  pronunciation?: string;
-  sentences: Sentence[];
+  wordProfile: WordProfile;
   deleteWord: () => Promise<void>;
+  updateWordProfile: () => Promise<void>;
 };
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
   const [deletePushed, setDeletePushed] = React.useState(false);
+  const [updatePushed, setUpdatePushed] = React.useState(false);
   const [expanded, setExpanded] = React.useState<boolean>(false);
+  const { value, meaning, pronunciation } = props.wordProfile.word;
+  const { sentences } = props.wordProfile;
   return (
     <Accordion sx={{ zIndex: 0, position: "relative" }} expanded={expanded}>
       <AccordionSummary
@@ -39,8 +41,8 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
         >
           <HorizontalContainer>
             <WordLine
-              word={props.word}
-              pronunciation={props.pronunciation}
+              word={value}
+              pronunciation={pronunciation}
               wordSize="large"
             />
             <Rates />
@@ -53,6 +55,15 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
                   opacity: 0.5,
                 },
               }}
+              onClick={async () => {
+                setUpdatePushed(true);
+              }}
+            />
+            <UpdateWordProfileModal
+              updateHandler={props.updateWordProfile}
+              open={updatePushed}
+              setOpen={setUpdatePushed}
+              wordProfile={props.wordProfile}
             />
             <DeleteForeverIcon
               fontSize="large"
@@ -69,7 +80,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
             />
             <DeleteConfirmModal
               deleteHandler={props.deleteWord}
-              word={props.word}
+              word={value}
               open={deletePushed}
               setOpen={setDeletePushed}
             ></DeleteConfirmModal>
@@ -78,18 +89,18 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
       </AccordionSummary>
       <AccordionDetails>
         <>
-          <Typography>{props.meaning}</Typography>
-          {props.sentences.map((sentence, index) => {
+          <Typography>{meaning}</Typography>
+          {sentences.map((sentence, index) => {
             return (
               <li key={index}>
                 <ul key={index}>
                   <Typography key={index}>
                     <WordLine
-                      word={sentence.value}
-                      pronunciation={sentence.pronunciation}
+                      word={sentence.sentence.value}
+                      pronunciation={sentence.sentence.pronunciation}
                       wordSize="medium"
                     />
-                    <Typography>{sentence.meaning}</Typography>
+                    <Typography>{sentence.sentence.meaning}</Typography>
                   </Typography>
                 </ul>
               </li>

@@ -29,5 +29,12 @@ export const translateUrl = () => {
   if (import.meta.env.PROD) {
     return "TODO";
   }
-  return `http://localhost:8080/translate`;
+  return `http://localhost:8081`;
+};
+
+export const createSentenceUrl = () => {
+  if (import.meta.env.PROD) {
+    return "TODO";
+  }
+  return `http://localhost:8081/createSentence`;
 };

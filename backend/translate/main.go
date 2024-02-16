@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,9 +19,52 @@ import (
 
 func main() {
 	// Start the server
-	server := common.DefaultELEServer()
+	server := common.NewELEServer("http://localhost:5173", 8081)
 	server.RegisterHandler("/", translateHandler)
+	server.RegisterHandler("/createSentence", createSentenceHandler)
 	server.Start()
+}
+
+type sentence struct {
+	Sentence string `json:"sentence"`
+	Meaning  string `json:"meaning"`
+}
+type createSentenceRequest struct {
+	Word string `json:"word"`
+}
+
+func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	len := r.ContentLength
+	b := make([]byte, len)
+
+	_, err := r.Body.Read(b)
+	if err != nil && err.Error() != "EOF" {
+		log.Printf("Failed to read request body: %s", err.Error())
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	req := new(createSentenceRequest)
+	err = json.Unmarshal(b, req)
+	if err != nil {
+		slog.Error("Failed to unmarshal request body: %s", err.Error())
+		http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
+		return
+	}
+	sentence := createSentence(req.Word)
+	resBytes, err := json.Marshal(sentence)
+	if err != nil {
+		slog.Error("Failed to marshal response: %s", err.Error())
+		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(resBytes)
+}
+
+func createSentence(source string) sentence {
+	return sentence{Sentence: source, Meaning: "meaning"}
 }
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +94,7 @@ func translateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create translate target. Request is too big.", http.StatusBadRequest)
 		return
 	}
-	results, err := target.TranslateToJP()
+	results, err := target.TranslateToJP(req.FromLang, req.ToLang)
 	if err != nil {
 		log.Printf("Failed to translate text: %s", err.Error())
 		http.Error(w, "Failed to translate text", http.StatusInternalServerError)
@@ -76,7 +121,9 @@ func translateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type TranslateRequest struct {
-	Target string `json:"target"`
+	Target   string `json:"target"`
+	FromLang string `json:"fromLang"`
+	ToLang   string `json:"toLang"`
 }
 
 type TranslateTarget string
@@ -86,9 +133,11 @@ type TranslateResponse struct {
 	Results []string        `json:"results"`
 }
 
-func (t TranslateTarget) TranslateToJP() ([]string, error) {
-	//return TranslateText("ja", string(t))
-	return []string{string(t)}, nil
+func (t TranslateTarget) TranslateToJP(fromLang, toLang string) ([]string, error) {
+	result, err := TranslateByGPT(toLang, string(t))
+	return []string{result}, err
+	//return Translate(fromLang, toLang, string(t))
+	//return []string{string(t)}, nil
 }
 
 func newTranslateTarget(req TranslateRequest) (TranslateTarget, error) {
@@ -96,6 +145,104 @@ func newTranslateTarget(req TranslateRequest) (TranslateTarget, error) {
 		return TranslateTarget(""), fmt.Errorf("text is too long")
 	}
 	return TranslateTarget(req.Target), nil
+}
+
+type Request struct {
+	Target string `json:"target"`
+	Text   string `json:"text"`
+	Source string `json:"source"`
+}
+type GptRequest struct {
+	Model    string `json:"model"`
+	Messages []struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"messages"`
+}
+
+type GptResponse struct {
+	Choices []struct {
+		Message struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"message"`
+	} `json:"choices"`
+}
+
+func TranslateByGPT(toLang, text string) (string, error) {
+	gptKey := os.Getenv("OPENAI_API_KEY")
+	client := &http.Client{}
+	url := "https://api.openai.com/v1/chat/completions"
+	b, err := json.Marshal(GptRequest{
+		Model: "gpt-4",
+		Messages: []struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		}{
+			{
+				Role:    "user",
+				Content: fmt.Sprintf("「%s」という単語を%sに翻訳して.返答の形式としては、略した単語のみにしてください.", text, toLang),
+			},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", gptKey))
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	var gptResp GptResponse
+	err = json.NewDecoder(resp.Body).Decode(&gptResp)
+	if err != nil {
+		return "", err
+	}
+	fmt.Printf("%v", gptResp)
+	return gptResp.Choices[0].Message.Content, nil
+}
+
+func Translate(fromLang, toLang, text string) ([]string, error) {
+	client := &http.Client{}
+	b, err := json.Marshal(Request{
+		Target: toLang,
+		Text:   text,
+		Source: fromLang,
+	})
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf("https://www.googleapis.com/language/translate/v2?key=%s&source=%s&target=%s&q=%s", os.Getenv("GOOGLE_TRANSLATE_KEY"), fromLang, toLang, text)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Println("GOOGLE_TRANSLATE_API_KEY", os.Getenv("GOOGLE_TRANSLATE_KEY"))
+	resp, err := client.Do(req)
+	if err != nil {
+		println(err.Error())
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result map[string]interface{}
+	fmt.Println("resp %v", resp)
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	translations := result["data"].(map[string]interface{})["translations"].([]interface{})
+	translatedTexts := make([]string, 0, len(translations))
+	for _, t := range translations {
+		translatedTexts = append(translatedTexts, t.(map[string]interface{})["translatedText"].(string))
+	}
+	return translatedTexts, nil
 }
 
 func textLimit(text string) int {

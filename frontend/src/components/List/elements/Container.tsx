@@ -37,16 +37,8 @@ export const ListContainer = () => {
               {wordbook.map((wordProfile, i) => (
                 <WordAndSentences
                   key={i}
-                  word={wordProfile.word.value}
-                  pronunciation={wordProfile.word.pronunciation}
-                  sentences={wordProfile.sentences.map((sentenceProfile) => {
-                    return {
-                      value: sentenceProfile.sentence.value,
-                      meaning: sentenceProfile.sentence.meaning,
-                      pronunciation: sentenceProfile.sentence.pronunciation,
-                    };
-                  })}
-                  meaning={wordProfile.word.meaning}
+                  wordProfile={wordProfile}
+                  updateWordProfile={async () => {}}
                   deleteWord={async () => {
                     const result = await deleteWordProfile({
                       userId,

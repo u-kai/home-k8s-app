@@ -7,22 +7,30 @@ import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
-import { fetchJsonWithCors, wordbookUrl } from "../../../fetch";
+import {
+  createSentenceUrl,
+  fetchJsonWithCors,
+  translateUrl,
+  wordbookUrl,
+} from "../../../fetch";
 import { UserContext } from "../../../contexts/user";
 import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
 import { Sentence } from "../../../contexts/wordbook";
+import { TextAreaField } from "@aws-amplify/ui-react";
+import { text } from "node:stream/consumers";
 
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 600,
-  height: 440,
+  width: 650,
+  height: 470,
   bgcolor: "white",
-  border: "1px solid #000",
+  border: "2px solid #000",
   overflowY: "scroll",
-  p: 4,
+  paddingX: 4,
+  paddingY: 2,
 };
 
 type ModalProps = {
@@ -36,11 +44,12 @@ export const RegisterModal = (props: ModalProps) => {
   const [wordValue, setWordValue] = useState<string>("");
   const [meaning, setMeaning] = useState<string>("");
   const [pronunciation, setPronunciation] = useState<string>("");
+  const [remarks, setRemarks] = useState<string>("");
   const [exampleSentences, setExampleSentences] = useState<string[]>([""]);
   const [exampleSentencesMeaning, setExampleSentencesMeaning] = useState<
     string[]
   >([""]);
-  const [saveButtonPosition, setSaveButtonPosition] = useState<number>(380);
+  const [saveButtonPosition, setSaveButtonPosition] = useState<number>(400);
   const { registerWordProfile } = useWordBook();
   const addEmpty = () => {
     setExampleSentences([...exampleSentences, ""]);
@@ -88,17 +97,49 @@ export const RegisterModal = (props: ModalProps) => {
     setExampleSentencesMeaning([""]);
   };
 
-  const translateRequest = async (word: string): Promise<string[]> => {
-    const url = "http://localhost:8080";
-    const body = { target: word };
-    const res = fetchJsonWithCors({
-      url: url,
+  const translateRequest = async (): Promise<void> => {
+    let toLang = "日本語";
+    let target = wordValue;
+    if (target.length === 0) {
+      if (meaning.length === 0) {
+        return;
+      }
+      toLang = "英語";
+      target = meaning;
+    }
+    const body = { target, toLang };
+    const res = await fetchJsonWithCors({
+      url: translateUrl(),
       method: "POST",
       body,
     }).catch((e) => {
-      console.error(e);
+      console.error("fetch error:", e);
     });
-    return (await res).results as string[];
+    const result = (await res).results as string[];
+    if (wordValue.length === 0) {
+      setWordValue(result[0]);
+    } else {
+      setMeaning(result[0]);
+    }
+  };
+  const createSentenceRequest = async (index: number): Promise<void> => {
+    if (wordValue.length === 0) {
+      return;
+    }
+    const body = {
+      word: wordValue,
+    };
+    const res = await fetchJsonWithCors({
+      url: createSentenceUrl(),
+      method: "POST",
+      body,
+    }).catch((e) => {
+      console.error("fetch error:", e);
+    });
+    const result = res as { sentence: string; meaning: string };
+    changeExampleSentence(index, result.sentence);
+    changeExampleSentenceMeaning(index, result.meaning);
+    return;
   };
 
   return (
@@ -145,11 +186,7 @@ export const RegisterModal = (props: ModalProps) => {
               <SupportAgentIcon
                 fontSize="large"
                 onClick={async () => {
-                  if (wordValue.length === 0) {
-                    return;
-                  }
-                  const res = await translateRequest(wordValue);
-                  setMeaning(res[0]);
+                  translateRequest();
                 }}
                 sx={{
                   position: "absolute",
@@ -162,6 +199,18 @@ export const RegisterModal = (props: ModalProps) => {
                 }}
               />
             </MeaningTextAndAiContainer>
+            <TextAreaField
+              style={{
+                ...textFieldStyle,
+                height: "70px",
+                borderWidth: "1px",
+              }}
+              id="standard-required"
+              label=""
+              placeholder="備考"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+            />
             {exampleSentences.map((value, index) => (
               <ExampleSentenceField
                 key={index}
@@ -179,6 +228,7 @@ export const RegisterModal = (props: ModalProps) => {
                   changeExampleSentenceMeaning(index, value)
                 }
                 meaning={exampleSentencesMeaning[index]}
+                onAssistantPress={async () => createSentenceRequest(index)}
               />
             ))}
             <Button
@@ -188,7 +238,7 @@ export const RegisterModal = (props: ModalProps) => {
               sx={{
                 position: "absolute",
                 left: "82%",
-                top: "65%",
+                top: "70%",
                 padding: "10px",
                 width: "100px",
               }}
@@ -227,7 +277,7 @@ export const RegisterModal = (props: ModalProps) => {
                 word: wordValue,
                 meaning: meaning,
                 pronunciation: pronunciation,
-                remarks: "",
+                remarks: remarks,
                 sentences,
               });
               if (isSuccessful(result)) {

@@ -13,6 +13,9 @@ type WordSize = "small" | "medium" | "large";
 const speak = (word: string) => {
   const synth = window.speechSynthesis;
   const voice = synth.getVoices().filter((v) => v.lang === "en-US")[0];
+  if (voice.lang !== "en-US") {
+    return;
+  }
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.voice = voice;
   synth.speak(utterance);

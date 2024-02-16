@@ -22,6 +22,22 @@ export type RegisterWordRequest = {
   sentences: Sentence[];
 };
 
+export type UpdateWordRequest = {
+  userId: string;
+  wordId: string;
+  word: string;
+  meaning: string;
+  pronunciation?: string;
+  remarks: string;
+  missCount: number;
+  sentences: {
+    sentenceId: string;
+    value: string;
+    meaning: string;
+    pronunciation?: string;
+  }[];
+};
+
 export const useWordBook = () => {
   const { wordbook, setWordBook } = useContext(WordBookContext);
 
@@ -49,13 +65,14 @@ export const useWordBook = () => {
     wordId: string;
   }): Promise<RequestResult<void>> => {
     try {
-      const response = await fetchJsonWithCors({
+      const _response = await fetchJsonWithCors({
         url: wordbookUrl("/deleteWord"),
         method: "POST",
         body: req,
       });
       const newWordBook = wordbook.filter((word) => word.wordId !== req.wordId);
       setWordBook(newWordBook);
+      return;
     } catch (e: any) {
       return new Error(e.toString());
     }
@@ -76,11 +93,45 @@ export const useWordBook = () => {
     }
   };
 
+  const updateWordProfile = async (
+    userId: string,
+    wordProfile: WordProfile
+  ): Promise<RequestResult<void>> => {
+    const req: UpdateWordRequest = {
+      userId: userId,
+      wordId: wordProfile.wordId,
+      word: wordProfile.word.value,
+      meaning: wordProfile.word.meaning,
+      pronunciation: wordProfile.word.pronunciation,
+      remarks: wordProfile.remarks,
+      missCount: wordProfile.missCount,
+      sentences: wordProfile.sentences.map((sentence) => {
+        return {
+          sentenceId: sentence.sentenceId,
+          value: sentence.sentence.value,
+          meaning: sentence.sentence.meaning,
+          pronunciation: sentence.sentence.pronunciation,
+        };
+      }),
+    };
+    try {
+      const response = await fetchJsonWithCors({
+        url: wordbookUrl("/updateWord"),
+        method: "POST",
+        body: req,
+      });
+      setWordBook([...wordbook, response]);
+      return;
+    } catch (e: any) {
+      return new Error(e.toString());
+    }
+  };
   return {
     wordbook,
     fetchAll,
     sortByCreatedAt,
-    registerWordProfile,
     deleteWordProfile,
+    registerWordProfile,
+    updateWordProfile,
   };
 };

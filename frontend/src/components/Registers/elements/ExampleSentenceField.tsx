@@ -10,6 +10,7 @@ type ExampleSentenceFieldProps = {
   meaning: string;
   onMeaningChange: (meaning: string) => void;
   onDeletePress: () => void;
+  onAssistantPress: () => Promise<void>;
 };
 
 export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
@@ -47,6 +48,9 @@ export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
         />
         <SupportAgentIcon
           fontSize="large"
+          onClick={async () => {
+            props.onAssistantPress();
+          }}
           sx={{
             position: "absolute",
             top: "80%",
