@@ -51,7 +51,18 @@ func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
 		return
 	}
-	sentence := createSentence(req.Word)
+	var sentence sentence
+	for i := 0; i < 3; i++ {
+		sentence, err = createSentence(req.Word)
+		if err == nil {
+			break
+		}
+		if err != nil && i == 2 {
+			slog.Error("Failed to create sentence: %s", err.Error())
+			http.Error(w, "Failed to create sentence", http.StatusInternalServerError)
+			return
+		}
+	}
 	resBytes, err := json.Marshal(sentence)
 	if err != nil {
 		slog.Error("Failed to marshal response: %s", err.Error())
@@ -63,18 +74,18 @@ func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(resBytes)
 }
 
-func createSentence(source string) sentence {
+func createSentence(source string) (sentence, error) {
 	prompt := fmt.Sprintf("「%s」を使った例文を作ってください。そしてその意味を日本語で教えて下さい。そして返答としては、jsonで返してほしくて、{\"sentence\":\"作成した例文\",\"meaning\":\"日本語翻訳\"}でお願いします。", source)
 	res, err := gptRequest(prompt)
 	if err != nil {
-		slog.Error("Failed to request to GPT-3: %s", err.Error())
+		return sentence{}, fmt.Errorf("Failed to create sentence: %s", err.Error())
 	}
 	result := new(sentence)
 	err = json.Unmarshal([]byte(res), result)
 	if err != nil {
-		slog.Error("Failed to unmarshal response: %s", err.Error())
+		return sentence{}, fmt.Errorf("Failed to unmarshal response: %s", err.Error())
 	}
-	return *result
+	return *result, nil
 }
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {

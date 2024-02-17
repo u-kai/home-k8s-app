@@ -49,10 +49,14 @@ export const RegisterModal = (props: ModalProps) => {
   const [exampleSentencesMeaning, setExampleSentencesMeaning] = useState<
     string[]
   >([""]);
-  const [saveButtonPosition, setSaveButtonPosition] = useState<number>(400);
+  const INIT_SAVE_BUTTON_POSITION = 400;
+  const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
+    INIT_SAVE_BUTTON_POSITION
+  );
   const { registerWordProfile } = useWordBook();
   const addEmpty = () => {
     setExampleSentences([...exampleSentences, ""]);
+    setExampleSentencesMeaning([...exampleSentencesMeaning, ""]);
   };
 
   const PER_PUSH_BUTTON = 110;
@@ -61,6 +65,9 @@ export const RegisterModal = (props: ModalProps) => {
   };
   const decreaseSaveButtonPosition = (posi: number) => {
     setSaveButtonPosition(saveButtonPosition - posi);
+  };
+  const backToInitPosition = () => {
+    setSaveButtonPosition(INIT_SAVE_BUTTON_POSITION);
   };
 
   const changeExampleSentence = (index: number, sentence: string) => {
@@ -112,8 +119,6 @@ export const RegisterModal = (props: ModalProps) => {
       url: translateUrl(),
       method: "POST",
       body,
-    }).catch((e) => {
-      console.error("fetch error:", e);
     });
     const result = (await res).results as string[];
     if (wordValue.length === 0) {
@@ -133,8 +138,6 @@ export const RegisterModal = (props: ModalProps) => {
       url: createSentenceUrl(),
       method: "POST",
       body,
-    }).catch((e) => {
-      console.error("fetch error:", e);
     });
     const result = res as { sentence: string; meaning: string };
     changeExampleSentence(index, result.sentence);
@@ -228,7 +231,11 @@ export const RegisterModal = (props: ModalProps) => {
                   changeExampleSentenceMeaning(index, value)
                 }
                 meaning={exampleSentencesMeaning[index]}
-                onAssistantPress={async () => createSentenceRequest(index)}
+                onAssistantPress={async () =>
+                  createSentenceRequest(index).catch((e) =>
+                    console.error("fetch error:", e)
+                  )
+                }
               />
             ))}
             <Button
@@ -279,12 +286,11 @@ export const RegisterModal = (props: ModalProps) => {
                 pronunciation: pronunciation,
                 remarks: remarks,
                 sentences,
-              });
+              }).catch((e) => console.error("fetch error:", e));
               if (isSuccessful(result)) {
                 props.handleClose();
                 allClear();
-                console.log("success");
-                console.log(result);
+                backToInitPosition();
                 return;
               }
               console.error(result);

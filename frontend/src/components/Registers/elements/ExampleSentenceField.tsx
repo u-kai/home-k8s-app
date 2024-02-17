@@ -28,7 +28,7 @@ export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
         <TextField
           sx={textFieldStyle}
           id="standard-required"
-          label="ExampleSentences Meaning"
+          label="Example Sentences Meaning"
           variant="standard"
           value={props.meaning}
           onChange={(e) => props.onMeaningChange(e.target.value)}

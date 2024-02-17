@@ -9,7 +9,7 @@ import { styled } from "styled-components";
 import { Rates } from "./Rates";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
-import { Sentence, WordProfile } from "../../../../contexts/wordbook";
+import { WordProfile } from "../../../../contexts/wordbook";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { UpdateWordProfileModal } from "./UpdateWordProfileModal";
 type WordAndSentencesProps = {
@@ -34,7 +34,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
         }
         aria-controls="panel1a-content"
         id="panel1a-header"
-        sx={{ height: 80, zIndex: 1, position: "relative" }}
+        sx={{ height: 50, zIndex: 1, position: "relative" }}
       >
         <Typography
           sx={{ width: "80%", position: "absolute", top: "0", zIndex: 4 }}
@@ -43,7 +43,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
             <WordLine
               word={value}
               pronunciation={pronunciation}
-              wordSize="large"
+              wordSize="1.3em"
             />
             <Rates />
             <ModeEditOutlineIcon
@@ -89,7 +89,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
       </AccordionSummary>
       <AccordionDetails>
         <>
-          <Typography>{meaning}</Typography>
+          <Typography sx={{ fontSize: "1em" }}>{meaning}</Typography>
           {sentences.map((sentence, index) => {
             return (
               <li key={index}>
@@ -98,10 +98,10 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
                     <WordLine
                       word={sentence.sentence.value}
                       pronunciation={sentence.sentence.pronunciation}
-                      wordSize="medium"
+                      wordSize="1em"
                     />
-                    <Typography>{sentence.sentence.meaning}</Typography>
                   </Typography>
+                  <Typography>{sentence.sentence.meaning}</Typography>
                 </ul>
               </li>
             );

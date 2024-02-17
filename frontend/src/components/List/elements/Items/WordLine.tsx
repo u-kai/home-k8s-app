@@ -6,29 +6,24 @@ import styled from "styled-components";
 export type WordLineProps = {
   pronunciation?: string;
   word: string;
-  wordSize?: WordSize;
+  wordSize?: string;
 };
-type WordSize = "small" | "medium" | "large";
 
 const speak = (word: string) => {
   const synth = window.speechSynthesis;
-  const voice = synth.getVoices().filter((v) => v.lang === "en-US")[0];
+  const voices = synth
+    .getVoices()
+    .filter((v) => v.lang !== undefined && v.lang === "en-US");
+  if (voices.length === 0) {
+    return;
+  }
+  const voice = voices[0];
   if (voice.lang !== "en-US") {
     return;
   }
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.voice = voice;
   synth.speak(utterance);
-};
-const wordSize = (size: WordSize): string => {
-  switch (size) {
-    case "small":
-      return "0.8em";
-    case "medium":
-      return "1.3em";
-    case "large":
-      return "1.8em";
-  }
 };
 export const WordLine = (props: WordLineProps) => {
   return (
@@ -38,13 +33,11 @@ export const WordLine = (props: WordLineProps) => {
           <PlayCircleIcon onClick={() => speak(props.word)} />
         </Button>
       }
-      sx={{ height: 80, zIndex: 1, width: "100%" }}
+      sx={{ height: 50, zIndex: 1, width: "100%" }}
     >
       <VerticalContainer>
         <Pronunciation>{props.pronunciation}</Pronunciation>
-        <Word fontSize={wordSize(props.wordSize ?? "medium")}>
-          {props.word}
-        </Word>
+        <Word fontSize={props.wordSize ?? "0.8rem"}>{props.word}</Word>
       </VerticalContainer>
     </ListItem>
   );
