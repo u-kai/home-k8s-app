@@ -26,7 +26,7 @@ func NewELEServer(service, frontend string, port int) *ELEServer {
 }
 
 func (s *ELEServer) RegisterHandler(route string, handler http.HandlerFunc) {
-	http.HandleFunc(route, http.HandlerFunc(corsMiddleware(http.HandlerFunc(handler), s.frontendHost).ServeHTTP))
+	http.HandleFunc("/"+s.service+route, http.HandlerFunc(corsMiddleware(http.HandlerFunc(handler), s.frontendHost).ServeHTTP))
 }
 
 func (s *ELEServer) Start() {
