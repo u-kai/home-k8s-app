@@ -1,17 +1,6 @@
 import { useContext } from "react";
-import {
-  Sentence,
-  Word,
-  WordBookContext,
-  WordProfile,
-} from "../contexts/wordbook";
-import { fetchJsonWithCors, wordbookUrl } from "../fetch";
-
-type RequestResult<T> = T | Error;
-
-export const isSuccessful = <T>(result: RequestResult<T>): result is T => {
-  return !(result instanceof Error);
-};
+import { Sentence, WordBookContext, WordProfile } from "../contexts/wordbook";
+import { fetchJsonWithCors, isFailed, Result, wordbookUrl } from "../fetch";
 
 export type RegisterWordRequest = {
   userId: string;
@@ -41,17 +30,18 @@ export type UpdateWordRequest = {
 export const useWordBook = () => {
   const { wordbook, setWordBook } = useContext(WordBookContext);
 
-  const fetchAll = async (userId: string): Promise<RequestResult<void>> => {
-    try {
-      const response: WordProfile[] = await fetchJsonWithCors({
-        url: wordbookUrl("/words?userId=" + userId),
-        method: "GET",
-      });
-      console.log("words response:", response);
-      setWordBook(response);
-    } catch (e: any) {
-      return new Error(e.toString());
+  const fetchAll = async (userId: string): Promise<Result<void>> => {
+    const response: Result<WordProfile[]> = await fetchJsonWithCors<
+      undefined,
+      WordProfile[]
+    >({
+      url: wordbookUrl("/words?userId=" + userId),
+      method: "GET",
+    });
+    if (isFailed(response)) {
+      return new Error("Failed to fetch wordbook." + response.toString());
     }
+    setWordBook(response);
   };
   const sortByCreatedAt = () => {
     const sorted = wordbook.slice().sort((a, b) => {
@@ -63,41 +53,40 @@ export const useWordBook = () => {
   const deleteWordProfile = async (req: {
     userId: string;
     wordId: string;
-  }): Promise<RequestResult<void>> => {
-    try {
-      const _response = await fetchJsonWithCors({
-        url: wordbookUrl("/deleteWord"),
-        method: "POST",
-        body: req,
-      });
-      const newWordBook = wordbook.filter((word) => word.wordId !== req.wordId);
-      setWordBook(newWordBook);
-      return;
-    } catch (e: any) {
-      return new Error(e.toString());
+  }): Promise<Result<void>> => {
+    const response = await fetchJsonWithCors({
+      url: wordbookUrl("/deleteWord"),
+      method: "POST",
+      body: req,
+    });
+    if (isFailed(response)) {
+      return new Error("Failed to delete word profile." + response.toString());
     }
+    const newWordBook = wordbook.filter((word) => word.wordId !== req.wordId);
+    setWordBook(newWordBook);
+    return;
   };
 
   const registerWordProfile = async (
     req: RegisterWordRequest
-  ): Promise<RequestResult<void>> => {
-    try {
-      const response = await fetchJsonWithCors({
-        url: wordbookUrl("/registerWord"),
-        method: "POST",
-        body: req,
-      });
-      console.log("registerWordProfile response:", response);
-      setWordBook([...wordbook, response]);
-    } catch (e: any) {
-      return new Error(e.toString());
+  ): Promise<Result<void>> => {
+    const response = await fetchJsonWithCors<RegisterWordRequest, WordProfile>({
+      url: wordbookUrl("/registerWord"),
+      method: "POST",
+      body: req,
+    });
+    if (isFailed(response)) {
+      return new Error(
+        "Failed to register word profile." + response.toString()
+      );
     }
+    setWordBook([...wordbook, response]);
   };
 
   const updateWordProfile = async (
     userId: string,
     wordProfile: WordProfile
-  ): Promise<RequestResult<void>> => {
+  ): Promise<Result<void>> => {
     const req: UpdateWordRequest = {
       userId: userId,
       wordId: wordProfile.wordId,
@@ -115,17 +104,15 @@ export const useWordBook = () => {
         };
       }),
     };
-    try {
-      const response = await fetchJsonWithCors({
-        url: wordbookUrl("/updateWord"),
-        method: "POST",
-        body: req,
-      });
-      setWordBook([...wordbook, response]);
-      return;
-    } catch (e: any) {
-      return new Error(e.toString());
+    const response = await fetchJsonWithCors<UpdateWordRequest, WordProfile>({
+      url: wordbookUrl("/updateWord"),
+      method: "POST",
+      body: req,
+    });
+    if (isFailed(response)) {
+      return new Error("Failed to update word profile." + response.toString());
     }
+    setWordBook([...wordbook, response]);
   };
   return {
     wordbook,

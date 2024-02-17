@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { isSuccessful } from "../../../../hooks/useWordBooks";
+import { isFailed } from "../../../../fetch";
 
 const style = {
   position: "absolute" as "absolute",
@@ -43,11 +43,7 @@ export const DeleteConfirmModal = (props: {
             variant="contained"
             color="error"
             onClick={async () => {
-              const result = await props.deleteHandler();
-              if (!isSuccessful(result)) {
-                console.error(result);
-              }
-              props.setOpen(false);
+              props.deleteHandler();
             }}
           >
             Delete

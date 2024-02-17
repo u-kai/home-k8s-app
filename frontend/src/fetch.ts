@@ -7,34 +7,46 @@ type FetchProps<T> = {
   body?: T;
 };
 
-export const fetchJsonWithCors = async <T>(props: FetchProps<T>) => {
+export type Result<T> = T | Error;
+export const isSuccessful = <T>(result: Result<T>): result is T => {
+  return !(result instanceof Error);
+};
+export const isFailed = <T>(result: Result<T>): result is Error => {
+  return result instanceof Error;
+};
+
+export const fetchJsonWithCors = async <P, T>(
+  props: FetchProps<P>
+): Promise<Result<T>> => {
   const { url, method, body } = props;
-  const response = await fetch(url, {
+  return fetch(url, {
     mode: "cors",
     method,
     body: JSON.stringify(body),
-  });
-  const json = await response.json();
-  return json;
+  })
+    .then((response) => response.json() as T)
+    .catch((e) => {
+      return new Error(e.toString());
+    });
 };
 
 export const wordbookUrl = (path: string) => {
   if (import.meta.env.PROD) {
-    return "http://test.kaiandkai.com/wordbook" + path;
+    import.meta.env.API_SERVER_URL + "/wordbook" + path;
   }
-  return `http://localhost:8080${path}`;
+  return `http://localhost:8081/wordbook${path}`;
 };
 
 export const translateUrl = () => {
   if (import.meta.env.PROD) {
-    return "http://test.kaiandkai.com/translate";
+    import.meta.env.API_SERVER_URL + "/translate";
   }
-  return `http://localhost:8081`;
+  return `http://localhost:8081/translate`;
 };
 
 export const createSentenceUrl = () => {
   if (import.meta.env.PROD) {
-    return "http://test.kaiandkai.com/translate/createSentence";
+    import.meta.env.API_SERVER_URL + "/translate/createSentence";
   }
   return `http://localhost:8081/createSentence`;
 };

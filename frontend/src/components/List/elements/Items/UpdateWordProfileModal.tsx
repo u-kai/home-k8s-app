@@ -3,8 +3,8 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { isSuccessful } from "../../../../hooks/useWordBooks";
 import { WordProfile } from "../../../../contexts/wordbook";
+import { isFailed } from "../../../../fetch";
 
 const style = {
   position: "absolute" as "absolute",
@@ -45,10 +45,7 @@ export const UpdateWordProfileModal = (props: {
             variant="contained"
             color="error"
             onClick={async () => {
-              const result = await props.updateHandler();
-              if (!isSuccessful(result)) {
-                console.error(result);
-              }
+              await props.updateHandler();
               props.setOpen(false);
             }}
           >

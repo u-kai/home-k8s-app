@@ -10,10 +10,11 @@ import { ExampleSentenceField } from "./ExampleSentenceField";
 import {
   createSentenceUrl,
   fetchJsonWithCors,
+  isFailed,
   translateUrl,
 } from "../../../fetch";
 import { UserContext } from "../../../contexts/user";
-import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
+import { useWordBook } from "../../../hooks/useWordBooks";
 import { Sentence } from "../../../contexts/wordbook";
 import { TextAreaField } from "@aws-amplify/ui-react";
 import { AppErrorContext } from "../../../contexts/error";
@@ -115,12 +116,23 @@ export const RegisterModal = (props: ModalProps) => {
       target = meaning;
     }
     const body = { target, toLang };
-    const res = await fetchJsonWithCors({
+    const res = await fetchJsonWithCors<
+      { target: string; toLang: string },
+      { results: string[] }
+    >({
       url: translateUrl(),
       method: "POST",
       body,
     });
-    const result = (await res).results as string[];
+    if (isFailed(res)) {
+      setAppError({
+        message: "Failed to translate" + res.message,
+        id: "translate",
+        name: "translate",
+      });
+      return;
+    }
+    const result = res.results;
     if (wordValue.length === 0) {
       setWordValue(result[0]);
     } else {
@@ -134,12 +146,23 @@ export const RegisterModal = (props: ModalProps) => {
     const body = {
       word: wordValue,
     };
-    const res = await fetchJsonWithCors({
+    const res = await fetchJsonWithCors<
+      { word: string },
+      { sentence: string; meaning: string }
+    >({
       url: createSentenceUrl(),
       method: "POST",
       body,
     });
-    const result = res as { sentence: string; meaning: string };
+    if (isFailed(res)) {
+      setAppError({
+        message: "Failed to create sentence" + res.message,
+        id: "createSentence",
+        name: "createSentence",
+      });
+      return;
+    }
+    const result = res;
     changeExampleSentence(index, result.sentence);
     changeExampleSentenceMeaning(index, result.meaning);
     return;
@@ -231,15 +254,7 @@ export const RegisterModal = (props: ModalProps) => {
                   changeExampleSentenceMeaning(index, value)
                 }
                 meaning={exampleSentencesMeaning[index]}
-                onAssistantPress={async () =>
-                  createSentenceRequest(index).catch((e) =>
-                    setAppError({
-                      name: "例文の作成に失敗しました。",
-                      message: "もう一度お試しください。" + e.message,
-                      id: "createSentenceRequest",
-                    })
-                  )
-                }
+                onAssistantPress={async () => createSentenceRequest(index)}
               />
             ))}
             <Button
@@ -290,19 +305,18 @@ export const RegisterModal = (props: ModalProps) => {
                 pronunciation: pronunciation,
                 remarks: remarks,
                 sentences,
-              }).catch((e) => console.error("fetch error:", e));
-              console.log("result", result);
-              if (isSuccessful(result)) {
-                props.handleClose();
-                allClear();
-                backToInitPosition();
-                return;
-              }
-              setAppError({
-                name: "単語の登録に失敗しました。",
-                message: "もう一度お試しください。" + result.message,
-                id: "registerWordProfile",
               });
+              if (isFailed(result)) {
+                setAppError({
+                  name: "単語の登録に失敗しました。",
+                  message: "もう一度お試しください。" + result.message,
+                  id: "registerWordProfile",
+                });
+              }
+              props.handleClose();
+              allClear();
+              backToInitPosition();
+              return;
             }}
           >
             保存する

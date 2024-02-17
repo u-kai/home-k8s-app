@@ -2,7 +2,8 @@ import { List } from "@mui/material";
 import { Box, Container } from "@mui/system";
 import React, { useContext, useEffect } from "react";
 import { AppErrorContext } from "../../../contexts/error";
-import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
+import { isFailed } from "../../../fetch";
+import { useWordBook } from "../../../hooks/useWordBooks";
 import { WordAndSentences } from "./Items/WordAndSentences";
 
 export const ListContainer = () => {
@@ -11,19 +12,15 @@ export const ListContainer = () => {
   const { setAppError } = useContext(AppErrorContext);
   useEffect(() => {
     (async () => {
-      const result = await fetchAll(userId).catch((e) => {
-        console.error(e);
-      });
-      if (isSuccessful(result)) {
-        console.log("success", result);
-        console.log("wordbook", wordbook);
+      const result = await fetchAll(userId);
+      if (isFailed(result)) {
+        setAppError({
+          id: "fetchAll",
+          name: "fetchAll",
+          message: "error in fetchAll" + result.message,
+        });
         return;
       }
-      setAppError({
-        id: "fetchAll",
-        name: "fetchAll",
-        message: "error in fetchAll" + result.message,
-      });
     })();
   }, []);
 
@@ -52,11 +49,14 @@ export const ListContainer = () => {
                       userId,
                       wordId: wordProfile.wordId,
                     });
-                    if (isSuccessful(result)) {
-                      console.log("success", result);
+                    if (isFailed(result)) {
+                      setAppError({
+                        id: "deleteWordProfile",
+                        name: "deleteWordProfile",
+                        message: "error in deleteWordProfile" + result.message,
+                      });
                       return;
                     }
-                    console.error("error", result);
                   }}
                 />
               ))}
