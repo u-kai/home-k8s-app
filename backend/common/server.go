@@ -10,14 +10,15 @@ import (
 
 type ELEServer struct {
 	port         int
+	service      string
 	frontendHost string
 }
 
-func DefaultELEServer() *ELEServer {
-	return NewELEServer(frontendHostFromEnv(), 8080)
+func DefaultELEServer(service string) *ELEServer {
+	return NewELEServer(service, frontendHostFromEnv(), 8080)
 }
 
-func NewELEServer(frontend string, port int) *ELEServer {
+func NewELEServer(service, frontend string, port int) *ELEServer {
 	return &ELEServer{
 		port:         port,
 		frontendHost: frontend,

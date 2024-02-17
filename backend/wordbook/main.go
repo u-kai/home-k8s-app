@@ -13,7 +13,7 @@ import (
 // TODO: AUTHORIZATION CHECK
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	server := common.DefaultELEServer()
+	server := common.DefaultELEServer("wordbook")
 	server.RegisterHandler("/words", fetchWordInfoHandler(logger))
 	server.RegisterHandler("/deleteWord", deleteWordHandler(logger))
 	server.RegisterHandler("/registerWord", registerWordHandler(logger))
@@ -24,6 +24,7 @@ func main() {
 
 func fetchWordInfoHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("start fetchWordInfoHandler")
 		userId := user.UserId(r.URL.Query().Get("userId"))
 		if userId == "" {
 			logger.Error("userId is empty")
@@ -50,11 +51,13 @@ func fetchWordInfoHandler(logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		logger.Info("end fetchWordInfoHandler")
 	}
 }
 
 func updateWordHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("start updateWordHandler")
 		var req wordbook.UpdateWordProfileApiSchema
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "updateWordHandler")
@@ -85,11 +88,13 @@ func updateWordHandler(logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		logger.Info("end updateWordHandler")
 	}
 }
 
 func registerWordHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("start registerWordHandler")
 		var req wordbook.RegisterWordProfileApiSchema
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "registerWordHandler")
@@ -121,6 +126,7 @@ func registerWordHandler(logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		logger.Info("end registerWordHandler")
 	}
 
 }
@@ -131,6 +137,7 @@ type deleteResponse struct {
 
 func deleteWordHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("start deleteWordHandler")
 		var req wordbook.DeleteWordProfileApiSchema
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "deleteWordHandler")
@@ -163,5 +170,6 @@ func deleteWordHandler(logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		logger.Info("end deleteWordHandler")
 	}
 }

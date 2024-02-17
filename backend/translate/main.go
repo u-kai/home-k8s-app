@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// Start the server
-	server := common.DefaultELEServer()
+	server := common.DefaultELEServer("translate")
 	server.RegisterHandler("/", translateHandler)
 	server.RegisterHandler("/createSentence", createSentenceHandler)
 	server.Start()
@@ -34,6 +34,7 @@ type createSentenceRequest struct {
 }
 
 func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("start createSentenceHandler")
 	defer r.Body.Close()
 	len := r.ContentLength
 	b := make([]byte, len)
@@ -72,6 +73,7 @@ func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resBytes)
+	slog.Info("end createSentenceHandler")
 }
 
 func createSentence(source string) (sentence, error) {
@@ -89,6 +91,7 @@ func createSentence(source string) (sentence, error) {
 }
 
 func translateHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("start translateHandler")
 	defer r.Body.Close()
 	len := r.ContentLength
 	b := make([]byte, len)
@@ -139,6 +142,7 @@ func translateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 		return
 	}
+	slog.Info("end translateHandler")
 }
 
 type TranslateRequest struct {
