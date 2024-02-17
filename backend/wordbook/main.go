@@ -137,7 +137,7 @@ type deleteResponse struct {
 
 func deleteWordHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("start deleteWordHandler")
+		logger.Info("start deleteWordHandler", "request", r)
 		var req wordbook.DeleteWordProfileApiSchema
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "deleteWordHandler")

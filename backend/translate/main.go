@@ -196,6 +196,9 @@ type GptResponse struct {
 
 func gptRequest(prompt string) (string, error) {
 	gptKey := os.Getenv("OPENAI_API_KEY")
+	if gptKey == "" {
+		return "No API key", nil
+	}
 	client := &http.Client{}
 	url := "https://api.openai.com/v1/chat/completions"
 	b, err := json.Marshal(GptRequest{
