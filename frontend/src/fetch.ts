@@ -20,21 +20,21 @@ export const fetchJsonWithCors = async <T>(props: FetchProps<T>) => {
 
 export const wordbookUrl = (path: string) => {
   if (import.meta.env.PROD) {
-    return "TODO";
+    return "http://test.kaiandkai.com/wordbook" + path;
   }
   return `http://localhost:8080${path}`;
 };
 
 export const translateUrl = () => {
   if (import.meta.env.PROD) {
-    return "TODO";
+    return "http://test.kaiandkai.com/translate";
   }
   return `http://localhost:8081`;
 };
 
 export const createSentenceUrl = () => {
   if (import.meta.env.PROD) {
-    return "TODO";
+    return "http://test.kaiandkai.com/translate/createSentence";
   }
   return `http://localhost:8081/createSentence`;
 };
