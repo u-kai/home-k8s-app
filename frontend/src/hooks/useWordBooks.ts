@@ -87,6 +87,7 @@ export const useWordBook = () => {
         method: "POST",
         body: req,
       });
+      console.log("registerWordProfile response:", response);
       setWordBook([...wordbook, response]);
     } catch (e: any) {
       return new Error(e.toString());

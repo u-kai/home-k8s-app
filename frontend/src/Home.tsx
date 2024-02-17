@@ -1,6 +1,7 @@
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import React, { useEffect } from "react";
 import { styled } from "styled-components";
+import { ErrorAlert } from "./components/Alers/ErrorAlert";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
@@ -17,6 +18,7 @@ export const Home = (props: Props) => {
   return (
     <Wrapper>
       <Header logout={props.logout} />
+      <ErrorAlert timeOut={1000} />
       <UpperContainer>
         <Search />
         <RegisterButtonContainer>

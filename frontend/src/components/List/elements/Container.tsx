@@ -1,21 +1,29 @@
 import { List } from "@mui/material";
 import { Box, Container } from "@mui/system";
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
+import { AppErrorContext } from "../../../contexts/error";
 import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
 import { WordAndSentences } from "./Items/WordAndSentences";
 
 export const ListContainer = () => {
   const userId = "test-user";
   const { wordbook, fetchAll, deleteWordProfile } = useWordBook();
+  const { setAppError } = useContext(AppErrorContext);
   useEffect(() => {
     (async () => {
-      const result = await fetchAll(userId);
+      const result = await fetchAll(userId).catch((e) => {
+        console.error(e);
+      });
       if (isSuccessful(result)) {
         console.log("success", result);
         console.log("wordbook", wordbook);
         return;
       }
-      console.error("error", result);
+      setAppError({
+        id: "fetchAll",
+        name: "fetchAll",
+        message: "error in fetchAll" + result.message,
+      });
     })();
   }, []);
 

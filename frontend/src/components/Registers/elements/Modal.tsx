@@ -11,13 +11,12 @@ import {
   createSentenceUrl,
   fetchJsonWithCors,
   translateUrl,
-  wordbookUrl,
 } from "../../../fetch";
 import { UserContext } from "../../../contexts/user";
 import { isSuccessful, useWordBook } from "../../../hooks/useWordBooks";
 import { Sentence } from "../../../contexts/wordbook";
 import { TextAreaField } from "@aws-amplify/ui-react";
-import { text } from "node:stream/consumers";
+import { AppErrorContext } from "../../../contexts/error";
 
 const style = {
   position: "absolute" as "absolute",
@@ -40,6 +39,7 @@ type ModalProps = {
 
 export const RegisterModal = (props: ModalProps) => {
   const { user } = useContext(UserContext);
+  const { setAppError } = useContext(AppErrorContext);
   const userId = "test-user";
   const [wordValue, setWordValue] = useState<string>("");
   const [meaning, setMeaning] = useState<string>("");
@@ -233,7 +233,11 @@ export const RegisterModal = (props: ModalProps) => {
                 meaning={exampleSentencesMeaning[index]}
                 onAssistantPress={async () =>
                   createSentenceRequest(index).catch((e) =>
-                    console.error("fetch error:", e)
+                    setAppError({
+                      name: "例文の作成に失敗しました。",
+                      message: "もう一度お試しください。" + e.message,
+                      id: "createSentenceRequest",
+                    })
                   )
                 }
               />
@@ -287,14 +291,18 @@ export const RegisterModal = (props: ModalProps) => {
                 remarks: remarks,
                 sentences,
               }).catch((e) => console.error("fetch error:", e));
+              console.log("result", result);
               if (isSuccessful(result)) {
                 props.handleClose();
                 allClear();
                 backToInitPosition();
                 return;
               }
-              console.error(result);
-              console.log("failed");
+              setAppError({
+                name: "単語の登録に失敗しました。",
+                message: "もう一度お試しください。" + result.message,
+                id: "registerWordProfile",
+              });
             }}
           >
             保存する
