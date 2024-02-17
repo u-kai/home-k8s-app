@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// Start the server
-	server := common.NewELEServer("http://localhost:5173", 8081)
+	server := common.DefaultELEServer()
 	server.RegisterHandler("/", translateHandler)
 	server.RegisterHandler("/createSentence", createSentenceHandler)
 	server.Start()

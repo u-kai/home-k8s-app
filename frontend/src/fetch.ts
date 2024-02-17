@@ -34,19 +34,19 @@ export const wordbookUrl = (path: string) => {
   if (import.meta.env.PROD) {
     import.meta.env.API_SERVER_URL + "/wordbook" + path;
   }
-  return `http://localhost:8081/wordbook${path}`;
+  return `http://test.kaiandkai.com/wordbook${path}`;
 };
 
 export const translateUrl = () => {
   if (import.meta.env.PROD) {
     import.meta.env.API_SERVER_URL + "/translate";
   }
-  return `http://localhost:8081/translate`;
+  return `http://test.kaiandkai.com/translate`;
 };
 
 export const createSentenceUrl = () => {
   if (import.meta.env.PROD) {
     import.meta.env.API_SERVER_URL + "/translate/createSentence";
   }
-  return `http://localhost:8081/createSentence`;
+  return `http://test.kaiandkai.com/createSentence`;
 };

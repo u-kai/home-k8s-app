@@ -18,6 +18,7 @@ func main() {
 	server.RegisterHandler("/deleteWord", deleteWordHandler(logger))
 	server.RegisterHandler("/registerWord", registerWordHandler(logger))
 	server.RegisterHandler("/updateWord", updateWordHandler(logger))
+	// Start the server
 	server.Start()
 }
 

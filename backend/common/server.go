@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 )
@@ -31,6 +32,14 @@ func (s *ELEServer) Start() {
 	addr := fmt.Sprintf(":%d", s.port)
 	log.Printf("Starting server on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
+	s.RegisterHandler("/health", healthHandler)
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Health check", "from", r.RemoteAddr)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
 }
 
 func corsMiddleware(next http.Handler, frontendHost string) http.Handler {
