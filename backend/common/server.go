@@ -30,14 +30,13 @@ func (s *ELEServer) RegisterHandler(route string, handler http.HandlerFunc) {
 
 func (s *ELEServer) Start() {
 	addr := fmt.Sprintf(":%d", s.port)
+	s.RegisterHandler("/health", healthHandler)
 	log.Printf("Starting server on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
-	s.RegisterHandler("/health", healthHandler)
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Health check", "from", r.RemoteAddr)
-
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
