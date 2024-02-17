@@ -32,21 +32,21 @@ export const fetchJsonWithCors = async <P, T>(
 
 export const wordbookUrl = (path: string) => {
   if (import.meta.env.PROD) {
-    import.meta.env.API_SERVER_URL + "/wordbook" + path;
+    return import.meta.env.API_SERVER_URL + "/wordbook" + path;
   }
   return `http://test.kaiandkai.com/wordbook${path}`;
 };
 
 export const translateUrl = () => {
   if (import.meta.env.PROD) {
-    import.meta.env.API_SERVER_URL + "/translate";
+    return import.meta.env.API_SERVER_URL + "/translate";
   }
   return `http://test.kaiandkai.com/translate`;
 };
 
 export const createSentenceUrl = () => {
   if (import.meta.env.PROD) {
-    import.meta.env.API_SERVER_URL + "/translate/createSentence";
+    return import.meta.env.API_SERVER_URL + "/translate/createSentence";
   }
   return `http://test.kaiandkai.com/createSentence`;
 };
