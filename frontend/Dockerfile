@@ -5,8 +5,10 @@ FROM node:latest as build
 WORKDIR ${APP_HOME}
 
 COPY . ${APP_HOME}
-RUN npm install --loglevel verbose --omit=dev
-RUN npm run build
+#RUN corepack enable
+#RUN yarn set version stable
+RUN yarn install
+RUN yarn run build
 
 # deploy stage
 FROM nginx:alpine

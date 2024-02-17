@@ -19,6 +19,7 @@
     "@types/react": "^18.2.41",
     "@types/react-dom": "^18.2.17",
     "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^4.2.1",
     "aws-amplify": "^6.0.16",
     "normalize.css": "^8.0.1",
     "react": "^18.2.0",
@@ -26,9 +27,8 @@
     "react-router-dom": "^6.22.0",
     "styled-components": "^6.1.8",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4",
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.1.1"
+    "vite": "^5.1.1",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "vite",
@@ -54,5 +54,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "packageManager": "yarn@4.1.0"
 }
