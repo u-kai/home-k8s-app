@@ -37,7 +37,7 @@ func (s *ELEServer) Start() {
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Health check", "from", r.RemoteAddr)
+	slog.Info("Health check", "from", r.RemoteAddr, "frontend", os.Getenv("FRONTEND_HOST"))
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
@@ -68,7 +68,7 @@ func logMiddleware(next http.Handler) http.Handler {
 
 func frontendHostFromEnv() string {
 	if os.Getenv("FRONTEND_HOST") == "" {
-		return "http://localhost:5173"
+		return "*"
 	}
 	return os.Getenv("FRONTEND_HOST")
 }

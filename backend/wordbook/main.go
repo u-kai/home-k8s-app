@@ -7,18 +7,16 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"os"
 )
 
 // TODO: AUTHORIZATION CHECK
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := common.NewJsonLogger()
 	server := common.DefaultELEServer("wordbook")
 	server.RegisterHandler("/words", fetchWordInfoHandler(logger))
 	server.RegisterHandler("/deleteWord", deleteWordHandler(logger))
 	server.RegisterHandler("/registerWord", registerWordHandler(logger))
 	server.RegisterHandler("/updateWord", updateWordHandler(logger))
-	// Start the server
 	server.Start()
 }
 

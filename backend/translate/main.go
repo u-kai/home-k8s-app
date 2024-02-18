@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,10 +17,10 @@ import (
 )
 
 func main() {
-	// Start the server
+	logger := common.NewJsonLogger()
 	server := common.DefaultELEServer("translate")
-	server.RegisterHandler("/", translateHandler)
-	server.RegisterHandler("/createSentence", createSentenceHandler)
+	server.RegisterHandler("/", translateHandler(logger))
+	server.RegisterHandler("/createSentence", createSentenceHandler(logger))
 	server.Start()
 }
 
@@ -33,47 +32,49 @@ type createSentenceRequest struct {
 	Word string `json:"word"`
 }
 
-func createSentenceHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("start createSentenceHandler")
-	defer r.Body.Close()
-	len := r.ContentLength
-	b := make([]byte, len)
+func createSentenceHandler(logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("start createSentenceHandler")
+		defer r.Body.Close()
+		len := r.ContentLength
+		b := make([]byte, len)
 
-	_, err := r.Body.Read(b)
-	if err != nil && err.Error() != "EOF" {
-		log.Printf("Failed to read request body: %s", err.Error())
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
-		return
-	}
-	req := new(createSentenceRequest)
-	err = json.Unmarshal(b, req)
-	if err != nil {
-		slog.Error("Failed to unmarshal request body: %s", err.Error())
-		http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
-		return
-	}
-	var sentence sentence
-	for i := 0; i < 3; i++ {
-		sentence, err = createSentence(req.Word)
-		if err == nil {
-			break
-		}
-		if err != nil && i == 2 {
-			slog.Error("Failed to create sentence: %s", err.Error())
-			http.Error(w, "Failed to create sentence", http.StatusInternalServerError)
+		_, err := r.Body.Read(b)
+		if err != nil && err.Error() != "EOF" {
+			logger.Error("Failed to read request body: %s", err.Error(), "api", "createSentenceHandler", "r", r)
+			http.Error(w, "Failed to read request body", http.StatusBadRequest)
 			return
 		}
+		req := new(createSentenceRequest)
+		err = json.Unmarshal(b, req)
+		if err != nil {
+			logger.Error("Failed to unmarshal request body: %s", err.Error(), "api", "createSentenceHandler", "r", r)
+			http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
+			return
+		}
+		var sentence sentence
+		for i := 0; i < 3; i++ {
+			sentence, err = createSentence(req.Word)
+			if err == nil {
+				break
+			}
+			if err != nil && i == 2 {
+				logger.Error("Failed to create sentence: %s", err.Error(), "api", "createSentenceHandler", "r", r)
+				http.Error(w, "Failed to create sentence", http.StatusInternalServerError)
+				return
+			}
+		}
+		resBytes, err := json.Marshal(sentence)
+		if err != nil {
+			logger.Error("Failed to marshal response: %s", err.Error(), "api", "createSentenceHandler", "r", r)
+			http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(resBytes)
+		slog.Info("end createSentenceHandler")
 	}
-	resBytes, err := json.Marshal(sentence)
-	if err != nil {
-		slog.Error("Failed to marshal response: %s", err.Error())
-		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(resBytes)
-	slog.Info("end createSentenceHandler")
 }
 
 func createSentence(source string) (sentence, error) {
@@ -90,59 +91,62 @@ func createSentence(source string) (sentence, error) {
 	return *result, nil
 }
 
-func translateHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("start translateHandler")
-	defer r.Body.Close()
-	len := r.ContentLength
-	b := make([]byte, len)
+func translateHandler(logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("start translateHandler")
+		defer r.Body.Close()
+		len := r.ContentLength
+		b := make([]byte, len)
 
-	_, err := r.Body.Read(b)
+		_, err := r.Body.Read(b)
 
-	if err != nil && err.Error() != "EOF" {
-		log.Printf("Failed to read request body: %s", err.Error())
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
-		return
-	}
+		if err != nil && err.Error() != "EOF" {
+			logger.Error("Failed to read request body: "+err.Error(), "err", err, "r", r)
+			http.Error(w, "Failed to read request body", http.StatusBadRequest)
+			return
+		}
 
-	// Create a new TranslateRequest
+		// Create a new TranslateRequest
 
-	req := new(TranslateRequest)
-	err = json.Unmarshal(b, req)
-	if err != nil {
-		log.Printf("Failed to unmarshal request body: %s", err.Error())
-		http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
-		return
-	}
-	target, err := newTranslateTarget(*req)
-	if err != nil {
-		http.Error(w, "Failed to create translate target. Request is too big.", http.StatusBadRequest)
-		return
-	}
-	results, err := target.TranslateToJP(req.FromLang, req.ToLang)
-	if err != nil {
-		log.Printf("Failed to translate text: %s", err.Error())
-		http.Error(w, "Failed to translate text", http.StatusInternalServerError)
-		return
-	}
-	res := TranslateResponse{
-		Target:  target,
-		Results: results,
-	}
+		req := new(TranslateRequest)
+		err = json.Unmarshal(b, req)
+		if err != nil {
+			logger.Error("Failed to unmarshal request body: "+err.Error(), "err", err, "req", req)
+			http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
+			return
+		}
+		target, err := newTranslateTarget(*req)
+		if err != nil {
+			logger.Error("Failed to create translate target: "+err.Error(), "err", err, "req", req)
+			http.Error(w, "Failed to create translate target. Request is too big.", http.StatusBadRequest)
+			return
+		}
+		results, err := target.TranslateToJP(req.FromLang, req.ToLang)
+		if err != nil {
+			logger.Error("Failed to translate text: "+err.Error(), "err", err, "req", req)
+			http.Error(w, "Failed to translate text", http.StatusInternalServerError)
+			return
+		}
+		res := TranslateResponse{
+			Target:  target,
+			Results: results,
+		}
 
-	resBytes, err := json.Marshal(res)
-	if err != nil {
-		log.Printf("Failed to marshal response: %s", err.Error())
-		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
-		return
+		resBytes, err := json.Marshal(res)
+		if err != nil {
+			logger.Error("Failed to marshal response: "+err.Error(), "err", err, "res", res)
+			http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, err = w.Write(resBytes)
+		if err != nil {
+			logger.Error("Failed to write response: "+err.Error(), "err", err)
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+			return
+		}
+		logger.Info("end translateHandler")
 	}
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(resBytes)
-	if err != nil {
-		log.Printf("Failed to write response: %s", err.Error())
-		http.Error(w, "Failed to write response", http.StatusInternalServerError)
-		return
-	}
-	slog.Info("end translateHandler")
 }
 
 type TranslateRequest struct {
