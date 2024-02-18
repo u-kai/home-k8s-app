@@ -49,7 +49,7 @@ func corsMiddleware(next http.Handler, frontendHost string) http.Handler {
 		log.Printf("Setting CORS headers for %s", frontendHost)
 		w.Header().Set("Access-Control-Allow-Origin", frontendHost)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization,Accept,Origin")
 
 		// If this is a preflight request, stop here
 		if r.Method == "OPTIONS" {
