@@ -20,6 +20,7 @@ func DefaultELEServer(service string) *ELEServer {
 
 func NewELEServer(service, frontend string, port int) *ELEServer {
 	return &ELEServer{
+		service:      service,
 		port:         port,
 		frontendHost: frontend,
 	}
@@ -45,6 +46,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 func corsMiddleware(next http.Handler, frontendHost string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set the CORS headers
+		log.Printf("Setting CORS headers for %s", frontendHost)
 		w.Header().Set("Access-Control-Allow-Origin", frontendHost)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")

@@ -21,6 +21,7 @@ func main() {
 	server := common.DefaultELEServer("translate")
 	server.RegisterHandler("/", translateHandler(logger))
 	server.RegisterHandler("/createSentence", createSentenceHandler(logger))
+	logger.Info("Starting Translate server...")
 	server.Start()
 }
 

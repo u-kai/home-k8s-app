@@ -17,6 +17,7 @@ func main() {
 	server.RegisterHandler("/deleteWord", deleteWordHandler(logger))
 	server.RegisterHandler("/registerWord", registerWordHandler(logger))
 	server.RegisterHandler("/updateWord", updateWordHandler(logger))
+	logger.Info("Starting Wordbook server...")
 	server.Start()
 }
 
