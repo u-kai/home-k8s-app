@@ -35,7 +35,7 @@ type createSentenceRequest struct {
 
 func createSentenceHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("start createSentenceHandler")
+		logger.Info("start createSentenceHandler", "API_KEY", os.Getenv("OPENAI_API_KEY")[0:4])
 		defer r.Body.Close()
 		len := r.ContentLength
 		b := make([]byte, len)
@@ -87,7 +87,7 @@ func createSentence(source string) (sentence, error) {
 	result := new(sentence)
 	err = json.Unmarshal([]byte(res), result)
 	if err != nil {
-		return sentence{}, fmt.Errorf("Failed to unmarshal response: %s", err.Error())
+		return sentence{}, fmt.Errorf("Failed to unmarshal %s\n response is %v", err.Error(), result)
 	}
 	return *result, nil
 }
