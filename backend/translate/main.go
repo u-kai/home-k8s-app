@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"ele/common"
 
@@ -79,17 +80,20 @@ func createSentenceHandler(logger *slog.Logger) http.HandlerFunc {
 }
 
 func createSentence(source string) (sentence, error) {
-	prompt := fmt.Sprintf("「%s」を使った例文を作ってください。そしてその意味を日本語で教えて下さい。そして返答としては、jsonで返してほしくて、{\"sentence\":\"作成した例文\",\"meaning\":\"日本語翻訳\"}でお願いします。", source)
+	prompt := fmt.Sprintf("1行目に「%s」を使った例文を返答してください。2行目に1行目で作った例文の日本語翻訳を返答して下さい。それ以外の返答は一切不要です。", source)
 	res, err := gptRequest(prompt)
 	if err != nil {
 		return sentence{}, fmt.Errorf("Failed to create sentence: %s", err.Error())
 	}
-	result := new(sentence)
-	err = json.Unmarshal([]byte(res), result)
-	if err != nil {
-		return sentence{}, fmt.Errorf("Failed to unmarshal %s\n response is %v", err.Error(), result)
+	slog.Info("gpt response", "res", res)
+	lines := strings.Split(res, "\n")
+	if len(lines) < 2 {
+		return sentence{}, fmt.Errorf("Failed to create sentence: %s", "Invalid response")
 	}
-	return *result, nil
+	return sentence{
+		Sentence: lines[0],
+		Meaning:  lines[1],
+	}, nil
 }
 
 func translateHandler(logger *slog.Logger) http.HandlerFunc {
