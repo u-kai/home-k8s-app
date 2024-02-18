@@ -90,9 +90,13 @@ func createSentence(source string) (sentence, error) {
 	if len(lines) < 2 {
 		return sentence{}, fmt.Errorf("Failed to create sentence: %s", "Invalid response")
 	}
+	meaning := lines[1]
+	if len(meaning) == 0 && len(lines) > 2 {
+		meaning = lines[2]
+	}
 	return sentence{
 		Sentence: lines[0],
-		Meaning:  lines[1],
+		Meaning:  meaning,
 	}, nil
 }
 
