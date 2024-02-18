@@ -41,7 +41,7 @@ export const wordbookUrl = (path: string) => {
 };
 
 export const translateUrl = () => {
-  return backendUrl(`/translate`);
+  return backendUrl(`/translate/`);
 };
 
 export const createSentenceUrl = () => {
