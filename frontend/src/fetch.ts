@@ -30,23 +30,23 @@ export const fetchJsonWithCors = async <P, T>(
     });
 };
 
-export const wordbookUrl = (path: string) => {
+const backendUrl = (path: string) => {
   if (import.meta.env.PROD) {
-    return import.meta.env.API_SERVER_URL + "/wordbook" + path;
+    if (import.meta.env.VITE_API_SERVER_URL) {
+      return import.meta.env.VITE_API_SERVER_URL + path;
+    }
+    return "http://dev.kaiandkai.com" + path;
   }
-  return `http://test.kaiandkai.com/wordbook${path}`;
+  return `http://test.kaiandkai.com${path}`;
+};
+export const wordbookUrl = (path: string) => {
+  return backendUrl(`/wordbook${path}`);
 };
 
 export const translateUrl = () => {
-  if (import.meta.env.PROD) {
-    return import.meta.env.API_SERVER_URL + "/translate";
-  }
-  return `http://test.kaiandkai.com/translate`;
+  return backendUrl(`/translate`);
 };
 
 export const createSentenceUrl = () => {
-  if (import.meta.env.PROD) {
-    return import.meta.env.API_SERVER_URL + "/translate/createSentence";
-  }
-  return `http://test.kaiandkai.com/createSentence`;
+  return backendUrl(`/translate/createSentence`);
 };
