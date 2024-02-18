@@ -50,16 +50,16 @@ func createSentenceHandler(logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 		req := new(createSentenceRequest)
-		userId := user.UserId(req.UserId)
-		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
-			logger.Error(err.Error(), "reason", "failed to auth user", "api", "createSentenceHandler")
-			http.Error(w, "Failed to auth user", http.StatusUnauthorized)
-			return
-		}
 		err = json.Unmarshal(b, req)
 		if err != nil {
 			logger.Error("Failed to unmarshal request body: %s", err.Error(), "api", "createSentenceHandler", "r", r)
 			http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
+			return
+		}
+		userId := user.UserId(req.UserId)
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "createSentenceHandler")
+			http.Error(w, "Failed to auth user", http.StatusUnauthorized)
 			return
 		}
 		var sentence sentence
