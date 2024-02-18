@@ -5,8 +5,6 @@ FROM node:latest as build
 WORKDIR ${APP_HOME}
 
 COPY . ${APP_HOME}
-#RUN corepack enable
-#RUN yarn set version stable
 RUN yarn install
 RUN yarn run build
 
