@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"ele/common"
+	"ele/user"
 
 	"cloud.google.com/go/translate"
 	"golang.org/x/text/language"
@@ -31,7 +32,8 @@ type sentence struct {
 	Meaning  string `json:"meaning"`
 }
 type createSentenceRequest struct {
-	Word string `json:"word"`
+	Word   string `json:"word"`
+	UserId string `json:"userId"`
 }
 
 func createSentenceHandler(logger *slog.Logger) http.HandlerFunc {
@@ -48,6 +50,12 @@ func createSentenceHandler(logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 		req := new(createSentenceRequest)
+		userId := user.UserId(req.UserId)
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "createSentenceHandler")
+			http.Error(w, "Failed to auth user", http.StatusUnauthorized)
+			return
+		}
 		err = json.Unmarshal(b, req)
 		if err != nil {
 			logger.Error("Failed to unmarshal request body: %s", err.Error(), "api", "createSentenceHandler", "r", r)
@@ -85,6 +93,7 @@ func createSentence(source string) (sentence, error) {
 	if err != nil {
 		return sentence{}, fmt.Errorf("Failed to create sentence: %s", err.Error())
 	}
+
 	slog.Info("gpt response", "res", res)
 	lines := strings.Split(res, "\n")
 	if len(lines) < 2 {
@@ -124,6 +133,13 @@ func translateHandler(logger *slog.Logger) http.HandlerFunc {
 			http.Error(w, "Failed to unmarshal request body", http.StatusBadRequest)
 			return
 		}
+		userId := user.UserId(req.UserId)
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "translateHandler")
+			http.Error(w, "Failed to auth user", http.StatusUnauthorized)
+			return
+		}
+
 		target, err := newTranslateTarget(*req)
 		if err != nil {
 			logger.Error("Failed to create translate target: "+err.Error(), "err", err, "req", req)
@@ -159,6 +175,7 @@ func translateHandler(logger *slog.Logger) http.HandlerFunc {
 }
 
 type TranslateRequest struct {
+	UserId   string `json:"userId"`
 	Target   string `json:"target"`
 	FromLang string `json:"fromLang"`
 	ToLang   string `json:"toLang"`

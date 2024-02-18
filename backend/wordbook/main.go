@@ -25,9 +25,9 @@ func fetchWordInfoHandler(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Info("start fetchWordInfoHandler")
 		userId := user.UserId(r.URL.Query().Get("userId"))
-		if userId == "" {
-			logger.Error("userId is empty")
-			http.Error(w, "userId is empty", http.StatusBadRequest)
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "fetchWordInfoHandler")
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		db, err := common.FromEnv().Open()
@@ -61,6 +61,12 @@ func updateWordHandler(logger *slog.Logger) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "updateWordHandler")
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		userId := user.UserId(req.UserId)
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "updateWordHandler")
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		updateSrc, err := req.ToUpdatedWordProfileSource()
@@ -98,6 +104,13 @@ func registerWordHandler(logger *slog.Logger) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "registerWordHandler")
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		userId := user.UserId(req.UserId)
+
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "registerWordHandler")
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		logger.Info("registerWordHandler", "req", req)
@@ -141,6 +154,12 @@ func deleteWordHandler(logger *slog.Logger) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			logger.Error(err.Error(), "reason", "failed to decode request", "api", "deleteWordHandler")
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		userId := user.UserId(req.UserId)
+		if err := user.AuthUserFromHeaderWithFeatureFlag(r, userId); err != nil {
+			logger.Error(err.Error(), "reason", "failed to auth user", "api", "deleteWordHandler")
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		src, err := req.ToDeleteWordProfileSource()
