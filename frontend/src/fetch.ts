@@ -31,13 +31,10 @@ export const fetchJsonWithCors = async <P, T>(
 };
 
 const backendUrl = (path: string) => {
-  if (import.meta.env.PROD) {
-    if (import.meta.env.VITE_API_SERVER_URL) {
-      return import.meta.env.VITE_API_SERVER_URL + path;
-    }
-    return "http://dev.kaiandkai.com" + path;
+  if (location.host === "www.kaiandkai.com") {
+    return `https://api.kaiandkai.com${path}`;
   }
-  return `http://test.kaiandkai.com${path}`;
+  return `http://dev.kaiandkai.com${path}`;
 };
 export const wordbookUrl = (path: string) => {
   return backendUrl(`/wordbook${path}`);
