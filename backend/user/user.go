@@ -25,6 +25,13 @@ func authUser(userId UserId, token string) (bool, error) {
 	}
 	return true, nil
 }
+func AuthUserFromHeaderWithFeatureFlag(r *http.Request, userId UserId) error {
+	if os.Getenv("JWT_AUTH_FLAG") != "true" {
+		return nil
+	}
+	return authUserFromHeader(r, userId)
+}
+
 func getAuthToken(r *http.Request) (string, error) {
 	token := r.Header.Get("Authorization")
 	if token == "" {
@@ -32,13 +39,6 @@ func getAuthToken(r *http.Request) (string, error) {
 	}
 	token = strings.Replace(token, "Bearer ", "", 1)
 	return token, nil
-}
-
-func AuthUserFromHeaderWithFeatureFlag(r *http.Request, userId UserId) error {
-	if os.Getenv("JWT_AUTH_FLAG") != "true" {
-		return nil
-	}
-	return authUserFromHeader(r, userId)
 }
 
 func authUserFromHeader(r *http.Request, userId UserId) error {

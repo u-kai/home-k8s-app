@@ -190,7 +190,6 @@ export const useWordBook = () => {
     setWordBook(newWordBook);
     return;
   };
-
   const registerWordProfile = async (
     req: RegisterWordRequest
   ): Promise<Result<void>> => {
@@ -249,8 +248,43 @@ export const useWordBook = () => {
     });
     setWordBook(newWordBook);
   };
+  type Suggestion = {
+    wordId: string;
+    value: string;
+  };
+  const getSuggestions = (search: string): Suggestion[] => {
+    if (search === "") {
+      return [];
+    }
+    const words = wordbook.filter((word) => {
+      return word.word.value.includes(search);
+    });
+    const sortFn = (search: string, a: WordProfile, b: WordProfile) => {
+      return a.word.value.indexOf(search) - b.word.value.indexOf(search);
+    };
+    return words
+      .sort((a, b) => sortFn(search, a, b))
+      .map((word) => {
+        return {
+          wordId: word.wordId,
+          value: word.word.value,
+        };
+      });
+  };
+  const wordToTop = (wordId: string) => {
+    const word = wordbook.find((word) => word.wordId === wordId);
+    if (!word) {
+      return;
+    }
+    const newWordBook = wordbook.filter((word) => word.wordId !== wordId);
+    newWordBook.unshift(word);
+    setWordBook(newWordBook);
+  };
+
   return {
     wordbook,
+    wordToTop,
+    getSuggestions,
     fetchAll,
     sortByCreatedAt,
     sortByLikeRates,

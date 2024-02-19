@@ -1,0 +1,100 @@
+import {
+  List,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import { Box, Container } from "@mui/system";
+import React, { useContext, useEffect } from "react";
+import { AppErrorContext } from "../../../contexts/error";
+import { isFailed } from "../../../fetch";
+import { useWordBook } from "../../../hooks/useWordBooks";
+import { WordAndSentences } from "./Items/WordAndSentences";
+import Table from "@mui/material/Table";
+
+export const TableList = () => {
+  const { wordbook, fetchAll, deleteWordProfile } = useWordBook();
+  const { setAppError } = useContext(AppErrorContext);
+  useEffect(() => {
+    (async () => {
+      const result = await fetchAll();
+      if (isFailed(result)) {
+        setAppError({
+          id: "fetchAll",
+          name: "fetchAll",
+          message: "error in fetchAll" + result.message,
+        });
+        return;
+      }
+    })();
+  }, []);
+
+  return (
+    <>
+      <TableContainer
+        sx={{
+          padding: 5,
+        }}
+      >
+        <Table
+          sx={{
+            height: 500,
+            overflowY: "scroll",
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell>Word</TableCell>
+              <TableCell>Meaning</TableCell>
+              <TableCell>Rates</TableCell>
+              <TableCell>CreatedAt</TableCell>
+              <TableCell>UpdatedAt</TableCell>
+            </TableRow>
+            <TableBody>{wordbook !== undefined ? <></> : null}</TableBody>
+          </TableHead>
+        </Table>
+      </TableContainer>
+      <Container
+        sx={{
+          padding: 5,
+        }}
+      >
+        <Box
+          sx={{
+            height: 500,
+            overflowY: "scroll",
+          }}
+        >
+          <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+            {wordbook !== undefined ? (
+              <>
+                {wordbook.map((wordProfile, i) => (
+                  <WordAndSentences
+                    key={i}
+                    wordProfile={wordProfile}
+                    //updateWordProfile={async () => {}}
+                    //deleteWord={async () => {
+                    //  const result = await deleteWordProfile({
+                    //    wordId: wordProfile.wordId,
+                    //  });
+                    //  if (isFailed(result)) {
+                    //    setAppError({
+                    //      id: "deleteWordProfile",
+                    //      name: "deleteWordProfile",
+                    //      message: "error in deleteWordProfile" + result.message,
+                    //    });
+                    //    return;
+                    //  }
+                    //}}
+                  />
+                ))}
+              </>
+            ) : null}
+          </List>
+        </Box>
+      </Container>
+    </>
+  );
+};
