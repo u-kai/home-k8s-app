@@ -1,8 +1,9 @@
 import { TextField } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { TextFieldContainer, textFieldStyle } from "./Modal";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import CircularProgress from "@mui/material/CircularProgress";
 
 type ExampleSentenceFieldProps = {
   sentence: string;
@@ -14,6 +15,7 @@ type ExampleSentenceFieldProps = {
 };
 
 export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
+  const [aiProgress, setAiProgress] = useState<boolean>(false);
   return (
     <div style={{ position: "relative" }}>
       <TextFieldContainer>
@@ -46,21 +48,33 @@ export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
             },
           }}
         />
-        <SupportAgentIcon
-          fontSize="large"
-          onClick={async () => {
-            props.onAssistantPress();
-          }}
-          sx={{
-            position: "absolute",
-            top: "80%",
-            left: "85%",
-            cursor: "pointer",
-            ":hover": {
-              opacity: 0.5,
-            },
-          }}
-        />
+        {aiProgress ? (
+          <CircularProgress
+            sx={{
+              position: "absolute",
+              top: "80%",
+              left: "85%",
+            }}
+          />
+        ) : (
+          <SupportAgentIcon
+            fontSize="large"
+            onClick={async () => {
+              setAiProgress(true);
+              await props.onAssistantPress();
+              setAiProgress(false);
+            }}
+            sx={{
+              position: "absolute",
+              top: "80%",
+              left: "85%",
+              cursor: "pointer",
+              ":hover": {
+                opacity: 0.5,
+              },
+            }}
+          />
+        )}
       </TextFieldContainer>
     </div>
   );

@@ -1,7 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
@@ -19,7 +19,15 @@ import { useWordBook } from "../../../hooks/useWordBooks";
 import { Sentence } from "../../../contexts/wordbook";
 import { TextAreaField } from "@aws-amplify/ui-react";
 import { AppErrorContext } from "../../../contexts/error";
-import { fetchAuthSession } from "aws-amplify/auth";
+import CircularProgress from "@mui/material/CircularProgress";
+
+export default function CircularIndeterminate() {
+  return (
+    <Box sx={{ display: "flex" }}>
+      <CircularProgress />
+    </Box>
+  );
+}
 
 const style = {
   position: "absolute" as "absolute",
@@ -50,6 +58,7 @@ export const RegisterModal = (props: ModalProps) => {
   const [exampleSentencesMeaning, setExampleSentencesMeaning] = useState<
     string[]
   >([""]);
+  const [aiProgress, setAiProgress] = useState<boolean>(false);
   const { user } = useContext(UserContext);
   const INIT_SAVE_BUTTON_POSITION = 400;
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
@@ -141,6 +150,7 @@ export const RegisterModal = (props: ModalProps) => {
     } else {
       setMeaning(result[0]);
     }
+    setAiProgress(false);
   };
   const createSentenceRequest = async (index: number): Promise<void> => {
     if (wordValue.length === 0) {
@@ -215,21 +225,32 @@ export const RegisterModal = (props: ModalProps) => {
                 value={meaning}
                 onChange={(e) => setMeaning(e.target.value)}
               />
-              <SupportAgentIcon
-                fontSize="large"
-                onClick={async () => {
-                  translateRequest();
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 20,
-                  left: "85%",
-                  cursor: "pointer",
-                  ":hover": {
-                    opacity: 0.5,
-                  },
-                }}
-              />
+              {aiProgress ? (
+                <CircularProgress
+                  sx={{
+                    position: "absolute",
+                    top: 20,
+                    left: "85%",
+                  }}
+                />
+              ) : (
+                <SupportAgentIcon
+                  fontSize="large"
+                  onClick={async () => {
+                    translateRequest();
+                    setAiProgress(true);
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: 20,
+                    left: "85%",
+                    cursor: "pointer",
+                    ":hover": {
+                      opacity: 0.5,
+                    },
+                  }}
+                />
+              )}
             </MeaningTextAndAiContainer>
             <TextAreaField
               style={{
