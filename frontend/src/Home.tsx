@@ -7,13 +7,13 @@ import { Header } from "./components/Header";
 import { List } from "./components/List";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
-import { fetchJsonWithCors } from "./fetch";
 
 type Props = {
   logout: () => Promise<void>;
 };
 
 export const Home = (props: Props) => {
+  const { signOut } = useAuthenticator();
   //
   return (
     <Wrapper>
@@ -22,7 +22,7 @@ export const Home = (props: Props) => {
           <ErrorAlert timeOut={10000} />
         </AlertContainer>
         <HeaderContainer>
-          <Header logout={props.logout} />
+          <Header logout={async () => signOut()} />
         </HeaderContainer>
       </HeaderAndAlertContainer>
       <UpperContainer>

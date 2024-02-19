@@ -12,10 +12,11 @@ import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
 import { WordProfile } from "../../../../contexts/wordbook";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { UpdateWordProfileModal } from "./UpdateWordProfileModal";
+import { useWordBook } from "../../../../hooks/useWordBooks";
+import { isFailed } from "../../../../fetch";
+import { AppErrorContext } from "../../../../contexts/error";
 type WordAndSentencesProps = {
   wordProfile: WordProfile;
-  deleteWord: () => Promise<void>;
-  updateWordProfile: () => Promise<void>;
 };
 
 export const WordAndSentences = (props: WordAndSentencesProps) => {
@@ -23,7 +24,9 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
   const [updatePushed, setUpdatePushed] = React.useState(false);
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const { value, meaning, pronunciation } = props.wordProfile.word;
-  const { sentences } = props.wordProfile;
+  const { sentences, likeRates } = props.wordProfile;
+  const { updateWordProfile, deleteWordProfile } = useWordBook();
+  const { setAppError } = React.useContext(AppErrorContext);
   return (
     <Accordion sx={{ zIndex: 0, position: "relative" }} expanded={expanded}>
       <AccordionSummary
@@ -45,7 +48,24 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
               pronunciation={pronunciation}
               wordSize="1.3em"
             />
-            <Rates />
+            <Rates
+              rate={likeRates}
+              onChange={async (rate) => {
+                const newWordProfile = {
+                  ...props.wordProfile,
+                  likeRates: rate,
+                };
+                const result = await updateWordProfile(newWordProfile);
+                if (isFailed(result)) {
+                  setAppError({
+                    id: "updateWordProfile",
+                    name: "updateWordProfile",
+                    message: "error in updateWordProfile" + result.message,
+                  });
+                  return;
+                }
+              }}
+            />
             <ModeEditOutlineIcon
               fontSize="large"
               sx={{
@@ -60,7 +80,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
               }}
             />
             <UpdateWordProfileModal
-              updateHandler={props.updateWordProfile}
+              updateHandler={async () => {}}
               open={updatePushed}
               setOpen={setUpdatePushed}
               wordProfile={props.wordProfile}
@@ -79,7 +99,17 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
               }}
             />
             <DeleteConfirmModal
-              deleteHandler={props.deleteWord}
+              deleteHandler={async () => {
+                const result = await deleteWordProfile(props.wordProfile);
+                if (isFailed(result)) {
+                  setAppError({
+                    id: "deleteWordProfile",
+                    name: "deleteWordProfile",
+                    message: "error in deleteWordProfile" + result.message,
+                  });
+                  return;
+                }
+              }}
               word={value}
               open={deletePushed}
               setOpen={setDeletePushed}

@@ -4,7 +4,6 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { WordProfile } from "../../../../contexts/wordbook";
-import { isFailed } from "../../../../fetch";
 
 const style = {
   position: "absolute" as "absolute",

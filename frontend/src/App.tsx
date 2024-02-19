@@ -1,3 +1,4 @@
+import { Authenticator } from "@aws-amplify/ui-react";
 import React from "react";
 import { AuthProvider } from "./AuthProvider";
 import { AppErrorContextProvider } from "./contexts/error";
@@ -8,7 +9,9 @@ export const App = () => {
     <AppErrorContextProvider>
       <UserContextProvider>
         <WordBookContextProvider>
-          <AuthProvider />
+          <Authenticator.Provider>
+            <AuthProvider />
+          </Authenticator.Provider>
         </WordBookContextProvider>
       </UserContextProvider>
     </AppErrorContextProvider>

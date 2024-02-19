@@ -5,6 +5,7 @@ type FetchProps<T> = {
   url: string;
   method: Method;
   body?: T;
+  headers?: { [key: string]: string };
 };
 
 export type Result<T> = T | Error;
@@ -23,11 +24,22 @@ export const fetchJsonWithCors = async <P, T>(
     mode: "cors",
     method,
     body: JSON.stringify(body),
+    headers: props.headers,
   })
     .then((response) => response.json() as T)
     .catch((e) => {
       return new Error(e.toString());
     });
+};
+
+export const authorizationHeader = (
+  token: string
+): { [key: string]: string } => {
+  console.log("token", token);
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 };
 
 const backendUrl = (path: string) => {

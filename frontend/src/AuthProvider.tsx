@@ -1,10 +1,12 @@
 import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import { Home } from "./Home";
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import "@aws-amplify/ui-react/styles.css"; // base styling needed for Amplify UI
 import "./App.css";
 import { ThemeProvider, Theme, useTheme, View } from "@aws-amplify/ui-react";
+import { UserContext } from "./contexts/user";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 Amplify.configure({
   Auth: {
@@ -55,6 +57,24 @@ const AuthenticatorWrapper = () => {
       },
     },
   };
+  const { user } = useAuthenticator();
+  const { setUser } = useContext(UserContext);
+  useEffect(() => {
+    if (user) {
+      fetchAuthSession()
+        .then((session) => {
+          setUser({
+            id: user?.userId,
+            name: user?.username,
+            token: session.tokens?.idToken?.toString(),
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      return;
+    }
+  }, [user]);
   const components = {
     Header() {
       const { tokens } = useTheme();
@@ -75,20 +95,14 @@ const AuthenticatorWrapper = () => {
 };
 
 export const AuthProvider = () => {
-  const AuthCheck = () => {
-    const { route } = useAuthenticator((context) => [context.user]);
-    const { user, signOut } = useAuthenticator();
-    return route === "authenticated" ? (
-      <Home logout={async () => signOut()} />
-    ) : (
-      <AuthenticatorWrapper />
-    );
-  };
-
+  const { user } = useContext(UserContext);
   return (
-    <Home logout={async () => {}} />
-    // <Authenticator.Provider>
-    //   <AuthCheck />
-    // </Authenticator.Provider>
+    <>
+      {user.token ? (
+        <Home logout={async () => console.log("d")} />
+      ) : (
+        <AuthenticatorWrapper />
+      )}
+    </>
   );
 };

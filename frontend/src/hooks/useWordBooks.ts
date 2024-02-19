@@ -1,9 +1,15 @@
 import { useContext } from "react";
+import { UserContext } from "../contexts/user";
 import { Sentence, WordBookContext, WordProfile } from "../contexts/wordbook";
-import { fetchJsonWithCors, isFailed, Result, wordbookUrl } from "../fetch";
+import {
+  authorizationHeader,
+  fetchJsonWithCors,
+  isFailed,
+  Result,
+  wordbookUrl,
+} from "../fetch";
 
 export type RegisterWordRequest = {
-  userId: string;
   word: string;
   meaning: string;
   pronunciation?: string;
@@ -19,6 +25,7 @@ export type UpdateWordRequest = {
   pronunciation?: string;
   remarks: string;
   missCount: number;
+  likeRates: string;
   sentences: {
     sentenceId: string;
     value: string;
@@ -29,14 +36,19 @@ export type UpdateWordRequest = {
 
 export const useWordBook = () => {
   const { wordbook, setWordBook } = useContext(WordBookContext);
-
-  const fetchAll = async (userId: string): Promise<Result<void>> => {
+  const { user } = useContext(UserContext);
+  const authHeader = authorizationHeader(user.token ?? "");
+  const fetchAll = async (): Promise<Result<void>> => {
+    if (wordbook.length > 0) {
+      return;
+    }
     const response: Result<WordProfile[]> = await fetchJsonWithCors<
       undefined,
       WordProfile[]
     >({
-      url: wordbookUrl("/words?userId=" + userId),
+      url: wordbookUrl("/words?userId=" + user.id),
       method: "GET",
+      headers: authHeader,
     });
     if (isFailed(response)) {
       return new Error("Failed to fetch wordbook." + response.toString());
@@ -51,13 +63,13 @@ export const useWordBook = () => {
   };
 
   const deleteWordProfile = async (req: {
-    userId: string;
     wordId: string;
   }): Promise<Result<void>> => {
     const response = await fetchJsonWithCors({
       url: wordbookUrl("/deleteWord"),
       method: "POST",
-      body: req,
+      body: { ...req, userId: user.id },
+      headers: authHeader,
     });
     if (isFailed(response)) {
       return new Error("Failed to delete word profile." + response.toString());
@@ -70,10 +82,14 @@ export const useWordBook = () => {
   const registerWordProfile = async (
     req: RegisterWordRequest
   ): Promise<Result<void>> => {
-    const response = await fetchJsonWithCors<RegisterWordRequest, WordProfile>({
+    const response = await fetchJsonWithCors<
+      RegisterWordRequest & { userId: string },
+      WordProfile
+    >({
       url: wordbookUrl("/registerWord"),
       method: "POST",
-      body: req,
+      body: { ...req, userId: user.id },
+      headers: authHeader,
     });
     if (isFailed(response)) {
       return new Error(
@@ -84,17 +100,17 @@ export const useWordBook = () => {
   };
 
   const updateWordProfile = async (
-    userId: string,
     wordProfile: WordProfile
   ): Promise<Result<void>> => {
     const req: UpdateWordRequest = {
-      userId: userId,
+      userId: user.id,
       wordId: wordProfile.wordId,
       word: wordProfile.word.value,
       meaning: wordProfile.word.meaning,
       pronunciation: wordProfile.word.pronunciation,
       remarks: wordProfile.remarks,
       missCount: wordProfile.missCount,
+      likeRates: wordProfile.likeRates,
       sentences: wordProfile.sentences.map((sentence) => {
         return {
           sentenceId: sentence.sentenceId,
@@ -108,11 +124,18 @@ export const useWordBook = () => {
       url: wordbookUrl("/updateWord"),
       method: "POST",
       body: req,
+      headers: authHeader,
     });
     if (isFailed(response)) {
       return new Error("Failed to update word profile." + response.toString());
     }
-    setWordBook([...wordbook, response]);
+    const newWordBook = wordbook.map((word) => {
+      if (word.wordId === response.wordId) {
+        return response;
+      }
+      return word;
+    });
+    setWordBook(newWordBook);
   };
   return {
     wordbook,

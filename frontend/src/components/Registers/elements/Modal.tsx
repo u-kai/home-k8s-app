@@ -8,6 +8,7 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
 import {
+  authorizationHeader,
   createSentenceUrl,
   fetchJsonWithCors,
   isFailed,
@@ -18,6 +19,7 @@ import { useWordBook } from "../../../hooks/useWordBooks";
 import { Sentence } from "../../../contexts/wordbook";
 import { TextAreaField } from "@aws-amplify/ui-react";
 import { AppErrorContext } from "../../../contexts/error";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 const style = {
   position: "absolute" as "absolute",
@@ -39,9 +41,7 @@ type ModalProps = {
 };
 
 export const RegisterModal = (props: ModalProps) => {
-  const { user } = useContext(UserContext);
   const { setAppError } = useContext(AppErrorContext);
-  const userId = "test-user";
   const [wordValue, setWordValue] = useState<string>("");
   const [meaning, setMeaning] = useState<string>("");
   const [pronunciation, setPronunciation] = useState<string>("");
@@ -50,6 +50,7 @@ export const RegisterModal = (props: ModalProps) => {
   const [exampleSentencesMeaning, setExampleSentencesMeaning] = useState<
     string[]
   >([""]);
+  const { user } = useContext(UserContext);
   const INIT_SAVE_BUTTON_POSITION = 400;
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
     INIT_SAVE_BUTTON_POSITION
@@ -115,7 +116,8 @@ export const RegisterModal = (props: ModalProps) => {
       toLang = "英語";
       target = meaning;
     }
-    const body = { target, toLang };
+    const authHeader = authorizationHeader(user.token ?? "");
+    const body = { target, toLang, userId: user.id };
     const res = await fetchJsonWithCors<
       { target: string; toLang: string },
       { results: string[] }
@@ -123,6 +125,7 @@ export const RegisterModal = (props: ModalProps) => {
       url: translateUrl(),
       method: "POST",
       body,
+      headers: authHeader,
     });
     if (isFailed(res)) {
       setAppError({
@@ -145,7 +148,9 @@ export const RegisterModal = (props: ModalProps) => {
     }
     const body = {
       word: wordValue,
+      userId: user.id,
     };
+    const authHeader = authorizationHeader(user.token ?? "");
     const res = await fetchJsonWithCors<
       { word: string },
       { sentence: string; meaning: string }
@@ -153,6 +158,7 @@ export const RegisterModal = (props: ModalProps) => {
       url: createSentenceUrl(),
       method: "POST",
       body,
+      headers: authHeader,
     });
     if (isFailed(res)) {
       setAppError({
@@ -299,7 +305,6 @@ export const RegisterModal = (props: ModalProps) => {
                 .filter((value) => value.value.length > 0);
 
               const result = await registerWordProfile({
-                userId: userId,
                 word: wordValue,
                 meaning: meaning,
                 pronunciation: pronunciation,

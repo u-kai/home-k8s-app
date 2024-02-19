@@ -7,12 +7,11 @@ import { useWordBook } from "../../../hooks/useWordBooks";
 import { WordAndSentences } from "./Items/WordAndSentences";
 
 export const ListContainer = () => {
-  const userId = "test-user";
   const { wordbook, fetchAll, deleteWordProfile } = useWordBook();
   const { setAppError } = useContext(AppErrorContext);
   useEffect(() => {
     (async () => {
-      const result = await fetchAll(userId);
+      const result = await fetchAll();
       if (isFailed(result)) {
         setAppError({
           id: "fetchAll",
@@ -43,21 +42,20 @@ export const ListContainer = () => {
                 <WordAndSentences
                   key={i}
                   wordProfile={wordProfile}
-                  updateWordProfile={async () => {}}
-                  deleteWord={async () => {
-                    const result = await deleteWordProfile({
-                      userId,
-                      wordId: wordProfile.wordId,
-                    });
-                    if (isFailed(result)) {
-                      setAppError({
-                        id: "deleteWordProfile",
-                        name: "deleteWordProfile",
-                        message: "error in deleteWordProfile" + result.message,
-                      });
-                      return;
-                    }
-                  }}
+                  //updateWordProfile={async () => {}}
+                  //deleteWord={async () => {
+                  //  const result = await deleteWordProfile({
+                  //    wordId: wordProfile.wordId,
+                  //  });
+                  //  if (isFailed(result)) {
+                  //    setAppError({
+                  //      id: "deleteWordProfile",
+                  //      name: "deleteWordProfile",
+                  //      message: "error in deleteWordProfile" + result.message,
+                  //    });
+                  //    return;
+                  //  }
+                  //}}
                 />
               ))}
             </>
