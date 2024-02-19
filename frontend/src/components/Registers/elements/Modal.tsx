@@ -1,5 +1,5 @@
 import Modal from "@mui/material/Modal";
-import { TextField, Typography } from "@mui/material";
+import { Fab, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
@@ -20,6 +20,8 @@ import { Sentence } from "../../../contexts/wordbook";
 import { TextAreaField } from "@aws-amplify/ui-react";
 import { AppErrorContext } from "../../../contexts/error";
 import CircularProgress from "@mui/material/CircularProgress";
+import AddIcon from "@mui/icons-material/Add";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
 
 export default function CircularIndeterminate() {
   return (
@@ -35,7 +37,7 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 650,
-  height: 470,
+  height: 500,
   bgcolor: "white",
   border: "2px solid #000",
   overflowY: "scroll",
@@ -60,10 +62,12 @@ export const RegisterModal = (props: ModalProps) => {
   >([""]);
   const [aiProgress, setAiProgress] = useState<boolean>(false);
   const { user } = useContext(UserContext);
-  const INIT_SAVE_BUTTON_POSITION = 400;
+  const INIT_SAVE_BUTTON_POSITION = 430;
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
     INIT_SAVE_BUTTON_POSITION
   );
+  const [registerCancel, setRegisterCancel] = useState<boolean>(false);
+
   const { registerWordProfile } = useWordBook();
   const addEmpty = () => {
     setExampleSentences([...exampleSentences, ""]);
@@ -79,6 +83,36 @@ export const RegisterModal = (props: ModalProps) => {
   };
   const backToInitPosition = () => {
     setSaveButtonPosition(INIT_SAVE_BUTTON_POSITION);
+  };
+  const save = async () => {
+    const sentences: Sentence[] = exampleSentences
+      .map((value, index) => {
+        return {
+          value: value,
+          meaning: exampleSentencesMeaning[index],
+          pronunciation: "",
+        };
+      })
+      .filter((value) => value.value.length > 0);
+
+    const result = await registerWordProfile({
+      word: wordValue,
+      meaning: meaning,
+      pronunciation: pronunciation,
+      remarks: remarks,
+      sentences,
+    });
+    if (isFailed(result)) {
+      setAppError({
+        name: "単語の登録に失敗しました。",
+        message: "もう一度お試しください。" + result.message,
+        id: "registerWordProfile",
+      });
+    }
+    props.handleClose();
+    allClear();
+    backToInitPosition();
+    return;
   };
 
   const changeExampleSentence = (index: number, sentence: string) => {
@@ -284,11 +318,8 @@ export const RegisterModal = (props: ModalProps) => {
                 onAssistantPress={async () => createSentenceRequest(index)}
               />
             ))}
-            <Button
-              variant="contained"
-              size="medium"
-              color="primary"
-              sx={{
+            <div
+              style={{
                 position: "absolute",
                 left: "82%",
                 top: "70%",
@@ -300,62 +331,66 @@ export const RegisterModal = (props: ModalProps) => {
                 increaseSaveButtonPosition(PER_PUSH_BUTTON);
               }}
             >
-              例文を追加
-            </Button>
+              <Fab color="primary" aria-label="add" size="small">
+                <AddIcon />
+              </Fab>
+            </div>
           </TextFieldContainer>
-          <Button
-            variant="contained"
-            endIcon={<SendIcon />}
-            sx={{
-              position: "absolute",
-              left: "82%",
-              top: saveButtonPosition,
-              paddingX: "3px",
-              paddingY: "10px",
-              width: "100px",
-            }}
-            onClick={async () => {
-              const sentences: Sentence[] = exampleSentences
-                .map((value, index) => {
-                  return {
-                    value: value,
-                    meaning: exampleSentencesMeaning[index],
-                    pronunciation: "",
-                  };
-                })
-                .filter((value) => value.value.length > 0);
-
-              const result = await registerWordProfile({
-                word: wordValue,
-                meaning: meaning,
-                pronunciation: pronunciation,
-                remarks: remarks,
-                sentences,
-              });
-              if (isFailed(result)) {
-                setAppError({
-                  name: "単語の登録に失敗しました。",
-                  message: "もう一度お試しください。" + result.message,
-                  id: "registerWordProfile",
-                });
-              }
-              props.handleClose();
-              allClear();
-              backToInitPosition();
-              return;
-            }}
-          >
-            保存する
-          </Button>
+          <div>
+            <Button
+              variant="contained"
+              endIcon={<SendIcon />}
+              sx={{
+                position: "absolute",
+                left: "82%",
+                top: saveButtonPosition,
+                paddingX: "3px",
+                paddingY: "10px",
+                width: "100px",
+              }}
+              onClick={async () => {
+                save();
+              }}
+            >
+              保存する
+            </Button>
+            <Button
+              color="error"
+              variant="contained"
+              sx={{
+                position: "absolute",
+                left: "10",
+                top: saveButtonPosition,
+                paddingX: "3px",
+                paddingY: "10px",
+                width: "100px",
+              }}
+              onClick={async () => {
+                setRegisterCancel(true);
+              }}
+            >
+              キャンセル
+            </Button>
+          </div>
         </Box>
       </Modal>
+      {registerCancel ? (
+        <DeleteConfirmModal
+          open={registerCancel}
+          setOpen={setRegisterCancel}
+          deleteHandler={async () => {
+            allClear();
+            props.handleClose();
+          }}
+        />
+      ) : null}
     </div>
   );
 };
 
 export const textFieldStyle = {
   width: "80%",
-  marginTop: "5px",
+  marginTop: "3px",
 };
 
 const MeaningTextAndAiContainer = styled.div`
@@ -365,7 +400,7 @@ const MeaningTextAndAiContainer = styled.div`
 `;
 export const TextFieldContainer = styled.div`
   width: 90%;
-  margin-top: 5px;
+  margin-top: 3px;
   justify-content: center;
   flex-direction: column;
 `;
