@@ -62,7 +62,7 @@ export const RegisterModal = (props: ModalProps) => {
   >([""]);
   const [aiProgress, setAiProgress] = useState<boolean>(false);
   const { user } = useContext(UserContext);
-  const INIT_SAVE_BUTTON_POSITION = 430;
+  const INIT_SAVE_BUTTON_POSITION = 420;
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
     INIT_SAVE_BUTTON_POSITION
   );
@@ -74,7 +74,7 @@ export const RegisterModal = (props: ModalProps) => {
     setExampleSentencesMeaning([...exampleSentencesMeaning, ""]);
   };
 
-  const PER_PUSH_BUTTON = 110;
+  const PER_PUSH_BUTTON = 105;
   const increaseSaveButtonPosition = (posi: number) => {
     setSaveButtonPosition(saveButtonPosition + posi);
   };
@@ -336,7 +336,13 @@ export const RegisterModal = (props: ModalProps) => {
               </Fab>
             </div>
           </TextFieldContainer>
-          <div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              height: "80px",
+            }}
+          >
             <Button
               variant="contained"
               endIcon={<SendIcon />}
@@ -381,6 +387,7 @@ export const RegisterModal = (props: ModalProps) => {
           deleteHandler={async () => {
             allClear();
             props.handleClose();
+            backToInitPosition();
           }}
         />
       ) : null}
