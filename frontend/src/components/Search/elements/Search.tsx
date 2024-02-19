@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { createRef, useEffect, useRef } from "react";
 import Paper from "@mui/material/Paper";
 import InputBase from "@mui/material/InputBase";
 import Divider from "@mui/material/Divider";
@@ -11,7 +11,8 @@ import { styled } from "styled-components";
 export const SearchBar = () => {
   const [value, setValue] = React.useState("");
   const [open, setOpen] = React.useState(false);
-  const { getSuggestions } = useWordBook();
+  const [focusIndex, setFocusIndex] = React.useState(0);
+  const { getSuggestions, wordToTop } = useWordBook();
   const suggestions = getSuggestions(value);
   useEffect(() => {
     if (suggestions.length > 0) {
@@ -19,44 +20,73 @@ export const SearchBar = () => {
     }
   }, [value]);
 
+  const decideSuggestion = (index: number) => {
+    wordToTop(suggestions[index].wordId);
+    setValue("");
+    setOpen(false);
+  };
+  const keyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "ArrowDown") {
+      setFocusIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (event.key === "ArrowUp") {
+      setFocusIndex(
+        (prev) => (prev - 1 + suggestions.length) % suggestions.length
+      );
+    } else if (event.key === "Enter") {
+      decideSuggestion(focusIndex);
+    }
+    return false;
+  };
+
   const searchBarWidth = 500;
   return (
     <div>
       <Paper
-        component="form"
         sx={{
           p: "2px 4px",
           display: "flex",
           alignItems: "center",
           width: searchBarWidth,
           height: 50,
+          position: "relative",
         }}
       >
         <InputBase
-          sx={{ ml: 1, flex: 1, height: 100 }}
+          sx={{ ml: 1, flex: 1, height: 50, zIndex: 2 }}
           placeholder="Search Words"
           value={value}
           onChange={(e) => setValue(e.target.value)}
+          onKeyDown={keyDown}
+          type="text"
         />
-        <IconButton type="submit" sx={{ p: "10px" }} aria-label="search">
+        <IconButton sx={{ p: "10px" }} aria-label="search">
           <SearchIcon />
         </IconButton>
         <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
       </Paper>
-      <SuggestionContainer width={searchBarWidth}>
-        {suggestions.map((suggestion) => (
-          <Suggestion>{suggestion.value}</Suggestion>
-        ))}
-      </SuggestionContainer>
+      {open ? (
+        <SuggestionContainer width={searchBarWidth}>
+          {suggestions.map((suggestion, index) => (
+            <Suggestion
+              focused={focusIndex === index}
+              key={suggestion.wordId}
+              onClick={() => decideSuggestion(index)}
+            >
+              {suggestion.value}
+            </Suggestion>
+          ))}
+        </SuggestionContainer>
+      ) : null}
     </div>
   );
 };
 
-const Suggestion = styled.div`
+const Suggestion = styled.div<{ focused: boolean }>`
   padding: 10px;
   &:hover {
     background-color: #f0f0f0;
   }
+  ${(props) => props.focused && "background-color: #f0f0f0;"}
   border-bottom: 1px solid black;
 `;
 

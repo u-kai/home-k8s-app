@@ -35,7 +35,6 @@ export const fetchJsonWithCors = async <P, T>(
 export const authorizationHeader = (
   token: string
 ): { [key: string]: string } => {
-  console.log("token", token);
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
