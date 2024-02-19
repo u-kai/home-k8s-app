@@ -5,46 +5,12 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
-
-type LikeRates = "veryGood" | "good" | "normal" | "bad" | "veryBad";
-const DEFAULT_RATE = "normal";
-
-const toLikeRates = (rate: number): LikeRates => {
-  if (rate === 1) {
-    return "veryBad";
-  }
-  if (rate === 2) {
-    return "bad";
-  }
-  if (rate === 3) {
-    return "normal";
-  }
-  if (rate === 4) {
-    return "good";
-  }
-  if (rate === 5) {
-    return "veryGood";
-  }
-  return DEFAULT_RATE;
-};
-const fromLikeRates = (rate: LikeRates): number => {
-  if (rate === "veryBad") {
-    return 1;
-  }
-  if (rate === "bad") {
-    return 2;
-  }
-  if (rate === "normal") {
-    return 3;
-  }
-  if (rate === "good") {
-    return 4;
-  }
-  if (rate === "veryGood") {
-    return 5;
-  }
-  return 3;
-};
+import {
+  fromLikeRates,
+  LikeRates,
+  toLikeRates,
+  toLikeRatesFromStr,
+} from "../../../../hooks/useWordBooks";
 
 const customIcons: {
   [index: string]: {
@@ -88,7 +54,7 @@ export const Rates = (props: RatesProps) => {
   return (
     <Rating
       name="highlight-selected-only"
-      defaultValue={fromLikeRates(props.rate as LikeRates)}
+      value={fromLikeRates(toLikeRatesFromStr(props.rate))}
       IconContainerComponent={IconContainer}
       highlightSelectedOnly
       onChange={(_, newValue) => {

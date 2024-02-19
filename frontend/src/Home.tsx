@@ -5,6 +5,7 @@ import { ErrorAlert } from "./components/Alers/ErrorAlert";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
+import { TableList } from "./components/List/elements/TableContainer";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
 
@@ -32,7 +33,7 @@ export const Home = (props: Props) => {
         </RegisterButtonContainer>
       </UpperContainer>
       <ListContainer>
-        <List></List>
+        <List />
       </ListContainer>
       <Footer />
     </Wrapper>

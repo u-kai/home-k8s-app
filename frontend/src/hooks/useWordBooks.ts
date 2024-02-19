@@ -33,6 +33,66 @@ export type UpdateWordRequest = {
     pronunciation?: string;
   }[];
 };
+export type LikeRates = "veryGood" | "good" | "normal" | "bad" | "veryBad";
+const DEFAULT_RATE = "normal";
+
+export const toLikeRatesFromStr = (rate: string): LikeRates => {
+  if (rate === "veryBad") {
+    return "veryBad";
+  }
+  if (rate === "bad") {
+    return "bad";
+  }
+  if (rate === "normal") {
+    return "normal";
+  }
+  if (rate === "good") {
+    return "good";
+  }
+  if (rate === "veryGood") {
+    return "veryGood";
+  }
+  return DEFAULT_RATE;
+};
+
+export const toLikeRates = (rate: number): LikeRates => {
+  if (rate === 1) {
+    return "veryBad";
+  }
+  if (rate === 2) {
+    return "bad";
+  }
+  if (rate === 3) {
+    return "normal";
+  }
+  if (rate === 4) {
+    return "good";
+  }
+  if (rate === 5) {
+    return "veryGood";
+  }
+  return DEFAULT_RATE;
+};
+export const fromLikeRates = (rate: LikeRates): number => {
+  if (rate === "veryBad") {
+    return 1;
+  }
+  if (rate === "bad") {
+    return 2;
+  }
+  if (rate === "normal") {
+    return 3;
+  }
+  if (rate === "good") {
+    return 4;
+  }
+  if (rate === "veryGood") {
+    return 5;
+  }
+  return 3;
+};
+export type TopOrBottom = "top" | "bottom";
+export const reverse = (v: TopOrBottom) => (v === "top" ? "bottom" : "top");
 
 export const useWordBook = () => {
   const { wordbook, setWordBook } = useContext(WordBookContext);
@@ -55,13 +115,65 @@ export const useWordBook = () => {
     }
     setWordBook(response);
   };
-  const sortByCreatedAt = () => {
-    const sorted = wordbook.slice().sort((a, b) => {
+  const sortByCreatedAt = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
       return b.createdAt - a.createdAt;
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return a.createdAt - b.createdAt;
+    };
+    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
+    const sorted = wordbook.slice().sort((a, b) => {
+      return sortFn(a, b);
+    });
+    setWordBook(sorted);
+  };
+  const sortByUpdatedAt = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return b.updatedAt - a.updatedAt;
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return a.updatedAt - b.updatedAt;
+    };
+    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
+    const sorted = wordbook.slice().sort((a, b) => {
+      return sortFn(a, b);
+    });
+    setWordBook(sorted);
+  };
+  const sortByLikeRates = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return (
+        fromLikeRates(toLikeRatesFromStr(b.likeRates)) -
+        fromLikeRates(toLikeRatesFromStr(a.likeRates))
+      );
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return (
+        fromLikeRates(toLikeRatesFromStr(a.likeRates)) -
+        fromLikeRates(toLikeRatesFromStr(b.likeRates))
+      );
+    };
+    const sorted = wordbook.slice().sort((a, b) => {
+      return topOrBottom === "top" ? sortTopFn(a, b) : sortBottomFn(a, b);
     });
     setWordBook(sorted);
   };
 
+  const sortByWord = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return a.word.value.localeCompare(b.word.value);
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return b.word.value.localeCompare(a.word.value);
+    };
+    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
+
+    const sorted = wordbook.slice().sort((a, b) => {
+      return sortFn(a, b);
+    });
+    setWordBook(sorted);
+  };
   const deleteWordProfile = async (req: {
     wordId: string;
   }): Promise<Result<void>> => {
@@ -141,6 +253,9 @@ export const useWordBook = () => {
     wordbook,
     fetchAll,
     sortByCreatedAt,
+    sortByLikeRates,
+    sortByWord,
+    sortByUpdatedAt,
     deleteWordProfile,
     registerWordProfile,
     updateWordProfile,

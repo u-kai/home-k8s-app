@@ -44,6 +44,7 @@ export const DeleteConfirmModal = (props: {
             color="error"
             onClick={async () => {
               props.deleteHandler();
+              props.setOpen(false);
             }}
           >
             Delete
