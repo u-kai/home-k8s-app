@@ -15,6 +15,7 @@ import { UpdateWordProfileModal } from "./UpdateWordProfileModal";
 import { useWordBook } from "../../../../hooks/useWordBooks";
 import { isFailed } from "../../../../fetch";
 import { AppErrorContext } from "../../../../contexts/error";
+
 type WordAndSentencesProps = {
   wordProfile: WordProfile;
 };
@@ -66,6 +67,11 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
                 }
               }}
             />
+            <div
+              style={{
+                padding: "10px",
+              }}
+            ></div>
             <ModeEditOutlineIcon
               fontSize="large"
               sx={{

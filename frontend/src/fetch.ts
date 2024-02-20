@@ -58,3 +58,22 @@ export const translateUrl = () => {
 export const createSentenceUrl = () => {
   return backendUrl(`/translate/createSentence`);
 };
+
+export const speak = (word: string) => {
+  const synth = window.speechSynthesis;
+  const voices = synth
+    .getVoices()
+    .filter((v) => v.lang !== undefined && v.lang === "en-US");
+  if (voices.length === 0) {
+    console.log("No voices found");
+    return;
+  }
+  const voice = voices[0];
+  if (voice.lang !== "en-US") {
+    console.log("No en-US voice found");
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.voice = voice;
+  synth.speak(utterance);
+};

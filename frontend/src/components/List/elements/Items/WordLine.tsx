@@ -2,6 +2,7 @@ import { Button, ListItem } from "@mui/material";
 import React from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import styled from "styled-components";
+import { speak } from "../../../../fetch";
 
 export type WordLineProps = {
   pronunciation?: string;
@@ -9,22 +10,6 @@ export type WordLineProps = {
   wordSize?: string;
 };
 
-const speak = (word: string) => {
-  const synth = window.speechSynthesis;
-  const voices = synth
-    .getVoices()
-    .filter((v) => v.lang !== undefined && v.lang === "en-US");
-  if (voices.length === 0) {
-    return;
-  }
-  const voice = voices[0];
-  if (voice.lang !== "en-US") {
-    return;
-  }
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.voice = voice;
-  synth.speak(utterance);
-};
 export const WordLine = (props: WordLineProps) => {
   return (
     <ListItem

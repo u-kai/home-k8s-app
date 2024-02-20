@@ -6,6 +6,7 @@ import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
 import { TableList } from "./components/List/elements/TableContainer";
+import { PlayAudios } from "./components/PlayAudios";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
 
@@ -33,6 +34,9 @@ export const Home = (props: Props) => {
         </RegisterButtonContainer>
       </UpperContainer>
       <ListContainer>
+        <PlayAudiosContainer>
+          <PlayAudios />
+        </PlayAudiosContainer>
         <List />
       </ListContainer>
       <Footer />
@@ -45,6 +49,7 @@ const HeaderAndAlertContainer = styled.div`
   top: 0;
   left: 0;
   width: 100%;
+  height: 100px;
   display: flex;
   flex-direction: column;
 `;
@@ -81,13 +86,24 @@ const RegisterButtonContainer = styled.div`
 `;
 const UpperContainer = styled.div`
   position: absolute;
-  top: 80px;
+  top: 70px;
   left: 32%;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: row;
 `;
+const PlayAudiosContainer = styled.div`
+  position: relative;
+  top: 30px;
+  z-index: 100;
+  left: 49%;
+`;
+//const PlayAudiosContainer = styled.div`
+//  position: absolute;
+//  top: 40px;
+//  right: 250px;
+//`;
 const ListContainer = styled.div`
   position: absolute;
   top: 120px;

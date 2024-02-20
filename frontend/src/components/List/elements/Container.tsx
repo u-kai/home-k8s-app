@@ -45,11 +45,7 @@ export const ListContainer = () => {
   }, []);
 
   return (
-    <Container
-      sx={{
-        padding: 5,
-      }}
-    >
+    <Container>
       <Box
         sx={{
           height: 500,
