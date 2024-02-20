@@ -61,6 +61,6 @@ const Pronunciation = styled.div`
 
 const Word = styled.div<{ fontSize: string }>`
   font-size: ${(props) => props.fontSize};
-  width: 80%;
+  width: 50%;
   white-space: nowrap;
 `;

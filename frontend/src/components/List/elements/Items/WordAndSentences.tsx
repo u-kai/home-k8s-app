@@ -80,10 +80,11 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
               }}
             />
             <UpdateWordProfileModal
-              updateHandler={async () => {}}
+              handleClose={() => {
+                setUpdatePushed(false);
+              }}
               open={updatePushed}
-              setOpen={setUpdatePushed}
-              wordProfile={props.wordProfile}
+              oldWordProfile={props.wordProfile}
             />
             <DeleteForeverIcon
               fontSize="large"

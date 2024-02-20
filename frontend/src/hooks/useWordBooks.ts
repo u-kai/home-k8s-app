@@ -1,6 +1,11 @@
 import { useContext } from "react";
 import { UserContext } from "../contexts/user";
-import { Sentence, WordBookContext, WordProfile } from "../contexts/wordbook";
+import {
+  Sentence,
+  SentenceProfile,
+  WordBookContext,
+  WordProfile,
+} from "../contexts/wordbook";
 import {
   authorizationHeader,
   fetchJsonWithCors,
@@ -209,7 +214,16 @@ export const useWordBook = () => {
     }
     setWordBook([...wordbook, response]);
   };
-
+  const emptySentence: SentenceProfile = {
+    sentenceId: "",
+    sentence: {
+      value: "",
+      meaning: "",
+      pronunciation: "",
+    },
+    createdAt: new Date().getTime(),
+    updatedAt: 0,
+  };
   const updateWordProfile = async (
     wordProfile: WordProfile
   ): Promise<Result<void>> => {
@@ -282,6 +296,7 @@ export const useWordBook = () => {
   };
 
   return {
+    emptySentence,
     wordbook,
     wordToTop,
     getSuggestions,
