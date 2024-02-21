@@ -1,7 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { Fab, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
@@ -22,6 +22,7 @@ import { AppErrorContext } from "../../../contexts/error";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { TranslateConfigContext } from "../../../contexts/translateConfig";
 
 const style = {
   position: "absolute" as "absolute",
@@ -59,8 +60,26 @@ export const RegisterModal = (props: ModalProps) => {
     INIT_SAVE_BUTTON_POSITION
   );
   const [registerCancel, setRegisterCancel] = useState<boolean>(false);
+  const { translateConfig } = useContext(TranslateConfigContext);
 
   const { registerWordProfile } = useWordBook();
+  const inputEnterHandler = async (e: React.KeyboardEvent) => {
+    console.log("inputEnterHandler");
+    const minWordLength = 1;
+    if (wordValue.length <= minWordLength) {
+      return;
+    }
+    if (e.key === "Enter") {
+      if (translateConfig.autoMeaning) {
+        translateRequest().then(() => setAiProgress(false));
+        setAiProgress(true);
+      }
+      if (translateConfig.autoSentence) {
+        const initIndex = 0;
+        createSentenceRequest(initIndex);
+      }
+    }
+  };
   const addEmpty = () => {
     setExampleSentences([...exampleSentences, ""]);
     setExampleSentencesMeaning([...exampleSentencesMeaning, ""]);
@@ -232,6 +251,7 @@ export const RegisterModal = (props: ModalProps) => {
               variant="standard"
               value={wordValue}
               onChange={(e) => setWordValue(e.target.value)}
+              onKeyDown={inputEnterHandler}
             />
             <TextField
               sx={textFieldStyle}

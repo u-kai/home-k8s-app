@@ -4,7 +4,6 @@ import InputBase from "@mui/material/InputBase";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
-import { MenuItem, Menu } from "@mui/material";
 import { useWordBook } from "../../../hooks/useWordBooks";
 import { styled } from "styled-components";
 
