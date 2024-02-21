@@ -64,7 +64,6 @@ export const RegisterModal = (props: ModalProps) => {
 
   const { registerWordProfile } = useWordBook();
   const inputEnterHandler = async (e: React.KeyboardEvent) => {
-    console.log("inputEnterHandler");
     const minWordLength = 1;
     if (wordValue.length <= minWordLength) {
       return;

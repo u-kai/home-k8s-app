@@ -11,8 +11,6 @@ export const PlayAudios = () => {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      console.log("intervalId");
-      console.log(doPlay);
       if (doPlay) {
         if (audioIndex === wordbook.length - 1) {
           setDoPlay(false);
