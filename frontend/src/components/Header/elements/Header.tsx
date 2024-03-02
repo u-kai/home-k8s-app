@@ -93,6 +93,7 @@ const Suggestion = styled.div<{ focused: boolean }>`
   text-align: center;
   border-radius: 2px;
   cursor: pointer;
+  height: 40px;
 `;
 
 const SuggestionContainer = styled.div<{ width: number }>`
@@ -100,6 +101,7 @@ const SuggestionContainer = styled.div<{ width: number }>`
   top: 65px;
   right: 25px;
   width: ${(props) => props.width}px;
+  height: 120x;
   background-color: white;
   z-index: 100;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);

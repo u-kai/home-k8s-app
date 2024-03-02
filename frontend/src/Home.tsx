@@ -5,7 +5,6 @@ import { ErrorAlert } from "./components/Alers/ErrorAlert";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
-import { TableList } from "./components/List/elements/TableContainer";
 import { PlayAudios } from "./components/PlayAudios";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
@@ -94,18 +93,12 @@ const UpperContainer = styled.div`
 `;
 const PlayAudiosContainer = styled.div`
   position: relative;
-  top: 30px;
   z-index: 100;
   left: 49%;
 `;
-//const PlayAudiosContainer = styled.div`
-//  position: absolute;
-//  top: 40px;
-//  right: 250px;
-//`;
 const ListContainer = styled.div`
   position: absolute;
-  top: 120px;
+  top: 150px;
   width: 100%;
   height: 100%;
 `;
