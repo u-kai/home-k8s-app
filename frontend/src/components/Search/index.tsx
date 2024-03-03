@@ -5,15 +5,16 @@ import { SearchBar } from "./elements/Search";
 export const Search = () => {
   return (
     // component want to center position
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        height: 50,
-        padding: 2,
-      }}
-    >
-      <SearchBar></SearchBar>
-    </Box>
+    // <Box
+    //   sx={{
+    //     display: "flex",
+    //     justifyContent: "center",
+    //     height: 50,
+    //     padding: 2,
+    //     minWidth: 0,
+    //   }}
+    // >
+    <SearchBar></SearchBar>
+    // </Box>
   );
 };

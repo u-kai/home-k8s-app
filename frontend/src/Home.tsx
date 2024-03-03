@@ -28,7 +28,9 @@ export const Home = (props: Props) => {
         </HeaderContainer>
       </HeaderAndAlertContainer>
       <UpperContainer>
-        <Search />
+        <SearchContainer>
+          <Search />
+        </SearchContainer>
         <RegisterButtonContainer>
           <Registers />
         </RegisterButtonContainer>
@@ -81,11 +83,6 @@ export const Wrapper = styled.div`
   position: relative;
 `;
 
-// TODO: consider why the value
-const RegisterButtonContainer = styled.div`
-  position: relative;
-  top: 20px;
-`;
 const UpperContainer = styled.div`
   position: absolute;
   top: 70px;
@@ -94,6 +91,17 @@ const UpperContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: row;
+`;
+const SearchContainer = styled.div`
+    flex-grow:1,
+    flex-shrink:1,
+    min-width:0px,
+`;
+const RegisterButtonContainer = styled.div`
+  position: relative;
+  top: 20px;
+  flex-shrink: 0;
+  left: 1%;
 `;
 const PlayAudiosContainer = styled.div<{ top: string }>`
   position: absolute;
