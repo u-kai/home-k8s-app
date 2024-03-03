@@ -8,6 +8,7 @@ import { List } from "./components/List";
 import { PlayAudios } from "./components/PlayAudios";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
+import { SortButton } from "./components/SortButton";
 
 type Props = {
   logout: () => Promise<void>;
@@ -15,7 +16,7 @@ type Props = {
 
 export const Home = (props: Props) => {
   const { signOut } = useAuthenticator();
-  //
+  const BUTTON_TOP_POSITION = "150px";
   return (
     <Wrapper>
       <HeaderAndAlertContainer>
@@ -32,10 +33,13 @@ export const Home = (props: Props) => {
           <Registers />
         </RegisterButtonContainer>
       </UpperContainer>
+      <SortButtonContainer top={BUTTON_TOP_POSITION}>
+        <SortButton />
+      </SortButtonContainer>
+      <PlayAudiosContainer top={BUTTON_TOP_POSITION}>
+        <PlayAudios />
+      </PlayAudiosContainer>
       <ListContainer>
-        <PlayAudiosContainer>
-          <PlayAudios />
-        </PlayAudiosContainer>
         <List />
       </ListContainer>
       <Footer />
@@ -91,14 +95,20 @@ const UpperContainer = styled.div`
   display: flex;
   flex-direction: row;
 `;
-const PlayAudiosContainer = styled.div`
-  position: relative;
+const PlayAudiosContainer = styled.div<{ top: string }>`
+  position: absolute;
   z-index: 100;
-  left: 49%;
+  top: ${(props) => props.top};
+  left: 50%;
 `;
 const ListContainer = styled.div`
   position: absolute;
-  top: 150px;
+  top: 200px;
   width: 100%;
-  height: 100%;
+`;
+
+const SortButtonContainer = styled.div<{ top: string }>`
+  position: absolute;
+  left: 87%;
+  top: ${(props) => props.top};
 `;
