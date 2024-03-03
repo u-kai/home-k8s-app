@@ -37,7 +37,7 @@ export const SearchBar = () => {
     }
     return false;
   };
-  // TODO : Fix use CSS
+  // TODO : Fix to use CSS
   const BASE_WIDTH = 500;
   const [width, setWidth] = useState(BASE_WIDTH);
   useEffect(() => {
@@ -83,7 +83,7 @@ export const SearchBar = () => {
         display: "flex",
         justifyContent: "center",
         height: 50,
-        padding: 2,
+        paddingY: 2,
         width: width,
       }}
     >
@@ -145,7 +145,7 @@ const Suggestion = styled.div<{ focused: boolean }>`
 
 const SuggestionContainer = styled.div<{ width: number }>`
   position: absolute;
-  top: 60px;
+  top: 67px;
   width: ${(props) => props.width}px;
   background-color: white;
   z-index: 100;

@@ -105,7 +105,6 @@ const RegisterButtonContainer = styled.div`
 `;
 const PlayAudiosContainer = styled.div<{ top: string }>`
   position: absolute;
-  z-index: 100;
   top: ${(props) => props.top};
   left: 50%;
 `;
