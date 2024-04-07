@@ -33,9 +33,6 @@ func (s UpdateWordProfileApiSchema) ToUpdatedWordProfileSource() (UpdatedWordPro
 		return UpdatedWordProfileSource{}, err
 	}
 	missCount := MissCount(s.MissCount)
-	if err != nil {
-		return UpdatedWordProfileSource{}, err
-	}
 	likeRates, err := NewLikeRates(s.LikeRates)
 	if err != nil {
 		return UpdatedWordProfileSource{}, err

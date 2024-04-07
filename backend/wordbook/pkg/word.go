@@ -251,7 +251,7 @@ func newSentenceProfile(sentence Sentence, newId func() SentenceId, now common.N
 
 func updateSentenceProfile(old SentenceProfile, new Sentence, now common.NowFunc) SentenceProfile {
 	old.Sentence = new
-	old.UpdatedAt = common.Now()
+	old.UpdatedAt = now()
 	return old
 }
 

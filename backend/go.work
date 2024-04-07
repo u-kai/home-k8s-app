@@ -5,7 +5,6 @@ use (
 	./wordbook
 	./common
 	./user
-	./auth
 	./image
 	./openai
 )
