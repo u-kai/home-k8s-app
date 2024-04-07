@@ -1,3 +1,3 @@
-module ele/image
+module ele/openai
 
 go 1.22
