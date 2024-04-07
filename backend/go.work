@@ -6,4 +6,6 @@ use (
 	./common
 	./user
 	./auth
+	./image
+	./openai
 )
