@@ -1,7 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { Fab, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
@@ -227,7 +227,16 @@ export const RegisterModal = (props: ModalProps) => {
     changeExampleSentenceMeaning(index, result.meaning);
     return;
   };
+  const focusInputArea = (): boolean => props.open;
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (focusInputArea()) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [focusInputArea()]);
   return (
     <div>
       <Modal
@@ -243,6 +252,8 @@ export const RegisterModal = (props: ModalProps) => {
           </Typography>
           <TextFieldContainer>
             <TextField
+              autoFocus={true}
+              inputRef={inputRef}
               sx={textFieldStyle}
               required
               id="standard-required"
