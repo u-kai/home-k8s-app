@@ -4,6 +4,7 @@ import { AppErrorContext } from "../../contexts/error";
 
 type Props = {
   timeOut: number;
+  errorMessage?: string;
 };
 
 export const ErrorAlert = (props: Props) => {
@@ -21,7 +22,7 @@ export const ErrorAlert = (props: Props) => {
       {appError !== undefined ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {appError.message}
+          {props.errorMessage ?? appError.message}
         </Alert>
       ) : null}
     </>

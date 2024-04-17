@@ -5,6 +5,7 @@ import { ErrorAlert } from "./components/Alers/ErrorAlert";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
+import { LongSentenceBoxes } from "./components/LongSentence";
 import { PlayAudios } from "./components/PlayAudios";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
@@ -41,13 +42,24 @@ export const Home = (props: Props) => {
       <PlayAudiosContainer top={BUTTON_TOP_POSITION}>
         <PlayAudios />
       </PlayAudiosContainer>
-      <ListContainer>
-        <List />
-      </ListContainer>
+      <HorizontalContainer>
+        <LongSentenceBoxesContainer>
+          <LongSentenceBoxes />
+        </LongSentenceBoxesContainer>
+        <ListContainer>
+          <List />
+        </ListContainer>
+      </HorizontalContainer>
       <Footer />
     </Wrapper>
   );
 };
+
+const HorizontalContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+`;
 
 const HeaderAndAlertContainer = styled.div`
   position: relative;
@@ -110,7 +122,14 @@ const PlayAudiosContainer = styled.div<{ top: string }>`
 `;
 const ListContainer = styled.div`
   position: absolute;
+  left: 20%;
   top: 200px;
+  width: 100%;
+`;
+const LongSentenceBoxesContainer = styled.div`
+  position: absolute;
+  top: 200px;
+  left: 5%;
   width: 100%;
 `;
 

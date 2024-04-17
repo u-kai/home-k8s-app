@@ -27,8 +27,9 @@ export const ListContainer = () => {
     <Container>
       <Box
         sx={{
-          height: 500,
+          height: "80%",
           overflowY: "scroll",
+          width: "80%",
         }}
       >
         <List sx={{ width: "100%", bgcolor: "background.paper" }}>
