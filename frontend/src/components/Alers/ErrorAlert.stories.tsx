@@ -11,6 +11,7 @@ const Template = (args: { timeOut: number; errorMessage: string }) => (
 );
 
 export const Primary = Template.bind({});
+
 Primary.args = {
   timeOut: 3000,
   errorMessage: "This is an error message",
