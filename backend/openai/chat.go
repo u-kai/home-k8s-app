@@ -33,6 +33,28 @@ func (c *chatStreamLine) toContent() (string, error) {
 	return chatStream.Choices[0].Delta.Content, nil
 }
 
+func (c *Client) Chat(ctx context.Context, messages []ChatMessage, model ChatGPTModel) (string, error) {
+	chatReq := &ChatRequest{
+		Model:    model,
+		Messages: messages,
+		Stream:   false,
+	}
+	resp, err := c.request(chatReq)
+	if err != nil {
+		return "", err
+	}
+	var chatResp ChatResponse
+	err = json.Unmarshal(resp, &chatResp)
+	if err != nil {
+		return "", err
+	}
+	if len(chatResp.Choices) == 0 {
+		return "", nil
+	}
+	last := len(chatResp.Choices) - 1
+	return chatResp.Choices[last].Message.Content, nil
+}
+
 func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model ChatGPTModel) (<-chan string, <-chan error) {
 	out := make(chan string)
 	errStream := make(chan error, 1)
@@ -85,12 +107,13 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 						errStream <- err
 						return
 					}
+					print(content)
 					out <- content
 				}
 			}
 		}
 	}()
-	return out, nil
+	return out, errStream
 }
 
 type ChatGPTModel string

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SSE Demo</title>
+  </head>
+  <body>
+    <h1>Server-Sent Events (SSE) Demo</h1>
+    <div id="events"></div>
+    <button onclick="handler()">Open Connection</button>
+    <script>
+      async function handler() {
+        console.log("onclick");
+        const response = await fetch(
+          "http://localhost:8080/translate/reviewSentence",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sentence:
+                "I'm learning english and frontend,etc css, tailwind css.",
+            }),
+          }
+        );
+        const reader = response.body?.getReader();
+        if (!reader) return;
+        let decoder = new TextDecoder();
+        const child = document.createElement("div");
+        const parent = document.getElementById("events");
+        parent.appendChild(child);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (!value) continue;
+          const lines = decoder.decode(value);
+          const displayText = lines.split("data: ").reduce((acc, line) => {
+            if (line) {
+              acc += line;
+            }
+            return acc;
+          }, "");
+          if (!displayText) {
+            continue;
+          }
+          child.textContent += displayText;
+        }
+      }
+      async function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+    </script>
+  </body>
+</html>

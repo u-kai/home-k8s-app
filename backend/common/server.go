@@ -30,6 +30,43 @@ func (s *ELEServer) RegisterHandler(route string, handler http.HandlerFunc) {
 	http.HandleFunc("/"+s.service+route, http.HandlerFunc(corsMiddleware(http.HandlerFunc(handler), s.frontendHost).ServeHTTP))
 }
 
+type SSEHandler func(w http.ResponseWriter, r *http.Request) (<-chan string, <-chan error)
+
+func NewSSEHandler(h SSEHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		f, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+		sendData, errStream := h(w, r)
+
+		for {
+			select {
+			case data, ok := <-sendData:
+				if !ok {
+					return
+				}
+				fmt.Fprintf(w, "data: %s\n\n", data)
+				f.Flush()
+			case err, ok := <-errStream:
+				if !ok {
+					return
+				}
+				slog.Error("Error in SSEHandler", "error", err)
+				http.Error(w, "Error in SSEHandler", http.StatusInternalServerError)
+				return
+			case <-r.Context().Done():
+				return
+			}
+		}
+	}
+}
+
 func (s *ELEServer) Start() {
 	addr := fmt.Sprintf(":%d", s.port)
 	s.RegisterHandler("/health", healthHandler)
