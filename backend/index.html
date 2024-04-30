@@ -30,15 +30,16 @@
         const child = document.createElement("div");
         const parent = document.getElementById("events");
         parent.appendChild(child);
+        function isOnlyWhitespace(str) {
+          return str.trim().length === 0;
+        }
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           if (!value) continue;
           const lines = decoder.decode(value);
           const displayText = lines.split("data: ").reduce((acc, line) => {
-            if (line) {
-              acc += line;
-            }
+            acc += line.substring(0, line.length - 2);
             return acc;
           }, "");
           if (!displayText) {
