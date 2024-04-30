@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"ele/openai"
 	"fmt"
 )
@@ -8,10 +9,23 @@ import (
 func main() {
 	client, _ := openai.FromEnv()
 
-	req := openai.NewDALLE2Request("I felt embarrassed when I tripped in front of everyone.")
-	resp, err := client.CreateImage(req)
-	if err != nil {
-		panic(err)
+	messages := []openai.ChatMessage{
+		{
+			Role:    openai.User,
+			Content: fmt.Sprintf("1行目に「%s」を使った例文を返答してください。2行目に1行目で作った例文の日本語翻訳を返答して下さい。それ以外の返答は一切不要です。", "apple"),
+		},
 	}
-	fmt.Printf("Image URL: %v\n", resp.Data[0].Url)
+	chatResp, errStream := client.StreamChat(context.Background(), messages, openai.Gpt3Dot5Trubo)
+loop:
+	for {
+		select {
+		case err := <-errStream:
+			fmt.Println(err.Error())
+		case msg, ok := <-chatResp:
+			if !ok {
+				break loop
+			}
+			print(msg)
+		}
+	}
 }

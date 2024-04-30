@@ -1,0 +1,10 @@
+{
+  "id": "chatcmpl-9JZ82SLUpIT2CZekQ7S7DWnubgfv9",
+  "object": "chat.completion.chunk",
+  "created": 1714450294,
+  "model": "gpt-3.5-turbo-0125",
+  "system_fingerprint": "fp_3b956da36b",
+  "choices": [
+    { "index": 0, "delta": {}, "logprobs": null, "finish_reason": "stop" }
+  ]
+}
