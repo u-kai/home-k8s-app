@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type ELEServer struct {
@@ -64,6 +65,94 @@ func CreatePostHandler[Req any, Resp json.Marshaler](h PostHandler[Req, Resp]) h
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	}
+}
+
+type Query map[string][]string
+
+// Req is the type of the request body, so that it can be decoded from JSON
+// Resp is the type of the response body
+type GetHandlerWithAuthorization[Resp json.Marshaler] func(query Query, idToken IDToken) (Resp, error)
+
+func CreateGetHandlerWithIDToken[Req Query, Resp json.Marshaler](h GetHandlerWithAuthorization[Resp]) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := make(Query)
+		for k, v := range r.URL.Query() {
+			query[k] = v
+		}
+		idToken, err := idTokenFromHeader(r)
+		if err != nil {
+			slog.Error("Failed to get idToken", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		resp, err := h(query, idToken)
+		if err != nil {
+			slog.Error("Failed to handle request", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		slog.Info("Response", "resp", resp)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	}
+}
+
+// Req is the type of the request body, so that it can be decoded from JSON
+// Resp is the type of the response body
+type PostHandlerWithAuthorization[Req any, Resp json.Marshaler] func(req *Req, idToken IDToken) (Resp, error)
+
+func CreatePostHandlerWithIDToken[Req any, Resp json.Marshaler](h PostHandlerWithAuthorization[Req, Resp]) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := new(Req)
+		err := json.NewDecoder(r.Body).Decode(req)
+		slog.Info("Request", "req", req)
+		if err != nil {
+			slog.Error("Failed to decode request body", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		idToken, err := idTokenFromHeader(r)
+		if err != nil {
+			slog.Error("Failed to get idToken", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		resp, err := h(req, idToken)
+		if err != nil {
+			slog.Error("Failed to handle request", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		slog.Info("Response", "resp", resp)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	}
+}
+
+func idTokenFromHeader(r *http.Request) (IDToken, error) {
+	token, err := getAuthToken(r)
+	if err != nil {
+		return IDToken{}, err
+	}
+	return fetchIDToken(token)
+}
+
+func fetchIDToken(token string) (IDToken, error) {
+	notValidateToken := NewNotValidateIDToken(token)
+	idToken, err := notValidateToken.ValidateIDToken()
+	if err != nil {
+		return IDToken{}, err
+	}
+	return idToken, nil
+}
+
+func getAuthToken(r *http.Request) (string, error) {
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		return "", fmt.Errorf("Authorization header is empty")
+	}
+	token = strings.Replace(token, "Bearer ", "", 1)
+	return token, nil
 }
 
 // chan owner ship is PostSSEHandler

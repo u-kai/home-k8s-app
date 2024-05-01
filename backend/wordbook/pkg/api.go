@@ -1,9 +1,44 @@
 package wordbook
 
-import "ele/user"
+import (
+	"context"
+	"ele/common"
+	"ele/user"
+	"encoding/json"
+	"net/http"
+)
+
+type FetchWordProfileResponse struct {
+	Result []WordProfile `json:"result"`
+}
+
+func (f FetchWordProfileResponse) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Result []WordProfile `json:"result"`
+	}{
+		Result: f.Result,
+	})
+}
+
+func FetchWordProfileHandler(ctx context.Context) http.HandlerFunc {
+	return common.CreateGetHandlerWithIDToken(func(query common.Query, idToken common.IDToken) (FetchWordProfileResponse, error) {
+		db, err := common.FromEnv().Open()
+		defer db.Close()
+		if err != nil {
+			return FetchWordProfileResponse{}, err
+		}
+		userId := user.UserIdFromIDToken(idToken)
+		wordProfile, err := FetchWordProfileFromDBByUserId(db, userId)
+		if err != nil {
+			return FetchWordProfileResponse{}, err
+		}
+		return FetchWordProfileResponse{
+			Result: wordProfile,
+		}, nil
+	})
+}
 
 type UpdateWordProfileApiSchema struct {
-	UserId        string                           `json:"userId"`
 	Word          string                           `json:"word"`
 	WordId        string                           `json:"wordId"`
 	Meaning       string                           `json:"meaning"`
@@ -14,7 +49,43 @@ type UpdateWordProfileApiSchema struct {
 	Sentences     []updateSentenceProfileApiSchema `json:"sentences"`
 }
 
-func (s UpdateWordProfileApiSchema) ToUpdatedWordProfileSource() (UpdatedWordProfileSource, error) {
+type UpdateWordProfileResult struct {
+	Result WordProfile `json:"result"`
+}
+
+func (u UpdateWordProfileResult) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Result WordProfile `json:"result"`
+	}{
+		Result: u.Result,
+	})
+}
+
+func UpdateWordHandler(ctx context.Context) http.HandlerFunc {
+	return common.CreatePostHandlerWithIDToken(func(req *UpdateWordProfileApiSchema, idToken common.IDToken) (UpdateWordProfileResult, error) {
+		updateSrc, err := req.toUpdatedWordProfileSource()
+		if err != nil {
+			return UpdateWordProfileResult{}, err
+		}
+		db, err := common.FromEnv().Open()
+		defer db.Close()
+		if err != nil {
+			return UpdateWordProfileResult{}, err
+		}
+		userId := user.UserIdFromIDToken(idToken)
+
+		// wordIdを憶測で更新できる脆弱性あり
+		wordProfile, err := UpdateWordProfileByDB(db, updateSrc, userId)
+		if err != nil {
+			return UpdateWordProfileResult{}, err
+		}
+		return UpdateWordProfileResult{
+			Result: wordProfile,
+		}, nil
+	})
+}
+
+func (s UpdateWordProfileApiSchema) toUpdatedWordProfileSource() (UpdatedWordProfileSource, error) {
 	value, err := NewWordValue(s.Word)
 	if err != nil {
 		return UpdatedWordProfileSource{}, err
@@ -114,12 +185,45 @@ func toUpdatedSentenceProfileSource(sentences []updateSentenceProfileApiSchema) 
 }
 
 type RegisterWordProfileApiSchema struct {
-	UserId        string                             `json:"userId"`
 	Word          string                             `json:"word"`
 	Meaning       string                             `json:"meaning"`
 	Pronunciation string                             `json:"pronunciation"`
 	Remarks       string                             `json:"remarks"`
 	Sentences     []registerSentenceProfileApiSchema `json:"sentences"`
+}
+
+type RegisterWordProfileResult struct {
+	Result WordProfile `json:"result"`
+}
+
+func (r RegisterWordProfileResult) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Result WordProfile `json:"result"`
+	}{
+		Result: r.Result,
+	})
+}
+
+func RegisterWordHandler(ctx context.Context) http.HandlerFunc {
+	return common.CreatePostHandlerWithIDToken(func(req *RegisterWordProfileApiSchema, idToken common.IDToken) (RegisterWordProfileResult, error) {
+		db, err := common.FromEnv().Open()
+		defer db.Close()
+		if err != nil {
+			return RegisterWordProfileResult{}, err
+		}
+		src, err := req.toRegisterWordProfileSource(user.UserIdFromIDToken(idToken))
+		if err != nil {
+			return RegisterWordProfileResult{}, err
+		}
+		wordInfo, err := RegisterWordProfileByDB(db, src)
+		if err != nil {
+			return RegisterWordProfileResult{}, err
+		}
+		return RegisterWordProfileResult{
+			Result: wordInfo,
+		}, nil
+	})
+
 }
 
 type registerSentenceProfileApiSchema struct {
@@ -128,7 +232,7 @@ type registerSentenceProfileApiSchema struct {
 	Pronunciation string `json:"pronunciation"`
 }
 
-func (s RegisterWordProfileApiSchema) ToRegisterWordProfileSource() (RegisterWordProfileSource, error) {
+func (s RegisterWordProfileApiSchema) toRegisterWordProfileSource(userId user.UserId) (RegisterWordProfileSource, error) {
 	sentences := make([]Sentence, 0, len(s.Sentences))
 	for _, sentence := range s.Sentences {
 		value, err := NewSentenceValue(sentence.Value)
@@ -166,7 +270,6 @@ func (s RegisterWordProfileApiSchema) ToRegisterWordProfileSource() (RegisterWor
 	if err != nil {
 		return RegisterWordProfileSource{}, err
 	}
-	userId := user.UserId(s.UserId)
 	return RegisterWordProfileSource{
 		UserId:    userId,
 		Word:      word,
@@ -176,10 +279,43 @@ func (s RegisterWordProfileApiSchema) ToRegisterWordProfileSource() (RegisterWor
 }
 
 type DeleteWordProfileApiSchema struct {
-	UserId string `json:"userId"`
 	WordId string `json:"wordId"`
 }
 
+type DeleteResponse struct {
+	Message string `json:"message"`
+}
+
+func (d DeleteResponse) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Message string `json:"message"`
+	}{
+		Message: d.Message,
+	})
+}
+
+func DeleteWordHandler(ctx context.Context) http.HandlerFunc {
+	return common.CreatePostHandlerWithIDToken(func(req *DeleteWordProfileApiSchema, idToken common.IDToken) (DeleteResponse, error) {
+		userId := user.UserIdFromIDToken(idToken)
+		src, err := req.ToDeleteWordProfileSource()
+		if err != nil {
+			return DeleteResponse{}, err
+		}
+		db, err := common.FromEnv().Open()
+		if err != nil {
+			return DeleteResponse{}, err
+		}
+		defer db.Close()
+		err = DeleteWordProfileByDB(db, src, userId)
+		if err != nil {
+			return DeleteResponse{}, err
+		}
+		return DeleteResponse{
+			Message: "success",
+		}, nil
+	})
+
+}
 func (s DeleteWordProfileApiSchema) ToDeleteWordProfileSource() (DeletedWordProfileSource, error) {
 	return DeletedWordProfileSource{
 		WordId: WordId(s.WordId),

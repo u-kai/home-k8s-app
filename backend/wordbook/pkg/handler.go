@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"ele/common"
 	"ele/user"
+	"fmt"
 )
 
 func FetchWordProfileFromDBByUserId(db *sql.DB, userId user.UserId) ([]WordProfile, error) {
@@ -20,18 +21,26 @@ type RegisterWordProfileSource struct {
 }
 
 func RegisterWordProfile(
+	checkExistWord func(user.UserId, Word) (bool, error),
 	src RegisterWordProfileSource,
 	newWordId func() WordId,
 	newSentenceId func() SentenceId,
 	now common.NowFunc,
 	registerWordProfile registerWordProfile,
 ) (WordProfile, error) {
+	exist, err := checkExistWord(src.UserId, src.Word)
+	if err != nil {
+		return WordProfile{}, err
+	}
+	if exist {
+		return WordProfile{}, fmt.Errorf("word already exists: %v", src.Word)
+	}
 	sentencesProfile := make([]SentenceProfile, len(src.Sentences))
 	for i, sentence := range src.Sentences {
 		sentencesProfile[i] = newSentenceProfile(sentence, newSentenceId, now)
 	}
 	new := NewWordProfile(src.Word, newWordId, now, sentencesProfile, src.Remarks)
-	_, err := registerWordProfile(src.UserId, new)
+	_, err = registerWordProfile(src.UserId, new)
 	if err != nil {
 		return WordProfile{}, err
 	}
@@ -41,7 +50,20 @@ func RegisterWordProfileByDB(
 	db *sql.DB,
 	src RegisterWordProfileSource,
 ) (WordProfile, error) {
+	// TODO: Implement checkExistWord more efficiently
+	selectWordByUserIdAndWordValue := func(userId user.UserId, word Word) (bool, error) {
+		sql := fmt.Sprintf("SELECT word_id FROM %s WHERE value=? AND user_id=?", WORD_TABLE_NAME)
+		row := db.QueryRow(sql, word.Value, userId)
+		var wordId WordId
+		err := row.Scan(&wordId)
+		if err != nil {
+			return false, nil
+		}
+		return true, nil
+	}
+
 	return RegisterWordProfile(
+		selectWordByUserIdAndWordValue,
 		src,
 		NewWordId(),
 		NewSentenceId(),
@@ -81,6 +103,7 @@ func UpdateWordProfile(
 func UpdateWordProfileByDB(
 	db *sql.DB,
 	src UpdatedWordProfileSource,
+	userId user.UserId,
 ) (WordProfile, error) {
 	return UpdateWordProfile(
 		src,
@@ -103,9 +126,12 @@ func DeleteWordProfile(
 ) error {
 	return deleteWordProfileFn(src.WordId)
 }
+
+// userIdが管理していないwordIdを削除できる脆弱性あり
 func DeleteWordProfileByDB(
 	db *sql.DB,
 	src DeletedWordProfileSource,
+	userId user.UserId,
 ) error {
 	return DeleteWordProfile(
 		src,

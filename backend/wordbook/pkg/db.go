@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"ele/user"
 	"fmt"
-	"log/slog"
 )
 
 type fetchWordProfileFromUserId func(user.UserId) ([]WordProfile, error)
@@ -14,10 +13,7 @@ type fetchSentencesFromWordId func(WordId) ([]SentenceProfile, error)
 func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
 	return func(wordId WordId) ([]SentenceProfile, error) {
 		sql, wordId := selectSentenceProfileByWordIdSql(wordId)
-		slog.Info("sql", sql.String())
-		slog.Info("wordId", wordId)
 		rows, err := db.Query(sql.String(), wordId)
-		slog.Info("rows", rows)
 		if err != nil {
 			return nil, fmt.Errorf("failed to select sentences query: %w", err)
 		}
@@ -284,7 +280,7 @@ func updateWordProfileByDB(db *sql.DB) updateWordProfile {
 	}
 }
 
-func deleteWordProfileByDB(db *sql.DB) deleteWordProfile {
+func deleteWordProfileByDB(db *sql.DB, userId user.UserId) deleteWordProfile {
 	return func(wordId WordId) error {
 		wordProfile, err := fetchWordProfileFromWordIdByDB(db)(wordId)
 		if err != nil {

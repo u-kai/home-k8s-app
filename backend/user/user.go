@@ -4,7 +4,6 @@ import (
 	"ele/common"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -12,6 +11,10 @@ type UserId string
 
 type User struct {
 	Id UserId `json:"id"`
+}
+
+func UserIdFromIDToken(token common.IDToken) UserId {
+	return UserId(token.Sub())
 }
 
 func authUser(userId UserId, token string) (bool, error) {
@@ -24,12 +27,6 @@ func authUser(userId UserId, token string) (bool, error) {
 		return false, nil
 	}
 	return true, nil
-}
-func AuthUserFromHeaderWithFeatureFlag(r *http.Request, userId UserId) error {
-	if os.Getenv("JWT_AUTH_FLAG") != "true" {
-		return nil
-	}
-	return authUserFromHeader(r, userId)
 }
 
 func getAuthToken(r *http.Request) (string, error) {
