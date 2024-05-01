@@ -29,7 +29,12 @@ export const WordProcessor = (props: {
       <span
         key={index}
         onClick={() => handleWordClick(word)}
-        style={{ cursor: "pointer", margin: "0 5px" }}
+        style={{
+          cursor: "pointer",
+          margin: "0 5px",
+          zIndex: 1,
+          position: "relative",
+        }}
       >
         {word}
       </span>
@@ -57,6 +62,7 @@ export const WordProcessor = (props: {
           opacity: 0,
           width: "100%",
           height: "100%",
+          pointerEvents: "none",
         }}
         placeholder="英文を入力してください"
       />
