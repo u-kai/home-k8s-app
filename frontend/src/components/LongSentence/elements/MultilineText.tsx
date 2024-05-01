@@ -28,6 +28,8 @@ export const MultilineText = (props: Props) => {
           rows={5}
           placeholder={props.placeholder}
           focused={props.focused}
+          onChange={props.onChange}
+          value={props.value}
         />
       </div>
     </Box>
