@@ -135,6 +135,6 @@ func DeleteWordProfileByDB(
 ) error {
 	return DeleteWordProfile(
 		src,
-		deleteWordProfileByDB(db),
+		deleteWordProfileByDB(db, userId),
 	)
 }
