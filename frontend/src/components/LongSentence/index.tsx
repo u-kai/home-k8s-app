@@ -27,13 +27,24 @@ export const LongSentenceBoxes = () => {
       <MultilineText
         value={value}
         focused={englishFocused}
-        onChange={(event) => setValue(event.target.value)}
+        onChange={(event) => {
+          setValue(event.target.value);
+        }}
+        onKeyDown={(event) => {
+          console.log(event.key);
+          setValue((prev) => prev + event.key);
+        }}
         label="English"
         placeholder="Enter a long sentence in English"
       />
       <MultilineText
         value={result}
-        onChange={(event) => setResult(event.target.value)}
+        onKeyDown={(event) => {
+          setResult(event.key);
+        }}
+        onChange={(event) => () => {
+          setResult(event.target.value);
+        }}
         label="Result of translation"
         focused={resultFocused}
         placeholder=""
