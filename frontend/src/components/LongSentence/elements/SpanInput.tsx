@@ -1,3 +1,4 @@
+import { TextField } from "@mui/material";
 import React, { useState, useRef } from "react";
 
 export const SpanInput = (props: {
@@ -20,36 +21,8 @@ export const SpanInput = (props: {
   const handleClick = () => {};
 
   const words = inputText.split(" ").filter(Boolean);
-  const calculatePosition = (index: number, fontSize: number) => {
-    const word = words[index];
-    const previousWords = words.slice(0, index);
-    const previousWordsLength = previousWords.reduce(
-      (acc, word) => acc + word.length,
-      0
-    );
-    return previousWordsLength * fontSize;
-  };
-  const spans = words.map((word, index) =>
-    word.length === 0 ? null : (
-      <span
-        key={index}
-        onClick={() => handleWordClick(word)}
-        style={{
-          cursor: "pointer",
-          zIndex: 1,
-          color: "black",
-          position: "absolute",
-          fontSize: "16px",
-          margin: "0 5px",
-          //left: `${calculatePosition(index, 10)}px`,
-          // top: index % 2 === 0 ? "0" : "20px",
-        }}
-      >
-        {word}
-      </span>
-    )
-  );
-
+  const heightTextFiled = document.getElementById("outlined-multiline-static")
+    ?.style.height;
   return (
     <div
       onClick={handleClick}
@@ -57,21 +30,20 @@ export const SpanInput = (props: {
         position: "absolute",
         top: "100px",
         minWidth: "300px",
-        minHeight: "50px",
-        border: "1px solid black",
+        height: heightTextFiled,
         zIndex: -2,
         backgroundColor: "transparent",
       }}
     >
       <textarea
+        id="outlined-multiline-static"
         value={inputText}
         onChange={handleInputChange}
         style={{
           position: "absolute",
-          border: "1px solid pink",
+          border: "1px solid black",
           zIndex: 1,
           width: "100%",
-          //backgroundColor: "black",
           color: "transparent",
         }}
       />
@@ -84,7 +56,6 @@ export const SpanInput = (props: {
           //width: "100%",
           //height: "100%",
           whiteSpace: "pre",
-          backgroundColor: "white",
           overflow: "hidden",
         }}
       >

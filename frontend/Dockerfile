@@ -5,7 +5,8 @@ FROM node:latest as build
 WORKDIR ${APP_HOME}
 
 COPY . ${APP_HOME}
-RUN yarn install --force
+RUN cat ${APP_HOME}/.yarnrc.yml
+RUN yarn install
 RUN yarn run build
 
 # deploy stage

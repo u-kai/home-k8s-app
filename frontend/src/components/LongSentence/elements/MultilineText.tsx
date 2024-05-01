@@ -13,8 +13,7 @@ type Props = {
 };
 
 export const MultilineText = (props: Props) => {
-  //const splitWord = props.value.split(" ");
-  //console.log(splitWord);
+  const words = props.value.split(" ").filter(Boolean);
   return (
     <Box
       component="form"
@@ -39,27 +38,3 @@ export const MultilineText = (props: Props) => {
     </Box>
   );
 };
-
-//{/* <TextBox>
-//  <TextField
-//    id="outlined-multiline-static"
-//    label={props.label}
-//    multiline
-//    rows={5}
-//    onKeyDown={props.onKeyDown}
-//    placeholder={props.placeholder}
-//    focused={props.focused}
-//    onChange={props.onChange}
-//    value={""}
-//  />
-//  {splitWord.map((word, index) => (
-//    <span key={index} onClick={() => console.log(word)}>
-//      {word}
-//    </span>
-//  ))}
-//</TextBox> */}
-const TextBox = styled.div`
-  width: 40ch;
-  height: 5em;
-  border: 1px solid #000;
-`;
