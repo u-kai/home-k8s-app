@@ -42,23 +42,24 @@ export const Home = (props: Props) => {
       <PlayAudiosContainer top={BUTTON_TOP_POSITION}>
         <PlayAudios />
       </PlayAudiosContainer>
-      <HorizontalContainer>
-        <LongSentenceBoxesContainer>
-          <LongSentenceBoxes />
-        </LongSentenceBoxesContainer>
+      <VerticalContainer>
         <ListContainer>
           <List />
         </ListContainer>
-      </HorizontalContainer>
+        <LongSentenceBoxesContainer>
+          <LongSentenceBoxes />
+        </LongSentenceBoxesContainer>
+      </VerticalContainer>
       <Footer />
     </Wrapper>
   );
 };
 
-const HorizontalContainer = styled.div`
+const VerticalContainer = styled.div`
   display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
+  flex-direction: column;
+  width: 100%;
+  height: 10%;
 `;
 
 const HeaderAndAlertContainer = styled.div`
@@ -122,14 +123,14 @@ const PlayAudiosContainer = styled.div<{ top: string }>`
 `;
 const ListContainer = styled.div`
   position: absolute;
-  left: 20%;
+  left: 8%;
   top: 200px;
   width: 100%;
 `;
 const LongSentenceBoxesContainer = styled.div`
   position: absolute;
-  top: 200px;
-  left: 5%;
+  bottom: 50px;
+  left: 22%;
   width: 100%;
 `;
 

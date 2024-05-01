@@ -14,7 +14,6 @@ import { AppErrorContext } from "../../../../contexts/error";
 import { UserContext } from "../../../../contexts/user";
 import { emptySentence, useWordBook } from "../../../../hooks/useWordBooks";
 import { ExampleSentenceField } from "../../../Registers/elements/ExampleSentenceField";
-import { isFailed } from "../../../../clients/fetch";
 import {
   createTranslateRequest,
   generateSentence,
@@ -89,14 +88,7 @@ export const UpdateWordProfileModal = (props: ModalProps) => {
     setSaveButtonPosition(initSaveButtonPosition(wordProfile));
   };
   const update = async () => {
-    const result = await updateWordProfile(wordProfile);
-    if (isFailed(result)) {
-      setAppError({
-        name: "単語の登録に失敗しました。",
-        message: "もう一度お試しください。" + result.message,
-        id: "registerWordProfile",
-      });
-    }
+    await updateWordProfile(wordProfile);
     props.handleClose();
     backToInitPosition();
     return;
