@@ -13,14 +13,13 @@ import { WordProfile } from "../../../../contexts/wordbook";
 import { AppErrorContext } from "../../../../contexts/error";
 import { UserContext } from "../../../../contexts/user";
 import { emptySentence, useWordBook } from "../../../../hooks/useWordBooks";
-import {
-  authorizationHeader,
-  createSentenceUrl,
-  fetchJsonWithCors,
-  isFailed,
-  translateUrl,
-} from "../../../../fetch";
 import { ExampleSentenceField } from "../../../Registers/elements/ExampleSentenceField";
+import { isFailed } from "../../../../clients/fetch";
+import {
+  createTranslateRequest,
+  generateSentence,
+  translateRequest,
+} from "../../../../clients/translate";
 
 const style = {
   position: "absolute" as "absolute",
@@ -125,41 +124,17 @@ export const UpdateWordProfileModal = (props: ModalProps) => {
     setWordProfile({ ...wordProfile, sentences: newExampleSentences });
   };
 
-  const translateRequest = async (): Promise<void> => {
-    let toLang = "日本語";
-    let target = wordProfile.word.value;
-    if (target.length === 0) {
-      if (wordProfile.word.meaning.length === 0) {
-        return;
-      }
-      toLang = "英語";
-      target = wordProfile.word.meaning;
-    }
-    const authHeader = authorizationHeader(user.token ?? "");
-    const body = { target, toLang, userId: user.id };
-    const res = await fetchJsonWithCors<
-      { target: string; toLang: string },
-      { results: string[] }
-    >({
-      url: translateUrl(),
-      method: "POST",
-      body,
-      headers: authHeader,
-    });
-    if (isFailed(res)) {
-      setAppError({
-        message: "Failed to translate" + res.message,
-        id: "translate",
-        name: "translate",
-      });
-      return;
-    }
-    const result = res.results;
+  const translateHandler = async (): Promise<void> => {
+    const result = await translateRequest(
+      createTranslateRequest(wordProfile.word.value, wordProfile.word.meaning),
+      user.token ?? ""
+    );
+
     if (wordProfile.word.value.length === 0) {
       setWordProfile({
         ...wordProfile,
         word: {
-          value: result[0],
+          value: result,
           meaning: wordProfile.word.meaning,
           pronunciation: wordProfile.word.pronunciation,
         },
@@ -169,40 +144,31 @@ export const UpdateWordProfileModal = (props: ModalProps) => {
         ...wordProfile,
         word: {
           value: wordProfile.word.value,
-          meaning: result[0],
+          meaning: result,
           pronunciation: wordProfile.word.pronunciation,
         },
       });
     }
     setAiProgress(false);
   };
-  const createSentenceRequest = async (index: number): Promise<void> => {
+  const generateSentenceHandler = async (index: number): Promise<void> => {
     if (wordProfile.word.value.length === 0) {
       return;
     }
-    const body = {
-      word: wordProfile.word.value,
-      userId: user.id,
-    };
-    const authHeader = authorizationHeader(user.token ?? "");
-    const res = await fetchJsonWithCors<
-      { word: string },
-      { sentence: string; meaning: string }
-    >({
-      url: createSentenceUrl(),
-      method: "POST",
-      body,
-      headers: authHeader,
-    });
-    if (isFailed(res)) {
+    const result = await generateSentence(
+      {
+        word: wordProfile.word.value,
+        toLang: "en",
+      },
+      user.token ?? ""
+    ).catch((e) => {
       setAppError({
-        message: "Failed to create sentence" + res.message,
+        message: "Failed to create sentence" + e.toString(),
         id: "createSentence",
         name: "createSentence",
       });
-      return;
-    }
-    const result = res;
+    });
+    if (!result) return;
     changeExampleSentence(index, result.sentence);
     changeExampleSentenceMeaning(index, result.meaning);
     return;
@@ -276,7 +242,7 @@ export const UpdateWordProfileModal = (props: ModalProps) => {
                 <SupportAgentIcon
                   fontSize="large"
                   onClick={async () => {
-                    translateRequest();
+                    translateHandler();
                     setAiProgress(true);
                   }}
                   sx={{
@@ -322,7 +288,7 @@ export const UpdateWordProfileModal = (props: ModalProps) => {
                   changeExampleSentenceMeaning(index, value)
                 }
                 meaning={value.sentence.meaning}
-                onAssistantPress={async () => createSentenceRequest(index)}
+                onAssistantPress={async () => generateSentenceHandler(index)}
               />
             ))}
             <div

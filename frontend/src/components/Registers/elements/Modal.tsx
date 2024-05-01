@@ -7,13 +7,7 @@ import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
-import {
-  authorizationHeader,
-  createSentenceUrl,
-  fetchJsonWithCors,
-  isFailed,
-  translateUrl,
-} from "../../../fetch";
+import { isFailed } from "../../../clients/fetch";
 import { UserContext } from "../../../contexts/user";
 import { useWordBook } from "../../../hooks/useWordBooks";
 import { Sentence } from "../../../contexts/wordbook";
@@ -23,6 +17,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { TranslateConfigContext } from "../../../contexts/translateConfig";
+import {
+  createTranslateRequest,
+  generateSentence,
+  translateRequest,
+} from "../../../clients/translate";
 
 const style = {
   position: "absolute" as "absolute",
@@ -69,13 +68,15 @@ export const RegisterModal = (props: ModalProps) => {
       return;
     }
     if (e.key === "Enter") {
+      console.log("Enter");
+      console.log(translateConfig);
       if (translateConfig.autoMeaning) {
-        translateRequest().then(() => setAiProgress(false));
+        translateHandler().then(() => setAiProgress(false));
         setAiProgress(true);
       }
       if (translateConfig.autoSentence) {
         const initIndex = 0;
-        createSentenceRequest(initIndex);
+        createSentenceHandler(initIndex);
       }
     }
   };
@@ -159,72 +160,32 @@ export const RegisterModal = (props: ModalProps) => {
     setExampleSentencesMeaning([""]);
   };
 
-  const translateRequest = async (): Promise<void> => {
-    let toLang = "日本語";
-    let target = wordValue;
-    if (target.length === 0) {
-      if (meaning.length === 0) {
-        return;
-      }
-      toLang = "英語";
-      target = meaning;
-    }
-    const authHeader = authorizationHeader(user.token ?? "");
-    const body = { target, toLang, userId: user.id };
-    const res = await fetchJsonWithCors<
-      { target: string; toLang: string },
-      { results: string[] }
-    >({
-      url: translateUrl(),
-      method: "POST",
-      body,
-      headers: authHeader,
-    });
-    if (isFailed(res)) {
-      setAppError({
-        message: "Failed to translate" + res.message,
-        id: "translate",
-        name: "translate",
-      });
-      return;
-    }
-    const result = res.results;
+  const translateHandler = async (): Promise<void> => {
+    const translated = await translateRequest(
+      createTranslateRequest(wordValue, meaning),
+      user.token ?? ""
+    );
     if (wordValue.length === 0) {
-      setWordValue(result[0]);
+      setWordValue(translated);
     } else {
-      setMeaning(result[0]);
+      console.log("translated", translated);
+      setMeaning(translated);
     }
     setAiProgress(false);
   };
-  const createSentenceRequest = async (index: number): Promise<void> => {
+  const createSentenceHandler = async (index: number): Promise<void> => {
     if (wordValue.length === 0) {
       return;
     }
-    const body = {
-      word: wordValue,
-      userId: user.id,
-    };
-    const authHeader = authorizationHeader(user.token ?? "");
-    const res = await fetchJsonWithCors<
-      { word: string },
-      { sentence: string; meaning: string }
-    >({
-      url: createSentenceUrl(),
-      method: "POST",
-      body,
-      headers: authHeader,
-    });
-    if (isFailed(res)) {
-      setAppError({
-        message: "Failed to create sentence" + res.message,
-        id: "createSentence",
-        name: "createSentence",
-      });
-      return;
-    }
-    const result = res;
-    changeExampleSentence(index, result.sentence);
-    changeExampleSentenceMeaning(index, result.meaning);
+    const generated = await generateSentence(
+      {
+        word: wordValue,
+        toLang: "en",
+      },
+      user.token ?? ""
+    );
+    changeExampleSentence(index, generated.sentence);
+    changeExampleSentenceMeaning(index, generated.meaning);
     return;
   };
   const focusInputArea = (): boolean => props.open;
@@ -293,7 +254,7 @@ export const RegisterModal = (props: ModalProps) => {
                 <SupportAgentIcon
                   fontSize="large"
                   onClick={async () => {
-                    translateRequest();
+                    translateHandler();
                     setAiProgress(true);
                   }}
                   sx={{
@@ -337,7 +298,7 @@ export const RegisterModal = (props: ModalProps) => {
                   changeExampleSentenceMeaning(index, value)
                 }
                 meaning={exampleSentencesMeaning[index]}
-                onAssistantPress={async () => createSentenceRequest(index)}
+                onAssistantPress={async () => createSentenceHandler(index)}
               />
             ))}
             <div

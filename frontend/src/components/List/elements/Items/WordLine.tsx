@@ -2,7 +2,7 @@ import { Button, ListItem } from "@mui/material";
 import React from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import styled from "styled-components";
-import { speak } from "../../../../fetch";
+import { speak } from "../../../../clients/fetch";
 
 export type WordLineProps = {
   pronunciation?: string;

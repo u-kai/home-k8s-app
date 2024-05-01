@@ -13,7 +13,7 @@ import { WordProfile } from "../../../../contexts/wordbook";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { UpdateWordProfileModal } from "./UpdateWordProfileModal";
 import { useWordBook } from "../../../../hooks/useWordBooks";
-import { isFailed } from "../../../../fetch";
+import { isFailed } from "../../../../clients/fetch";
 import { AppErrorContext } from "../../../../contexts/error";
 
 type WordAndSentencesProps = {

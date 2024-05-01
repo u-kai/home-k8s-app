@@ -8,11 +8,11 @@ import {
 } from "../contexts/wordbook";
 import {
   authorizationHeader,
+  backendUrl,
   fetchJsonWithCors,
   isFailed,
   Result,
-  wordbookUrl,
-} from "../fetch";
+} from "../clients/fetch";
 
 export type RegisterWordRequest = {
   word: string;
@@ -38,6 +38,9 @@ export type UpdateWordRequest = {
   }[];
 };
 
+const wordbookUrl = (path: string) => {
+  return backendUrl(`/wordbook${path}`);
+};
 export const useWordBook = () => {
   const { wordbook, setWordBook } = useContext(WordBookContext);
   const { user } = useContext(UserContext);

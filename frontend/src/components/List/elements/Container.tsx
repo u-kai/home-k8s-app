@@ -2,7 +2,7 @@ import { List } from "@mui/material";
 import { Box, Container } from "@mui/system";
 import React, { useContext, useEffect } from "react";
 import { AppErrorContext } from "../../../contexts/error";
-import { isFailed } from "../../../fetch";
+import { isFailed } from "../../../clients/fetch";
 import { useWordBook } from "../../../hooks/useWordBooks";
 import { WordAndSentences } from "./Items/WordAndSentences";
 
