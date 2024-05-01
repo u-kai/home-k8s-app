@@ -107,7 +107,6 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 						errStream <- err
 						return
 					}
-					print(content)
 					out <- content
 				}
 			}

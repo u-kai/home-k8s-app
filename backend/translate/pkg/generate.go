@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GenerateSentence(ctx context.Context, source string) (GenerateSentenceResult, error) {
+func GenerateSentence(ctx context.Context, source string, model openai.ChatGPTModel) (GenerateSentenceResult, error) {
 	client, err := openai.FromEnv()
 	if err != nil {
 		return GenerateSentenceResult{}, fmt.Errorf("failed to get client: %w", err)
@@ -20,10 +20,16 @@ func GenerateSentence(ctx context.Context, source string) (GenerateSentenceResul
 			Content: prompt,
 		},
 	}
-	res, err := client.Chat(ctx, messages, openai.Gpt4)
+	res, err := client.Chat(ctx, messages, model)
 	if err != nil {
-		return GenerateSentenceResult{}, fmt.Errorf("Failed to create sentence: %s", err.Error())
+		return GenerateSentenceResult{}, fmt.Errorf("Failed to GPT response: %s", err.Error())
 	}
+
+	return gptResponseToGenerateSentenceResult(res)
+}
+
+// GPTからの生成がブレる可能性があるので、ブレを補正する
+func gptResponseToGenerateSentenceResult(res string) (GenerateSentenceResult, error) {
 	lines := strings.Split(res, "\n")
 	if len(lines) < 2 {
 		return GenerateSentenceResult{}, fmt.Errorf("Failed to create sentence: %s", "Invalid response")
@@ -39,9 +45,9 @@ func GenerateSentence(ctx context.Context, source string) (GenerateSentenceResul
 		}
 		result.Meaning = line
 	}
-
 	return result, nil
 }
+
 func generateSentencePrompt(source string) string {
 	return fmt.Sprintf("1行目に「%s」を使った例文を返答してください。2行目に1行目で作った例文の日本語翻訳を返答して下さい。それ以外の返答は一切不要です。", source)
 }

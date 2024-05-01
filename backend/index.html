@@ -6,33 +6,107 @@
   </head>
   <body>
     <h1>Server-Sent Events (SSE) Demo</h1>
-    <div id="events"></div>
+    <h2>ReviewSentence</h2>
+    <input type="text" id="input" />
+    <div id="review-events"></div>
     <button onclick="handler()">Open Connection</button>
+    <h2>GenerateSentence</h2>
+    <input type="text" id="input-en" />
+    <div id="generate"></div>
+    <button onclick="handlerGenerateSentence()">Open Connection</button>
+    <h2>TranslateSentence</h2>
+    <input type="text" id="input-translate" />
+    <div id="translate-sentence"></div>
+    <button onclick="handlerTranslateSentence()">Open Connection</button>
+    <h2>TranslateWord</h2>
+    <input type="text" id="input-word" />
+    <div id="translate-word"></div>
+    <button onclick="handlerWord()">Open Connection</button>
     <script>
-      async function handler() {
+      async function handlerWord() {
         console.log("onclick");
+        const child = document.createElement("div");
+        const parent = document.getElementById("translate-word");
+        parent.appendChild(child);
+        const value = document.getElementById("input-word").value;
+        const response = await fetch("http://localhost:8080/translate/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            word: value,
+            toLang: "jp",
+          }),
+        });
+        child.textContent = await response.text();
+      }
+      async function handlerTranslateSentence() {
+        console.log("onclick");
+        const child = document.createElement("div");
+        const parent = document.getElementById("translate-sentence");
+        parent.appendChild(child);
+        const value = document.getElementById("input-translate").value;
         const response = await fetch(
-          "http://localhost:8080/translate/reviewSentence",
+          "http://localhost:8080/translate/sentence",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              sentence:
-                "I'm learning english and frontend,etc css, tailwind css.",
+              sentence: value,
+              toLang: "jp",
             }),
           }
         );
         const reader = response.body?.getReader();
+        getSSE(reader, (line) => (child.textContent += line));
+      }
+      async function handler() {
+        console.log("onclick");
+        const child = document.createElement("div");
+        const parent = document.getElementById("review-events");
+        parent.appendChild(child);
+        const value = document.getElementById("input").value;
+        const response = await fetch(
+          "http://localhost:8080/translate/sentence/review",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sentence: value,
+            }),
+          }
+        );
+        const reader = response.body?.getReader();
+        getSSE(reader, (line) => (child.textContent += line));
+      }
+      async function handlerGenerateSentence() {
+        console.log("onclick");
+        const child = document.createElement("div");
+        const parent = document.getElementById("generate");
+        parent.appendChild(child);
+        const value = document.getElementById("input-en").value;
+        const response = await fetch(
+          "http://localhost:8080/translate/sentence/generate",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              word: value,
+            }),
+          }
+        );
+        child.textContent = await response.text();
+      }
+      async function getSSE(reader, f) {
         if (!reader) return;
         let decoder = new TextDecoder();
-        const child = document.createElement("div");
-        const parent = document.getElementById("events");
-        parent.appendChild(child);
-        function isOnlyWhitespace(str) {
-          return str.trim().length === 0;
-        }
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -45,11 +119,8 @@
           if (!displayText) {
             continue;
           }
-          child.textContent += displayText;
+          f(displayText);
         }
-      }
-      async function sleep(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
       }
     </script>
   </body>

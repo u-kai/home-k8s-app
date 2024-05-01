@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func TranslateSentenceStream(ctx context.Context, sentence, lang string) (<-chan string, <-chan error) {
+func TranslateSentenceStream(ctx context.Context, sentence, lang string, model openai.ChatGPTModel) (<-chan string, <-chan error) {
 	errStream := make(chan error, 1)
 	client, err := openai.FromEnv()
 	if err != nil {
@@ -27,10 +27,14 @@ func TranslateSentenceStream(ctx context.Context, sentence, lang string) (<-chan
 			Content: translateSentencePrompt(sentence, lang),
 		},
 	}
-	return client.StreamChat(ctx, messages, openai.Gpt4)
+	return client.StreamChat(ctx, messages, model)
 }
 
-func Translate(ctx context.Context, word, lang string) (string, error) {
+func translateSentencePrompt(sentence, lang string) string {
+	return fmt.Sprintf("以下の文章を%sに翻訳してください。返答の形式としては、略した文章のみにしてください.\ns", lang, sentence)
+}
+
+func Translate(ctx context.Context, word, lang string, model openai.ChatGPTModel) (string, error) {
 	client, err := openai.FromEnv()
 	if err != nil {
 		return "", fmt.Errorf("failed to get client: %w", err)
@@ -44,7 +48,7 @@ func Translate(ctx context.Context, word, lang string) (string, error) {
 			Content: translatePrompt(word, lang),
 		},
 	}
-	resp, err := client.Chat(ctx, messages, openai.Gpt4)
+	resp, err := client.Chat(ctx, messages, model)
 	if err != nil {
 		return "", fmt.Errorf("failed to get response: %w", err)
 	}
@@ -53,10 +57,6 @@ func Translate(ctx context.Context, word, lang string) (string, error) {
 
 func translatePrompt(word, lang string) string {
 	return fmt.Sprintf("「%s」という単語を%sに翻訳して.返答の形式としては、略した単語のみにしてください.", word, lang)
-}
-
-func translateSentencePrompt(sentence, lang string) string {
-	return fmt.Sprintf("以下の文章を%sに翻訳してください。返答の形式としては、略した文章のみにしてください.\ns", lang, sentence)
 }
 
 func sentenceLimit(text string) int {

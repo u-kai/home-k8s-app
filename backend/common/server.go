@@ -1,8 +1,8 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -30,10 +30,57 @@ func (s *ELEServer) RegisterHandler(route string, handler http.HandlerFunc) {
 	http.HandleFunc("/"+s.service+route, http.HandlerFunc(corsMiddleware(http.HandlerFunc(handler), s.frontendHost).ServeHTTP))
 }
 
-type SSEHandler func(w http.ResponseWriter, r *http.Request) (<-chan string, <-chan error)
+func (s *ELEServer) Start() {
+	addr := fmt.Sprintf(":%d", s.port)
+	s.RegisterHandler("/health", healthHandler)
+	slog.Info("Starting server", "addr", addr)
+	err := http.ListenAndServe(addr, nil)
+	if err != nil {
+		slog.Error("Failed to start server", "error", err.Error())
+	}
+}
 
-func NewSSEHandler(h SSEHandler) http.HandlerFunc {
+// Req is the type of the request body, so that it can be decoded from JSON
+// Resp is the type of the response body
+type PostHandler[Req any, Resp json.Marshaler] func(req *Req) (Resp, error)
+
+func CreatePostHandler[Req any, Resp json.Marshaler](h PostHandler[Req, Resp]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		req := new(Req)
+		err := json.NewDecoder(r.Body).Decode(req)
+		slog.Info("Request", "req", req)
+		if err != nil {
+			slog.Error("Failed to decode request body", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		resp, err := h(req)
+		if err != nil {
+			slog.Error("Failed to handle request", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		slog.Info("Response", "resp", resp)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	}
+}
+
+// chan owner ship is PostSSEHandler
+type PostSSEHandler[Req any, Resp json.Marshaler] func(req *Req) (<-chan Resp, <-chan error)
+
+func CreatePostSSEHandler[Req any, Resp json.Marshaler](h PostSSEHandler[Req, Resp]) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := new(Req)
+		err := json.NewDecoder(r.Body).Decode(req)
+		if err != nil {
+			slog.Error("Failed to decode request body", "error", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		slog.Info("Request", "req", req)
+		respStream, errStream := h(req)
+
 		f, ok := w.(http.Flusher)
 		if !ok {
 			http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
@@ -43,21 +90,30 @@ func NewSSEHandler(h SSEHandler) http.HandlerFunc {
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
-		sendData, errStream := h(w, r)
 
+		logBuffer := ""
 		for {
 			select {
-			case data, ok := <-sendData:
+			case data, ok := <-respStream:
 				if !ok {
+					slog.Info("Stream closed", "sended", logBuffer)
 					return
 				}
-				fmt.Fprintf(w, "data: %s\n\n", data)
+				json, err := data.MarshalJSON()
+				if err != nil {
+					slog.Error("Failed to marshal response", "error", err.Error())
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				sendData := string(json)
+				fmt.Fprintf(w, "data: %s\n\n", sendData)
 				f.Flush()
+				logBuffer += sendData
 			case err, ok := <-errStream:
 				if !ok {
 					return
 				}
-				slog.Error("Error in SSEHandler", "error", err)
+				slog.Error("Error in SSEHandler", "error", err.Error())
 				http.Error(w, "Error in SSEHandler", http.StatusInternalServerError)
 				return
 			case <-r.Context().Done():
@@ -65,13 +121,6 @@ func NewSSEHandler(h SSEHandler) http.HandlerFunc {
 			}
 		}
 	}
-}
-
-func (s *ELEServer) Start() {
-	addr := fmt.Sprintf(":%d", s.port)
-	s.RegisterHandler("/health", healthHandler)
-	log.Printf("Starting server on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +132,6 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 func corsMiddleware(next http.Handler, frontendHost string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set the CORS headers
-		log.Printf("Setting CORS headers for %s", frontendHost)
 		w.Header().Set("Access-Control-Allow-Origin", frontendHost)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With")
