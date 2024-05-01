@@ -12,7 +12,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { WordProfile } from "../../../../contexts/wordbook";
 import { AppErrorContext } from "../../../../contexts/error";
 import { UserContext } from "../../../../contexts/user";
-import { useWordBook } from "../../../../hooks/useWordBooks";
+import { emptySentence, useWordBook } from "../../../../hooks/useWordBooks";
 import {
   authorizationHeader,
   createSentenceUrl,
@@ -65,7 +65,6 @@ export const UpdateWordProfileModal = (props: ModalProps) => {
     setWordProfile(props.oldWordProfile);
     setSaveButtonPosition(initSaveButtonPosition(props.oldWordProfile));
   }, [props.open]);
-  const { emptySentence } = useWordBook();
   const { setAppError } = useContext(AppErrorContext);
   const [aiProgress, setAiProgress] = useState<boolean>(false);
   const { user } = useContext(UserContext);

@@ -23,7 +23,6 @@ export type RegisterWordRequest = {
 };
 
 export type UpdateWordRequest = {
-  userId: string;
   wordId: string;
   word: string;
   meaning: string;
@@ -37,6 +36,232 @@ export type UpdateWordRequest = {
     meaning: string;
     pronunciation?: string;
   }[];
+};
+
+export const useWordBook = () => {
+  const { wordbook, setWordBook } = useContext(WordBookContext);
+  const { user } = useContext(UserContext);
+  const authHeader = authorizationHeader(user.token ?? "");
+  // API Requests
+  // Fetch All is called when the page is loaded.
+  // It fetches all the word profiles from the server and set the wordbook state.
+  const fetchAll = async (): Promise<Result<void>> => {
+    if (wordbook.length > 0) {
+      return;
+    }
+    const response: Result<{ result: WordProfile[] }> = await fetchJsonWithCors<
+      null,
+      { result: WordProfile[] }
+    >({
+      url: wordbookUrl("/words"),
+      method: "GET",
+      headers: authHeader,
+    });
+
+    if (isFailed(response)) {
+      return new Error("Failed to fetch wordbook." + response.toString());
+    }
+    setWordBook(response.result);
+  };
+
+  const registerWordProfile = async (
+    req: RegisterWordRequest
+  ): Promise<Result<void>> => {
+    const response = await fetchJsonWithCors<
+      RegisterWordRequest,
+      { result: WordProfile }
+    >({
+      url: wordbookUrl("/registerWord"),
+      method: "POST",
+      body: req,
+      headers: authHeader,
+    });
+    if (isFailed(response)) {
+      return new Error(
+        "Failed to register word profile." + response.toString()
+      );
+    }
+    setWordBook([response.result, ...wordbook]);
+  };
+
+  const updateWordProfile = async (
+    wordProfile: WordProfile
+  ): Promise<Result<void>> => {
+    const req: UpdateWordRequest = {
+      wordId: wordProfile.wordId,
+      word: wordProfile.word.value,
+      meaning: wordProfile.word.meaning,
+      pronunciation: wordProfile.word.pronunciation,
+      remarks: wordProfile.remarks,
+      missCount: wordProfile.missCount,
+      likeRates: wordProfile.likeRates,
+      sentences: wordProfile.sentences.map((sentence) => {
+        return {
+          sentenceId: sentence.sentenceId,
+          value: sentence.sentence.value,
+          meaning: sentence.sentence.meaning,
+          pronunciation: sentence.sentence.pronunciation,
+        };
+      }),
+    };
+    const response = await fetchJsonWithCors<
+      UpdateWordRequest,
+      { result: WordProfile }
+    >({
+      url: wordbookUrl("/updateWord"),
+      method: "POST",
+      body: req,
+      headers: authHeader,
+    });
+    if (isFailed(response)) {
+      return new Error("Failed to update word profile." + response.toString());
+    }
+    const newWordBook = wordbook.map((word) => {
+      if (word.wordId === response.result.wordId) {
+        return response.result;
+      }
+      return word;
+    });
+    setWordBook(newWordBook);
+  };
+
+  const deleteWordProfile = async (req: {
+    wordId: string;
+  }): Promise<Result<void>> => {
+    const response = await fetchJsonWithCors({
+      url: wordbookUrl("/deleteWord"),
+      method: "POST",
+      body: { ...req, userId: user.id },
+      headers: authHeader,
+    });
+    if (isFailed(response)) {
+      return new Error("Failed to delete word profile." + response.toString());
+    }
+    const newWordBook = wordbook.filter((word) => word.wordId !== req.wordId);
+    setWordBook(newWordBook);
+    return;
+  };
+
+  // use search input
+  type Suggestion = {
+    wordId: string;
+    value: string;
+  };
+  const getSuggestions = (search: string): Suggestion[] => {
+    if (search === "") {
+      return [];
+    }
+    const words = wordbook.filter((word) => {
+      return word.word.value.includes(search);
+    });
+    const sortFn = (search: string, a: WordProfile, b: WordProfile) => {
+      return a.word.value.indexOf(search) - b.word.value.indexOf(search);
+    };
+    return words
+      .sort((a, b) => sortFn(search, a, b))
+      .map((word) => {
+        return {
+          wordId: word.wordId,
+          value: word.word.value,
+        };
+      });
+  };
+  // use search input end
+  const wordToTop = (wordId: string) => {
+    const word = wordbook.find((word) => word.wordId === wordId);
+    if (!word) {
+      return;
+    }
+    const newWordBook = wordbook.filter((word) => word.wordId !== wordId);
+    newWordBook.unshift(word);
+    setWordBook(newWordBook);
+  };
+
+  // sort functions
+  const sortByCreatedAt = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return b.createdAt - a.createdAt;
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return a.createdAt - b.createdAt;
+    };
+    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
+    const sorted = wordbook.slice().sort((a, b) => {
+      return sortFn(a, b);
+    });
+    setWordBook(sorted);
+  };
+  const sortByUpdatedAt = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return b.updatedAt - a.updatedAt;
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return a.updatedAt - b.updatedAt;
+    };
+    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
+    const sorted = wordbook.slice().sort((a, b) => {
+      return sortFn(a, b);
+    });
+    setWordBook(sorted);
+  };
+  const sortByLikeRates = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return (
+        fromLikeRates(toLikeRatesFromStr(b.likeRates)) -
+        fromLikeRates(toLikeRatesFromStr(a.likeRates))
+      );
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return (
+        fromLikeRates(toLikeRatesFromStr(a.likeRates)) -
+        fromLikeRates(toLikeRatesFromStr(b.likeRates))
+      );
+    };
+    const sorted = wordbook.slice().sort((a, b) => {
+      return topOrBottom === "top" ? sortTopFn(a, b) : sortBottomFn(a, b);
+    });
+    setWordBook(sorted);
+  };
+
+  const sortByWord = (topOrBottom: TopOrBottom) => {
+    const sortTopFn = (a: WordProfile, b: WordProfile) => {
+      return a.word.value.localeCompare(b.word.value);
+    };
+    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
+      return b.word.value.localeCompare(a.word.value);
+    };
+    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
+
+    const sorted = wordbook.slice().sort((a, b) => {
+      return sortFn(a, b);
+    });
+    setWordBook(sorted);
+  };
+
+  return {
+    wordbook,
+    wordToTop,
+    getSuggestions,
+    fetchAll,
+    sortByCreatedAt,
+    sortByLikeRates,
+    sortByWord,
+    sortByUpdatedAt,
+    deleteWordProfile,
+    registerWordProfile,
+    updateWordProfile,
+  };
+};
+
+export const emptySentence: SentenceProfile = {
+  sentenceId: "",
+  sentence: {
+    value: "",
+    meaning: "",
+    pronunciation: "",
+  },
+  createdAt: new Date().getTime(),
+  updatedAt: 0,
 };
 export type LikeRates = "veryGood" | "good" | "normal" | "bad" | "veryBad";
 const DEFAULT_RATE = "normal";
@@ -98,215 +323,3 @@ export const fromLikeRates = (rate: LikeRates): number => {
 };
 export type TopOrBottom = "top" | "bottom";
 export const reverse = (v: TopOrBottom) => (v === "top" ? "bottom" : "top");
-
-export const useWordBook = () => {
-  const { wordbook, setWordBook } = useContext(WordBookContext);
-  const { user } = useContext(UserContext);
-  const authHeader = authorizationHeader(user.token ?? "");
-  const fetchAll = async (): Promise<Result<void>> => {
-    if (wordbook.length > 0) {
-      return;
-    }
-    const response: Result<WordProfile[]> = await fetchJsonWithCors<
-      undefined,
-      WordProfile[]
-    >({
-      url: wordbookUrl("/words?userId=" + user.id),
-      method: "GET",
-      headers: authHeader,
-    });
-    if (isFailed(response)) {
-      return new Error("Failed to fetch wordbook." + response.toString());
-    }
-    setWordBook(response);
-  };
-  const sortByCreatedAt = (topOrBottom: TopOrBottom) => {
-    const sortTopFn = (a: WordProfile, b: WordProfile) => {
-      return b.createdAt - a.createdAt;
-    };
-    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
-      return a.createdAt - b.createdAt;
-    };
-    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
-    const sorted = wordbook.slice().sort((a, b) => {
-      return sortFn(a, b);
-    });
-    setWordBook(sorted);
-  };
-  const sortByUpdatedAt = (topOrBottom: TopOrBottom) => {
-    const sortTopFn = (a: WordProfile, b: WordProfile) => {
-      return b.updatedAt - a.updatedAt;
-    };
-    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
-      return a.updatedAt - b.updatedAt;
-    };
-    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
-    const sorted = wordbook.slice().sort((a, b) => {
-      return sortFn(a, b);
-    });
-    setWordBook(sorted);
-  };
-  const sortByLikeRates = (topOrBottom: TopOrBottom) => {
-    const sortTopFn = (a: WordProfile, b: WordProfile) => {
-      return (
-        fromLikeRates(toLikeRatesFromStr(b.likeRates)) -
-        fromLikeRates(toLikeRatesFromStr(a.likeRates))
-      );
-    };
-    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
-      return (
-        fromLikeRates(toLikeRatesFromStr(a.likeRates)) -
-        fromLikeRates(toLikeRatesFromStr(b.likeRates))
-      );
-    };
-    const sorted = wordbook.slice().sort((a, b) => {
-      return topOrBottom === "top" ? sortTopFn(a, b) : sortBottomFn(a, b);
-    });
-    setWordBook(sorted);
-  };
-
-  const sortByWord = (topOrBottom: TopOrBottom) => {
-    const sortTopFn = (a: WordProfile, b: WordProfile) => {
-      return a.word.value.localeCompare(b.word.value);
-    };
-    const sortBottomFn = (a: WordProfile, b: WordProfile) => {
-      return b.word.value.localeCompare(a.word.value);
-    };
-    const sortFn = topOrBottom === "top" ? sortTopFn : sortBottomFn;
-
-    const sorted = wordbook.slice().sort((a, b) => {
-      return sortFn(a, b);
-    });
-    setWordBook(sorted);
-  };
-  const deleteWordProfile = async (req: {
-    wordId: string;
-  }): Promise<Result<void>> => {
-    const response = await fetchJsonWithCors({
-      url: wordbookUrl("/deleteWord"),
-      method: "POST",
-      body: { ...req, userId: user.id },
-      headers: authHeader,
-    });
-    if (isFailed(response)) {
-      return new Error("Failed to delete word profile." + response.toString());
-    }
-    const newWordBook = wordbook.filter((word) => word.wordId !== req.wordId);
-    setWordBook(newWordBook);
-    return;
-  };
-  const registerWordProfile = async (
-    req: RegisterWordRequest
-  ): Promise<Result<void>> => {
-    const response = await fetchJsonWithCors<
-      RegisterWordRequest & { userId: string },
-      WordProfile
-    >({
-      url: wordbookUrl("/registerWord"),
-      method: "POST",
-      body: { ...req, userId: user.id },
-      headers: authHeader,
-    });
-    if (isFailed(response)) {
-      return new Error(
-        "Failed to register word profile." + response.toString()
-      );
-    }
-    setWordBook([...wordbook, response]);
-  };
-  const emptySentence: SentenceProfile = {
-    sentenceId: "",
-    sentence: {
-      value: "",
-      meaning: "",
-      pronunciation: "",
-    },
-    createdAt: new Date().getTime(),
-    updatedAt: 0,
-  };
-  const updateWordProfile = async (
-    wordProfile: WordProfile
-  ): Promise<Result<void>> => {
-    const req: UpdateWordRequest = {
-      userId: user.id,
-      wordId: wordProfile.wordId,
-      word: wordProfile.word.value,
-      meaning: wordProfile.word.meaning,
-      pronunciation: wordProfile.word.pronunciation,
-      remarks: wordProfile.remarks,
-      missCount: wordProfile.missCount,
-      likeRates: wordProfile.likeRates,
-      sentences: wordProfile.sentences.map((sentence) => {
-        return {
-          sentenceId: sentence.sentenceId,
-          value: sentence.sentence.value,
-          meaning: sentence.sentence.meaning,
-          pronunciation: sentence.sentence.pronunciation,
-        };
-      }),
-    };
-    const response = await fetchJsonWithCors<UpdateWordRequest, WordProfile>({
-      url: wordbookUrl("/updateWord"),
-      method: "POST",
-      body: req,
-      headers: authHeader,
-    });
-    if (isFailed(response)) {
-      return new Error("Failed to update word profile." + response.toString());
-    }
-    const newWordBook = wordbook.map((word) => {
-      if (word.wordId === response.wordId) {
-        return response;
-      }
-      return word;
-    });
-    setWordBook(newWordBook);
-  };
-  type Suggestion = {
-    wordId: string;
-    value: string;
-  };
-  const getSuggestions = (search: string): Suggestion[] => {
-    if (search === "") {
-      return [];
-    }
-    const words = wordbook.filter((word) => {
-      return word.word.value.includes(search);
-    });
-    const sortFn = (search: string, a: WordProfile, b: WordProfile) => {
-      return a.word.value.indexOf(search) - b.word.value.indexOf(search);
-    };
-    return words
-      .sort((a, b) => sortFn(search, a, b))
-      .map((word) => {
-        return {
-          wordId: word.wordId,
-          value: word.word.value,
-        };
-      });
-  };
-  const wordToTop = (wordId: string) => {
-    const word = wordbook.find((word) => word.wordId === wordId);
-    if (!word) {
-      return;
-    }
-    const newWordBook = wordbook.filter((word) => word.wordId !== wordId);
-    newWordBook.unshift(word);
-    setWordBook(newWordBook);
-  };
-
-  return {
-    emptySentence,
-    wordbook,
-    wordToTop,
-    getSuggestions,
-    fetchAll,
-    sortByCreatedAt,
-    sortByLikeRates,
-    sortByWord,
-    sortByUpdatedAt,
-    deleteWordProfile,
-    registerWordProfile,
-    updateWordProfile,
-  };
-};
