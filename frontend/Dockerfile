@@ -5,8 +5,7 @@ FROM node:latest as build
 WORKDIR ${APP_HOME}
 
 COPY . ${APP_HOME}
-RUN npm install -g yarn
-RUN yarn install
+RUN yarn install --network-timeout 600000
 RUN yarn run build
 
 # deploy stage
