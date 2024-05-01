@@ -33,7 +33,7 @@ export const WordProcessor = (props: {
           cursor: "pointer",
           margin: "0 5px",
           zIndex: 1,
-          position: "relative",
+          position: "absolute",
         }}
       >
         {word}
@@ -48,6 +48,7 @@ export const WordProcessor = (props: {
         minWidth: "200px",
         minHeight: "20px",
         border: "1px solid black",
+        zIndex: -2,
       }}
     >
       <input
@@ -63,10 +64,12 @@ export const WordProcessor = (props: {
           width: "100%",
           height: "100%",
           pointerEvents: "none",
+          zIndex: -1,
+          color: "transparent",
         }}
         placeholder="英文を入力してください"
       />
-      <div style={{ pointerEvents: "none" }}>{words}</div>
+      <div style={{ pointerEvents: "none", position: "absolute" }}>{words}</div>
     </div>
   );
 };
