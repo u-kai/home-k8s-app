@@ -1,13 +1,13 @@
 import Modal from "@mui/material/Modal";
 import { Fab, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import { ExampleSentenceField } from "./ExampleSentenceField";
 import AddIcon from "@mui/icons-material/Add";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { ToLang } from "../../../clients/translate";
+import { ToLang } from "../../../../clients/translate";
 import { WordField } from "./WordFiled";
 
 export type ModalProps = {
@@ -33,6 +33,7 @@ export type RegisteredWordProfile = {
     pronunciation?: string;
   }[];
 };
+
 const createTranslateRequest = (
   word: string,
   meaning: string
@@ -66,7 +67,7 @@ const INIT_WORD_PROFILE: RegisteredWordProfile = {
 };
 const INPUT_WIDTH = "400px";
 
-export const WordModal = (props: ModalProps) => {
+export const RegisterModal = (props: ModalProps) => {
   const [wordProfile, setWordProfile] = useState<RegisteredWordProfile>(
     props.init ?? INIT_WORD_PROFILE
   );
@@ -116,10 +117,7 @@ export const WordModal = (props: ModalProps) => {
 
   const onDeleteSentence = (index: number) => {
     if (wordProfile.sentences.length === 1) {
-      wordProfile.sentences[0] = {
-        value: "",
-        meaning: "",
-      };
+      wordProfile.sentences[0] = INIT_SENTENCE;
       setWordProfile({ ...wordProfile });
       return;
     }

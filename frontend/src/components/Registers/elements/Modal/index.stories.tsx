@@ -1,14 +1,13 @@
 import React from "react";
 import { StoryFn } from "@storybook/react";
-import { WordModal } from "./Modal";
-import { ModalProps } from "./Modal";
-import { ToLang } from "../../../clients/translate";
+import { RegisterModal, ModalProps } from "./index";
+import { ToLang } from "../../../../clients/translate";
 export default {
   title: "Example/RegisterModal",
-  component: WordModal,
+  component: RegisterModal,
 };
 
-const Template: StoryFn<ModalProps> = (args) => <WordModal {...args} />;
+const Template: StoryFn<ModalProps> = (args) => <RegisterModal {...args} />;
 
 export const Primary = Template.bind({});
 

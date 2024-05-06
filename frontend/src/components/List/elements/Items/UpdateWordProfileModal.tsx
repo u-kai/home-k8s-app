@@ -13,12 +13,12 @@ import { WordProfile } from "../../../../contexts/wordbook";
 import { AppErrorContext } from "../../../../contexts/error";
 import { UserContext } from "../../../../contexts/user";
 import { emptySentence, useWordBook } from "../../../../hooks/useWordBooks";
-import { ExampleSentenceField } from "../../../Registers/elements/ExampleSentenceField";
-import {
-  createTranslateRequest,
-  generateSentence,
-  translateRequest,
-} from "../../../../clients/translate";
+//import { ExampleSentenceField } from "../../../Registers/elements/ExampleSentenceField";
+//import {
+//  createTranslateRequest,
+//  generateSentence,
+//  translateRequest,
+//} from "../../../../clients/translate";
 
 const style = {
   position: "absolute" as "absolute",
