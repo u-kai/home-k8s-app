@@ -2,6 +2,10 @@ import { TextField } from "@mui/material";
 import React, { useState, useRef } from "react";
 import { keyframes, styled } from "styled-components";
 
+// inputの幅はpropsで指定したい
+const DEFAULT_WIDTH = "200px";
+const DEFAULT_HEIGHT = "100px";
+
 export const SpanInput = (props: {
   handleWordClick: (word: string) => Promise<void>;
   width?: string;
@@ -10,7 +14,10 @@ export const SpanInput = (props: {
   const [inputText, setInputText] = useState("");
   const words = inputText.split(" ");
   return (
-    <Container>
+    <Container
+      width={props.width || DEFAULT_WIDTH}
+      height={props.height || DEFAULT_HEIGHT}
+    >
       <TextArea
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
@@ -30,10 +37,21 @@ export const SpanInput = (props: {
   );
 };
 
-const Word = styled.span`
-  margin: 0 4px;
-  cursor: pointer;
-  display: inline-block;
+const Container = styled.div<{ width: string; height: string }>`
+  position: absolute;
+  width: ${(props) => props.width};
+  height: ${(props) => props.height};
+  z-index: -2;
+`;
+
+const TextArea = styled.textarea`
+  position: absolute;
+  border: 1px solid black;
+  z-index: 1;
+  color: transparent;
+  resize: none;
+  height: 100%;
+  width: 100%;
 `;
 
 const TextAreaWrapper = styled.div`
@@ -42,24 +60,14 @@ const TextAreaWrapper = styled.div`
   left: 0;
   top: 0;
   white-space: pre-wrap;
+  max-width: 100%;
   overflow: hidden;
 `;
-const Container = styled.div`
-  position: absolute;
-  min-width: 300px;
-  height: 200px;
-  z-index: -2;
-  background-color: "transparent";
-`;
 
-const TextArea = styled.textarea`
-  position: absolute;
-  border: 1px solid black;
-  z-index: 1;
-  height: 200px;
-  width: 100%;
-  color: transparent;
-  resize: none;
+const Word = styled.span`
+  margin: 0 4px;
+  cursor: pointer;
+  display: inline-block;
 `;
 
 const blink = keyframes`
