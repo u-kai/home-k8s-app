@@ -70,6 +70,11 @@ export const useWordBook = () => {
   const registerWordProfile = async (
     req: RegisterWordRequest
   ): Promise<Result<void>> => {
+    const duplicate = wordbook.find((word) => word.word.value === req.word);
+    if (duplicate) {
+      console.log("The word is already registered.");
+      return new Error("The word is already registered.");
+    }
     const response = await fetchJsonWithCors<
       RegisterWordRequest,
       { result: WordProfile }

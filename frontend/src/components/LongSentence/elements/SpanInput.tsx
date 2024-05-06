@@ -21,8 +21,6 @@ export const SpanInput = (props: {
   const handleClick = () => {};
 
   const words = inputText.split(" ").filter(Boolean);
-  const heightTextFiled = document.getElementById("outlined-multiline-static")
-    ?.style.height;
   return (
     <div
       onClick={handleClick}
@@ -30,7 +28,7 @@ export const SpanInput = (props: {
         position: "absolute",
         top: "100px",
         minWidth: "300px",
-        height: heightTextFiled,
+        height: "200px",
         zIndex: -2,
         backgroundColor: "transparent",
       }}
@@ -43,8 +41,10 @@ export const SpanInput = (props: {
           position: "absolute",
           border: "1px solid black",
           zIndex: 1,
+          height: "200px",
           width: "100%",
           color: "transparent",
+          resize: "none",
         }}
       />
       <div
@@ -53,9 +53,8 @@ export const SpanInput = (props: {
           zIndex: 1,
           left: 0,
           top: 0,
-          //width: "100%",
-          //height: "100%",
-          whiteSpace: "pre",
+          maxWidth: "100%",
+          whiteSpace: "pre-wrap",
           overflow: "hidden",
         }}
       >
@@ -64,6 +63,8 @@ export const SpanInput = (props: {
             key={index}
             style={{
               margin: "0 4px",
+              cursor: "pointer",
+              display: "inline-block",
             }}
             onClick={() => handleWordClick(word)}
           >
