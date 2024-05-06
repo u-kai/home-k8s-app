@@ -1,6 +1,6 @@
 import React from "react";
 import { styled } from "styled-components";
-import { RegisterModal } from "./elements/Modal";
+import { RegisterModal } from "./elements/RegisterModal";
 import { RegisterButtons } from "./elements/RegisterButton";
 
 export const Registers = () => {

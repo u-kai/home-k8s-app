@@ -9,8 +9,7 @@ import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
 import { isFailed } from "../../../clients/fetch";
 import { UserContext } from "../../../contexts/user";
-import { useWordBook } from "../../../hooks/useWordBooks";
-import { Sentence } from "../../../contexts/wordbook";
+import { RegisterWordRequest, useWordBook } from "../../../hooks/useWordBooks";
 import { TextAreaField } from "@aws-amplify/ui-react";
 import { AppErrorContext } from "../../../contexts/error";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -20,6 +19,7 @@ import { TranslateConfigContext } from "../../../contexts/translateConfig";
 import {
   createTranslateRequest,
   generateSentence,
+  ToLang,
   translateRequest,
 } from "../../../clients/translate";
 
@@ -37,167 +37,196 @@ const style = {
   paddingY: 2,
 };
 
-type ModalProps = {
+export type ModalProps = {
   open: boolean;
   handleClose: () => void;
+  registerHandler: (target: RegisteredWordProfile) => Promise<void>;
+  translateHandler?: (req: { word: string; toLang: ToLang }) => Promise<string>;
+  createSentenceHandler?: (
+    word: string
+  ) => Promise<{ value: string; meaning: string }>;
+  init?: RegisteredWordProfile;
+  errorHandler?: (error: Error) => void;
 };
 
-export const RegisterModal = (props: ModalProps) => {
-  const { setAppError } = useContext(AppErrorContext);
-  const [wordValue, setWordValue] = useState<string>("");
-  const [meaning, setMeaning] = useState<string>("");
-  const [pronunciation, setPronunciation] = useState<string>("");
-  const [remarks, setRemarks] = useState<string>("");
-  const [exampleSentences, setExampleSentences] = useState<string[]>([""]);
-  const [exampleSentencesMeaning, setExampleSentencesMeaning] = useState<
-    string[]
-  >([""]);
-  const [aiProgress, setAiProgress] = useState<boolean>(false);
-  const { user } = useContext(UserContext);
-  const INIT_SAVE_BUTTON_POSITION = 420;
+export type RegisteredWordProfile = {
+  word: string;
+  meaning: string;
+  pronunciation?: string;
+  remarks: string;
+  sentences: {
+    value: string;
+    meaning: string;
+    pronunciation?: string;
+  }[];
+};
+
+const INIT_SAVE_BUTTON_POSITION = 420;
+const PER_PUSH_BUTTON = 105;
+
+const INIT_SENTENCE = {
+  value: "",
+  meaning: "",
+};
+
+const INIT_WORD_PROFILE: RegisteredWordProfile = {
+  word: "",
+  meaning: "",
+  pronunciation: "",
+  remarks: "",
+  sentences: [INIT_SENTENCE],
+};
+
+export const WordModal = (props: ModalProps) => {
+  const [wordProfile, setWordProfile] = useState<RegisteredWordProfile>(
+    props.init ?? INIT_WORD_PROFILE
+  );
+  const addNewSentence = () => {
+    setWordProfile({
+      ...wordProfile,
+      sentences: [...wordProfile.sentences, INIT_SENTENCE],
+    });
+  };
+  const changeSentence = (index: number, sentence: string) => {
+    wordProfile.sentences[index].value = sentence;
+    setWordProfile({ ...wordProfile });
+  };
+
+  const changeSentenceMeaning = (index: number, meaning: string) => {
+    wordProfile.sentences[index].meaning = meaning;
+    setWordProfile({ ...wordProfile });
+  };
+
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
     INIT_SAVE_BUTTON_POSITION
   );
-  const [registerCancel, setRegisterCancel] = useState<boolean>(false);
-  const { translateConfig } = useContext(TranslateConfigContext);
-
-  const { registerWordProfile } = useWordBook();
-  const inputEnterHandler = async (e: React.KeyboardEvent) => {
-    const minWordLength = 1;
-    if (wordValue.length <= minWordLength) {
-      return;
-    }
-    if (e.key === "Enter") {
-      console.log("Enter");
-      console.log(translateConfig);
-      if (translateConfig.autoMeaning) {
-        translateHandler().then(() => setAiProgress(false));
-        setAiProgress(true);
-      }
-      if (translateConfig.autoSentence) {
-        const initIndex = 0;
-        createSentenceHandler(initIndex);
-      }
-    }
+  const increaseSaveButtonPosition = () => {
+    setSaveButtonPosition(saveButtonPosition + PER_PUSH_BUTTON);
   };
-  const addEmpty = () => {
-    setExampleSentences([...exampleSentences, ""]);
-    setExampleSentencesMeaning([...exampleSentencesMeaning, ""]);
-  };
-
-  const PER_PUSH_BUTTON = 105;
-  const increaseSaveButtonPosition = (posi: number) => {
-    setSaveButtonPosition(saveButtonPosition + posi);
-  };
-  const decreaseSaveButtonPosition = (posi: number) => {
-    setSaveButtonPosition(saveButtonPosition - posi);
+  const decreaseSaveButtonPosition = () => {
+    setSaveButtonPosition(saveButtonPosition - PER_PUSH_BUTTON);
   };
   const backToInitPosition = () => {
     setSaveButtonPosition(INIT_SAVE_BUTTON_POSITION);
   };
-  const save = async () => {
-    const sentences: Sentence[] = exampleSentences
-      .map((value, index) => {
-        return {
-          value: value,
-          meaning: exampleSentencesMeaning[index],
-          pronunciation: "",
-        };
+
+  const [cancel, setCancel] = useState<boolean>(false);
+  const [aiProgress, setAiProgress] = useState<boolean>(false);
+
+  //const inputEnterHandler = async (e: React.KeyboardEvent) => {
+  //  const minWordLength = 1;
+  //  if (wordValue.length <= minWordLength) {
+  //    return;
+  //  }
+  //  if (e.key === "Enter") {
+  //    //  console.log("Enter");
+  //    //  console.log(translateConfig);
+  //    //  if (translateConfig.autoMeaning) {
+  //    //    translateHandler().then(() => setAiProgress(false));
+  //    //    setAiProgress(true);
+  //    //  }
+  //    //  if (translateConfig.autoSentence) {
+  //    //    const initIndex = 0;
+  //    //    createSentenceHandler(initIndex);
+  //    //  }
+  //  }
+  //};
+
+  const register = async () => {
+    props
+      .registerHandler(wordProfile)
+      .then(() => {
+        props.handleClose();
+        allClear();
+        backToInitPosition();
       })
-      .filter((value) => value.value.length > 0);
-
-    const result = await registerWordProfile({
-      word: wordValue,
-      meaning: meaning,
-      pronunciation: pronunciation,
-      remarks: remarks,
-      sentences,
-    });
-    if (isFailed(result)) {
-      setAppError({
-        name: "単語の登録に失敗しました。",
-        message: "もう一度お試しください。" + result.message,
-        id: "registerWordProfile",
+      .catch((e) => {
+        props.errorHandler?.(e);
       });
-    }
-    props.handleClose();
-    allClear();
-    backToInitPosition();
-    return;
   };
 
-  const changeExampleSentence = (index: number, sentence: string) => {
-    const newExampleSentences = [...exampleSentences];
-    newExampleSentences[index] = sentence;
-    setExampleSentences(newExampleSentences);
-  };
-
-  const changeExampleSentenceMeaning = (index: number, meaning: string) => {
-    const newExampleSentencesMeaning = [...exampleSentencesMeaning];
-    newExampleSentencesMeaning[index] = meaning;
-    setExampleSentencesMeaning(newExampleSentencesMeaning);
-  };
-
-  const onDeletePress = (index: number) => {
-    if (exampleSentences.length === 1) {
-      setExampleSentences([""]);
-      setExampleSentencesMeaning([""]);
+  const onDeleteSentence = (index: number) => {
+    if (wordProfile.sentences.length === 1) {
+      wordProfile.sentences[0] = {
+        value: "",
+        meaning: "",
+      };
+      setWordProfile({ ...wordProfile });
       return;
     }
-    const newExampleSentences = [...exampleSentences];
-    newExampleSentences.splice(index, 1);
-    setExampleSentences(newExampleSentences);
-
-    const newExampleSentencesMeaning = [...exampleSentencesMeaning];
-    newExampleSentencesMeaning.splice(index, 1);
-    setExampleSentencesMeaning(newExampleSentencesMeaning);
+    setWordProfile((prev) => {
+      const sentences = prev.sentences.filter((_, i) => i !== index);
+      return { ...prev, sentences };
+    });
   };
+
+  const translateRequest = async () => {
+    setAiProgress(true);
+    if (wordProfile.word.length === 0) {
+      const req = {
+        word: wordProfile.meaning,
+        toLang: "en" as ToLang,
+      };
+      const translated = await props.translateHandler?.(req).catch((e) => {
+        props.errorHandler?.(e);
+      });
+      setWordProfile({ ...wordProfile, word: translated ?? "" });
+      return;
+    }
+
+    const req = {
+      word: wordProfile.word,
+      toLang: "ja" as ToLang,
+    };
+    const translated = await props.translateHandler?.(req).catch((e) => {
+      props.errorHandler?.(e);
+    });
+    setWordProfile({ ...wordProfile, meaning: translated ?? "" });
+  };
+
   const allClear = () => {
-    setWordValue("");
-    setMeaning("");
-    setPronunciation("");
-    setExampleSentences([""]);
-    setExampleSentencesMeaning([""]);
+    setWordProfile(INIT_WORD_PROFILE);
   };
 
-  const translateHandler = async (): Promise<void> => {
-    const translated = await translateRequest(
-      createTranslateRequest(wordValue, meaning),
-      user.token ?? ""
-    );
-    if (wordValue.length === 0) {
-      setWordValue(translated);
-    } else {
-      console.log("translated", translated);
-      setMeaning(translated);
-    }
-    setAiProgress(false);
-  };
-  const createSentenceHandler = async (index: number): Promise<void> => {
-    if (wordValue.length === 0) {
-      return;
-    }
-    const generated = await generateSentence(
-      {
-        word: wordValue,
-        toLang: "en",
-      },
-      user.token ?? ""
-    );
-    changeExampleSentence(index, generated.sentence);
-    changeExampleSentenceMeaning(index, generated.meaning);
-    return;
-  };
-  const focusInputArea = (): boolean => props.open;
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  //const translateHandler = async (): Promise<void> => {
+  //  const translated = await translateRequest(
+  //    createTranslateRequest(wordValue, meaning),
+  //    user.token ?? ""
+  //  );
+  //  if (wordValue.length === 0) {
+  //    setWordValue(translated);
+  //  } else {
+  //    console.log("translated", translated);
+  //    setMeaning(translated);
+  //  }
+  //  setAiProgress(false);
+  //};
+  //const createSentenceHandler = async (index: number): Promise<void> => {
+  //  if (wordValue.length === 0) {
+  //    return;
+  //  }
+  //  const generated = await generateSentence(
+  //    {
+  //      word: wordValue,
+  //      toLang: "en",
+  //    },
+  //    user.token ?? ""
+  //  );
+  //  changeExampleSentence(index, generated.sentence);
+  //  changeExampleSentenceMeaning(index, generated.meaning);
+  //  return;
+  //};
 
+  // Modalが開いた時にすぐに入力できるようにするための処理
+  const topInputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
-    if (focusInputArea()) {
+    if (props.open) {
       setTimeout(() => {
-        inputRef.current?.focus();
+        topInputRef.current?.focus();
       }, 100);
     }
-  }, [focusInputArea()]);
+  }, []);
+
   return (
     <div>
       <Modal
@@ -214,23 +243,30 @@ export const RegisterModal = (props: ModalProps) => {
           <TextFieldContainer>
             <TextField
               autoFocus={true}
-              inputRef={inputRef}
+              inputRef={topInputRef}
               sx={textFieldStyle}
               required
               id="standard-required"
               label="New Word"
               variant="standard"
-              value={wordValue}
-              onChange={(e) => setWordValue(e.target.value)}
-              onKeyDown={inputEnterHandler}
+              value={wordProfile.word}
+              onChange={(e) =>
+                setWordProfile({ ...wordProfile, word: e.target.value })
+              }
+              //onKeyDown={inputEnterHandler}
             />
             <TextField
               sx={textFieldStyle}
               id="standard-required"
               label="カタカナ読み"
               variant="standard"
-              value={pronunciation}
-              onChange={(e) => setPronunciation(e.target.value)}
+              value={wordProfile.pronunciation}
+              onChange={(e) =>
+                setWordProfile({
+                  ...wordProfile,
+                  pronunciation: e.target.value,
+                })
+              }
             />
             <MeaningTextAndAiContainer>
               <TextField
@@ -239,8 +275,10 @@ export const RegisterModal = (props: ModalProps) => {
                 id="standard-required"
                 label="Meaning"
                 variant="standard"
-                value={meaning}
-                onChange={(e) => setMeaning(e.target.value)}
+                value={wordProfile.meaning}
+                onChange={(e) =>
+                  setWordProfile({ ...wordProfile, meaning: e.target.value })
+                }
               />
               {aiProgress ? (
                 <CircularProgress
@@ -254,8 +292,8 @@ export const RegisterModal = (props: ModalProps) => {
                 <SupportAgentIcon
                   fontSize="large"
                   onClick={async () => {
-                    translateHandler();
-                    setAiProgress(true);
+                    await translateRequest();
+                    setAiProgress(false);
                   }}
                   sx={{
                     position: "absolute",
@@ -278,27 +316,35 @@ export const RegisterModal = (props: ModalProps) => {
               id="standard-required"
               label=""
               placeholder="備考"
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
+              value={wordProfile.remarks}
+              onChange={(e) =>
+                setWordProfile({ ...wordProfile, remarks: e.target.value })
+              }
             />
-            {exampleSentences.map((value, index) => (
+            {wordProfile.sentences.map((value, index) => (
               <ExampleSentenceField
                 key={index}
-                sentence={value}
-                onSentenceChange={(value) =>
-                  changeExampleSentence(index, value)
-                }
+                sentence={value.value}
+                onSentenceChange={(value) => changeSentence(index, value)}
                 onDeletePress={() => {
-                  onDeletePress(index);
-                  if (exampleSentences.length !== 1) {
-                    decreaseSaveButtonPosition(PER_PUSH_BUTTON);
+                  onDeleteSentence(index);
+                  if (wordProfile.sentences.length !== 1) {
+                    decreaseSaveButtonPosition();
                   }
                 }}
-                onMeaningChange={(value) =>
-                  changeExampleSentenceMeaning(index, value)
-                }
-                meaning={exampleSentencesMeaning[index]}
-                onAssistantPress={async () => createSentenceHandler(index)}
+                onMeaningChange={(value) => changeSentenceMeaning(index, value)}
+                meaning={value.meaning}
+                onAssistantPress={async () => {
+                  const sentence = await props
+                    .createSentenceHandler?.(wordProfile.word)
+                    .catch((e) => {
+                      props.errorHandler?.(e);
+                    });
+                  if (sentence) {
+                    changeSentence(index, sentence.value);
+                    changeSentenceMeaning(index, sentence.meaning);
+                  }
+                }}
               />
             ))}
             <div
@@ -310,8 +356,8 @@ export const RegisterModal = (props: ModalProps) => {
                 width: "100px",
               }}
               onClick={() => {
-                addEmpty();
-                increaseSaveButtonPosition(PER_PUSH_BUTTON);
+                addNewSentence();
+                increaseSaveButtonPosition();
               }}
             >
               <Fab color="primary" aria-label="add" size="small">
@@ -338,7 +384,7 @@ export const RegisterModal = (props: ModalProps) => {
                 width: "100px",
               }}
               onClick={async () => {
-                save();
+                register();
               }}
             >
               保存する
@@ -355,7 +401,7 @@ export const RegisterModal = (props: ModalProps) => {
                 width: "100px",
               }}
               onClick={async () => {
-                setRegisterCancel(true);
+                setCancel(true);
               }}
             >
               キャンセル
@@ -363,10 +409,10 @@ export const RegisterModal = (props: ModalProps) => {
           </div>
         </Box>
       </Modal>
-      {registerCancel ? (
+      {cancel ? (
         <DeleteConfirmModal
-          open={registerCancel}
-          setOpen={setRegisterCancel}
+          open={cancel}
+          setOpen={setCancel}
           deleteHandler={async () => {
             allClear();
             props.handleClose();
@@ -377,6 +423,20 @@ export const RegisterModal = (props: ModalProps) => {
     </div>
   );
 };
+
+const Container = styled(Box)`
+  position: absolute; 
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%; -50%),
+  width: 650;
+  height: 500;
+  background-color: white;
+  border: 2px solid #000;
+  overflowY: scroll;
+  paddingX: 4;
+  paddingY: 2;
+`;
 
 export const textFieldStyle = {
   width: "80%",
