@@ -8,11 +8,15 @@ export default {
 };
 
 const Template: StoryFn<{
-  border?: string;
-  height?: string;
+  handleWordClick: (word: string) => Promise<void>;
   width?: string;
+  height?: string;
 }> = (args) => <SpanInput {...args} />;
 
 export const Primary = Template.bind({});
 
-Primary.args = {};
+Primary.args = {
+  handleWordClick: async (word: string) => {
+    console.log(word);
+  },
+};
