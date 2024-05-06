@@ -63,12 +63,11 @@ const TextAreaWrapper = styled.div`
 `;
 
 const Word = styled.span`
-  margin: 1px 4px;
+  margin: 0 4px;
   cursor: pointer;
   display: inline-block;
   &:hover {
-    height: 90%;
-    background-color: #ead9ff;
+    background-color: lightgray;
     text-decoration: underline;
   }
 `;
