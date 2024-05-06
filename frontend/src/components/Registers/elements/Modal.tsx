@@ -1,41 +1,14 @@
 import Modal from "@mui/material/Modal";
-import { Fab, TextField, Typography } from "@mui/material";
+import { Fab, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
-import { styled } from "styled-components";
 import { ExampleSentenceField } from "./ExampleSentenceField";
-import { isFailed } from "../../../clients/fetch";
-import { UserContext } from "../../../contexts/user";
-import { RegisterWordRequest, useWordBook } from "../../../hooks/useWordBooks";
-import { TextAreaField } from "@aws-amplify/ui-react";
-import { AppErrorContext } from "../../../contexts/error";
-import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { TranslateConfigContext } from "../../../contexts/translateConfig";
-import {
-  createTranslateRequest,
-  generateSentence,
-  ToLang,
-  translateRequest,
-} from "../../../clients/translate";
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 650,
-  height: 500,
-  bgcolor: "white",
-  border: "2px solid #000",
-  overflowY: "scroll",
-  paddingX: 4,
-  paddingY: 2,
-};
+import { ToLang } from "../../../clients/translate";
+import { WordField } from "./WordFiled";
 
 export type ModalProps = {
   open: boolean;
@@ -60,8 +33,23 @@ export type RegisteredWordProfile = {
     pronunciation?: string;
   }[];
 };
+const createTranslateRequest = (
+  word: string,
+  meaning: string
+): { word: string; toLang: ToLang } => {
+  if (word.length === 0 && meaning.length !== 0) {
+    return {
+      toLang: "en",
+      word: meaning,
+    };
+  }
+  return {
+    toLang: "ja",
+    word,
+  };
+};
 
-const INIT_SAVE_BUTTON_POSITION = 420;
+const INIT_SAVE_BUTTON_POSITION = 400;
 const PER_PUSH_BUTTON = 105;
 
 const INIT_SENTENCE = {
@@ -76,6 +64,7 @@ const INIT_WORD_PROFILE: RegisteredWordProfile = {
   remarks: "",
   sentences: [INIT_SENTENCE],
 };
+const INPUT_WIDTH = "400px";
 
 export const WordModal = (props: ModalProps) => {
   const [wordProfile, setWordProfile] = useState<RegisteredWordProfile>(
@@ -111,26 +100,6 @@ export const WordModal = (props: ModalProps) => {
   };
 
   const [cancel, setCancel] = useState<boolean>(false);
-  const [aiProgress, setAiProgress] = useState<boolean>(false);
-
-  //const inputEnterHandler = async (e: React.KeyboardEvent) => {
-  //  const minWordLength = 1;
-  //  if (wordValue.length <= minWordLength) {
-  //    return;
-  //  }
-  //  if (e.key === "Enter") {
-  //    //  console.log("Enter");
-  //    //  console.log(translateConfig);
-  //    //  if (translateConfig.autoMeaning) {
-  //    //    translateHandler().then(() => setAiProgress(false));
-  //    //    setAiProgress(true);
-  //    //  }
-  //    //  if (translateConfig.autoSentence) {
-  //    //    const initIndex = 0;
-  //    //    createSentenceHandler(initIndex);
-  //    //  }
-  //  }
-  //};
 
   const register = async () => {
     props
@@ -160,72 +129,22 @@ export const WordModal = (props: ModalProps) => {
     });
   };
 
-  const translateRequest = async () => {
-    setAiProgress(true);
-    if (wordProfile.word.length === 0) {
-      const req = {
-        word: wordProfile.meaning,
-        toLang: "en" as ToLang,
-      };
-      const translated = await props.translateHandler?.(req).catch((e) => {
-        props.errorHandler?.(e);
-      });
-      setWordProfile({ ...wordProfile, word: translated ?? "" });
-      return;
-    }
-
-    const req = {
-      word: wordProfile.word,
-      toLang: "ja" as ToLang,
-    };
-    const translated = await props.translateHandler?.(req).catch((e) => {
-      props.errorHandler?.(e);
-    });
-    setWordProfile({ ...wordProfile, meaning: translated ?? "" });
-  };
-
   const allClear = () => {
     setWordProfile(INIT_WORD_PROFILE);
   };
 
-  //const translateHandler = async (): Promise<void> => {
-  //  const translated = await translateRequest(
-  //    createTranslateRequest(wordValue, meaning),
-  //    user.token ?? ""
-  //  );
-  //  if (wordValue.length === 0) {
-  //    setWordValue(translated);
-  //  } else {
-  //    console.log("translated", translated);
-  //    setMeaning(translated);
-  //  }
-  //  setAiProgress(false);
-  //};
-  //const createSentenceHandler = async (index: number): Promise<void> => {
-  //  if (wordValue.length === 0) {
-  //    return;
-  //  }
-  //  const generated = await generateSentence(
-  //    {
-  //      word: wordValue,
-  //      toLang: "en",
-  //    },
-  //    user.token ?? ""
-  //  );
-  //  changeExampleSentence(index, generated.sentence);
-  //  changeExampleSentenceMeaning(index, generated.meaning);
-  //  return;
-  //};
-
-  // Modalが開いた時にすぐに入力できるようにするための処理
-  const topInputRef = useRef<HTMLInputElement | null>(null);
-  useEffect(() => {
-    if (props.open) {
-      setTimeout(() => {
-        topInputRef.current?.focus();
-      }, 100);
+  const translateHandler = async () => {
+    const req = createTranslateRequest(wordProfile.word, wordProfile.meaning);
+    const translated = await props.translateHandler?.(req).catch((e) => {
+      props.errorHandler?.(e);
+    });
+    if (!translated) return;
+    if (wordProfile.word === "") {
+      setWordProfile({ ...wordProfile, word: translated });
+      return;
     }
-  }, []);
+    setWordProfile({ ...wordProfile, meaning: translated });
+  };
 
   return (
     <div>
@@ -236,94 +155,57 @@ export const WordModal = (props: ModalProps) => {
         aria-describedby="modal-modal-description"
         style={{ height: "100%" }}
       >
-        <Box sx={style}>
+        <Box
+          sx={{
+            position: "absolute" as "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 650,
+            height: 470,
+            bgcolor: "white",
+            border: "2px solid #000",
+            overflowY: "scroll",
+            paddingX: 4,
+            paddingY: 2,
+          }}
+        >
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Register New Word and Sentences
           </Typography>
-          <TextFieldContainer>
-            <TextField
-              autoFocus={true}
-              inputRef={topInputRef}
-              sx={textFieldStyle}
-              required
-              id="standard-required"
-              label="New Word"
-              variant="standard"
-              value={wordProfile.word}
-              onChange={(e) =>
-                setWordProfile({ ...wordProfile, word: e.target.value })
-              }
-              //onKeyDown={inputEnterHandler}
-            />
-            <TextField
-              sx={textFieldStyle}
-              id="standard-required"
-              label="カタカナ読み"
-              variant="standard"
-              value={wordProfile.pronunciation}
-              onChange={(e) =>
-                setWordProfile({
-                  ...wordProfile,
-                  pronunciation: e.target.value,
-                })
-              }
-            />
-            <MeaningTextAndAiContainer>
-              <TextField
-                sx={textFieldStyle}
-                required
-                id="standard-required"
-                label="Meaning"
-                variant="standard"
-                value={wordProfile.meaning}
-                onChange={(e) =>
-                  setWordProfile({ ...wordProfile, meaning: e.target.value })
-                }
-              />
-              {aiProgress ? (
-                <CircularProgress
-                  sx={{
-                    position: "absolute",
-                    top: 20,
-                    left: "85%",
-                  }}
-                />
-              ) : (
-                <SupportAgentIcon
-                  fontSize="large"
-                  onClick={async () => {
-                    await translateRequest();
-                    setAiProgress(false);
-                  }}
-                  sx={{
-                    position: "absolute",
-                    top: 20,
-                    left: "85%",
-                    cursor: "pointer",
-                    ":hover": {
-                      opacity: 0.5,
-                    },
-                  }}
-                />
-              )}
-            </MeaningTextAndAiContainer>
-            <TextAreaField
-              style={{
-                ...textFieldStyle,
-                height: "70px",
-                borderWidth: "1px",
-              }}
-              id="standard-required"
-              label=""
-              placeholder="備考"
-              value={wordProfile.remarks}
-              onChange={(e) =>
-                setWordProfile({ ...wordProfile, remarks: e.target.value })
-              }
-            />
+          <WordField
+            word={{
+              value: wordProfile.word,
+              meaning: wordProfile.meaning,
+              remarks: wordProfile.remarks,
+              pronunciation: wordProfile.pronunciation,
+            }}
+            width={INPUT_WIDTH}
+            handleWordChange={(value) => {
+              setWordProfile({ ...wordProfile, word: value });
+            }}
+            handleMeaningChange={(value) => {
+              setWordProfile({ ...wordProfile, meaning: value });
+            }}
+            handlePronunciationChange={(value) => {
+              setWordProfile({ ...wordProfile, pronunciation: value });
+            }}
+            handleRemarksChange={(value) => {
+              setWordProfile({ ...wordProfile, remarks: value });
+            }}
+            translateHandler={translateHandler}
+            errorHandler={props.errorHandler ?? console.error}
+          />
+          <div
+            style={{
+              position: "relative",
+              top: "230px",
+            }}
+          >
             {wordProfile.sentences.map((value, index) => (
               <ExampleSentenceField
                 key={index}
+                width={INPUT_WIDTH}
                 sentence={value.value}
                 onSentenceChange={(value) => changeSentence(index, value)}
                 onDeletePress={() => {
@@ -347,66 +229,58 @@ export const WordModal = (props: ModalProps) => {
                 }}
               />
             ))}
-            <div
-              style={{
-                position: "absolute",
-                left: "82%",
-                top: "70%",
-                padding: "10px",
-                width: "100px",
-              }}
-              onClick={() => {
-                addNewSentence();
-                increaseSaveButtonPosition();
-              }}
-            >
-              <Fab color="primary" aria-label="add" size="small">
-                <AddIcon />
-              </Fab>
-            </div>
-          </TextFieldContainer>
+          </div>
           <div
             style={{
-              display: "flex",
-              flexDirection: "row",
-              height: "80px",
+              position: "absolute",
+              left: "82%",
+              top: "70%",
+              padding: "10px",
+              width: "100px",
+            }}
+            onClick={() => {
+              addNewSentence();
+              increaseSaveButtonPosition();
             }}
           >
-            <Button
-              variant="contained"
-              endIcon={<SendIcon />}
-              sx={{
-                position: "absolute",
-                left: "82%",
-                top: saveButtonPosition,
-                paddingX: "3px",
-                paddingY: "10px",
-                width: "100px",
-              }}
-              onClick={async () => {
-                register();
-              }}
-            >
-              保存する
-            </Button>
-            <Button
-              color="error"
-              variant="contained"
-              sx={{
-                position: "absolute",
-                left: "10",
-                top: saveButtonPosition,
-                paddingX: "3px",
-                paddingY: "10px",
-                width: "100px",
-              }}
-              onClick={async () => {
-                setCancel(true);
-              }}
-            >
-              キャンセル
-            </Button>
+            <Fab color="primary" aria-label="add" size="small">
+              <AddIcon />
+            </Fab>
           </div>
+          <Button
+            variant="contained"
+            endIcon={<SendIcon />}
+            sx={{
+              position: "absolute",
+              left: "82%",
+              top: saveButtonPosition,
+              paddingX: "3px",
+              paddingY: "10px",
+              width: "100px",
+            }}
+            onClick={async () => {
+              register();
+            }}
+          >
+            保存する
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            sx={{
+              position: "absolute",
+              left: "10",
+              top: saveButtonPosition,
+              paddingX: "3px",
+              paddingY: "10px",
+              width: "100px",
+            }}
+            onClick={async () => {
+              setCancel(true);
+            }}
+          >
+            キャンセル
+          </Button>
         </Box>
       </Modal>
       {cancel ? (
@@ -423,34 +297,3 @@ export const WordModal = (props: ModalProps) => {
     </div>
   );
 };
-
-const Container = styled(Box)`
-  position: absolute; 
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%; -50%),
-  width: 650;
-  height: 500;
-  background-color: white;
-  border: 2px solid #000;
-  overflowY: scroll;
-  paddingX: 4;
-  paddingY: 2;
-`;
-
-export const textFieldStyle = {
-  width: "80%",
-  marginTop: "3px",
-};
-
-const MeaningTextAndAiContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  position: relative;
-`;
-export const TextFieldContainer = styled.div`
-  width: 90%;
-  margin-top: 3px;
-  justify-content: center;
-  flex-direction: column;
-`;

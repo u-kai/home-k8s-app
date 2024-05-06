@@ -21,21 +21,6 @@ export type TranslateRequest = {
   toLang: ToLang;
 };
 
-export const createTranslateRequest = (
-  word: string,
-  meaning: string
-): TranslateRequest => {
-  if (word.length === 0 && meaning.length !== 0) {
-    return {
-      toLang: "en",
-      word: meaning,
-    };
-  }
-  return {
-    toLang: "ja",
-    word,
-  };
-};
 export const translateRequest = async (
   request: TranslateRequest,
   token: string

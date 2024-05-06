@@ -1,81 +1,59 @@
-import { TextField } from "@mui/material";
-import React, { useState } from "react";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
-import { TextFieldContainer, textFieldStyle } from "./Modal";
+import React from "react";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import CircularProgress from "@mui/material/CircularProgress";
+import { styled } from "styled-components";
+import { InputFieldWithButton } from "./InputFieldWithButton";
+import { AISupportButton } from "./AISupportButton";
 
-type ExampleSentenceFieldProps = {
+export type ExampleSentenceFieldProps = {
   sentence: string;
   onSentenceChange: (sentence: string) => void;
   meaning: string;
   onMeaningChange: (meaning: string) => void;
   onDeletePress: () => void;
   onAssistantPress: () => Promise<void>;
+  width?: string;
 };
 
 export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
-  const [aiProgress, setAiProgress] = useState<boolean>(false);
   return (
-    <div style={{ position: "relative" }}>
-      <TextFieldContainer>
-        <TextField
-          sx={textFieldStyle}
-          id="optional"
-          label="Example Sentence"
-          variant="standard"
-          value={props.sentence}
-          onChange={(e) => props.onSentenceChange(e.target.value)}
-        />
-        <TextField
-          sx={textFieldStyle}
-          id="standard-required"
-          label="Example Sentences Meaning"
-          variant="standard"
-          value={props.meaning}
-          onChange={(e) => props.onMeaningChange(e.target.value)}
-        />
-        <DeleteForeverIcon
-          onClick={props.onDeletePress}
-          fontSize="large"
-          sx={{
-            position: "absolute",
-            top: "30%",
-            left: "85%",
-            cursor: "pointer",
-            ":hover": {
-              opacity: 0.5,
-            },
-          }}
-        />
-        {aiProgress ? (
-          <CircularProgress
-            sx={{
-              position: "absolute",
-              top: "80%",
-              left: "85%",
-            }}
-          />
-        ) : (
-          <SupportAgentIcon
+    <Container>
+      <InputFieldWithButton
+        id="optional"
+        label="Example Sentence"
+        variant="standard"
+        value={props.sentence}
+        handleWordChange={props.onSentenceChange}
+        width={props.width}
+        button={
+          <DeleteForeverIcon
+            onClick={props.onDeletePress}
             fontSize="large"
-            onClick={async () => {
-              setAiProgress(true);
-              await props.onAssistantPress();
-              setAiProgress(false);
-            }}
             sx={{
-              position: "absolute",
-              top: "80%",
-              left: "85%",
               cursor: "pointer",
               ":hover": {
                 opacity: 0.5,
               },
             }}
           />
-        )}
-      </TextFieldContainer>
-    </div>
+        }
+      />
+      <InputFieldWithButton
+        width={props.width}
+        id="standard-required"
+        label="Example Sentences Meaning"
+        variant="standard"
+        value={props.meaning}
+        handleWordChange={props.onMeaningChange}
+        button={<AISupportButton handleClick={props.onAssistantPress} />}
+      />
+    </Container>
   );
 };
+
+const Container = styled.div<{ width?: string; height?: string }>`
+  position: relative;
+  width: ${(props) => props.width ?? "100%"};
+  height: ${(props) => props.height ?? "100%"};
+  display: flex;
+  flex-direction: column;
+`;
