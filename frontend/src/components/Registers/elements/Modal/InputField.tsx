@@ -10,6 +10,8 @@ export type InputFieldProps = {
   id?: string;
   label?: string;
   variant?: string;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  ref?: React.Ref<HTMLInputElement>;
 };
 
 export const InputField = (props: InputFieldProps) => {
@@ -24,6 +26,7 @@ export const InputField = (props: InputFieldProps) => {
       variant={props.variant ?? ("standard" as any)}
       value={props.value}
       onChange={(e) => props.handleWordChange(e.target.value)}
+      onKeyDown={props.onKeyDown}
     />
   );
 };

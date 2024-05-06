@@ -1,351 +1,124 @@
-import Modal from "@mui/material/Modal";
-import { Fab, TextField, Typography } from "@mui/material";
-import { Box } from "@mui/system";
 import React, { useContext, useEffect, useState } from "react";
-import Button from "@mui/material/Button";
-import SendIcon from "@mui/icons-material/Send";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import { styled } from "styled-components";
-import { TextAreaField } from "@aws-amplify/ui-react";
-import CircularProgress from "@mui/material/CircularProgress";
-import AddIcon from "@mui/icons-material/Add";
-import { WordProfile } from "../../../../contexts/wordbook";
+import { SentenceProfile, WordProfile } from "../../../../contexts/wordbook";
 import { AppErrorContext } from "../../../../contexts/error";
 import { UserContext } from "../../../../contexts/user";
-import { emptySentence, useWordBook } from "../../../../hooks/useWordBooks";
-//import { ExampleSentenceField } from "../../../Registers/elements/ExampleSentenceField";
-//import {
-//  createTranslateRequest,
-//  generateSentence,
-//  translateRequest,
-//} from "../../../../clients/translate";
+import { useWordBook } from "../../../../hooks/useWordBooks";
+import {
+  generateSentence,
+  ToLang,
+  translateRequest,
+} from "../../../../clients/translate";
+import {
+  RegisteredWordProfile,
+  RegisterModal,
+} from "../../../Registers/elements/Modal";
 
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 650,
-  height: 500,
-  bgcolor: "white",
-  border: "2px solid #000",
-  overflowY: "scroll",
-  paddingX: 4,
-  paddingY: 2,
-};
-
-type ModalProps = {
+export type UpdateWordProfileModalProps = {
+  updateTarget: WordProfile;
   open: boolean;
   handleClose: () => void;
-  oldWordProfile: WordProfile;
-};
-const PER_PUSH_BUTTON = 105;
-const INIT_SAVE_BUTTON_POSITION_BASE = 420;
-const initSaveButtonPosition = (wordProfile: WordProfile) => {
-  if (wordProfile.sentences.length === 0) {
-    return INIT_SAVE_BUTTON_POSITION_BASE;
-  }
-  return 420 + 105 * (wordProfile.sentences.length - 1);
 };
 
-export const UpdateWordProfileModal = (props: ModalProps) => {
-  const [wordProfile, setWordProfile] = useState<WordProfile>(
-    props.oldWordProfile
-  );
-  useEffect(() => {
-    if (props.oldWordProfile.sentences.length === 0) {
-      setWordProfile({
-        ...props.oldWordProfile,
-        sentences: [emptySentence],
-      });
-      return;
-    }
-    setWordProfile(props.oldWordProfile);
-    setSaveButtonPosition(initSaveButtonPosition(props.oldWordProfile));
-  }, [props.open]);
-  const { setAppError } = useContext(AppErrorContext);
-  const [aiProgress, setAiProgress] = useState<boolean>(false);
+export const UpdateWordProfileModal = (props: UpdateWordProfileModalProps) => {
   const { user } = useContext(UserContext);
-  const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
-    initSaveButtonPosition(wordProfile)
-  );
-
+  const { setAppError } = useContext(AppErrorContext);
   const { updateWordProfile } = useWordBook();
-  const addEmpty = () => {
-    setWordProfile({
-      ...wordProfile,
-      sentences: [...wordProfile.sentences, emptySentence],
+  const errorHandler = (error: Error) => {
+    setAppError({
+      name: error.name,
+      message: error.message,
+      id: "update",
     });
   };
 
-  const increaseSaveButtonPosition = (posi: number) => {
-    setSaveButtonPosition(saveButtonPosition + posi);
-  };
-  const decreaseSaveButtonPosition = (posi: number) => {
-    setSaveButtonPosition(saveButtonPosition - posi);
-  };
-  const backToInitPosition = () => {
-    setSaveButtonPosition(initSaveButtonPosition(wordProfile));
-  };
-  const update = async () => {
-    await updateWordProfile(wordProfile);
-    props.handleClose();
-    backToInitPosition();
-    return;
-  };
-
-  const changeExampleSentence = (index: number, sentence: string) => {
-    const newExampleSentences = [...wordProfile.sentences];
-    newExampleSentences[index].sentence.value = sentence;
-    setWordProfile({ ...wordProfile, sentences: newExampleSentences });
-  };
-
-  const changeExampleSentenceMeaning = (index: number, meaning: string) => {
-    const newExampleSentencesMeaning = [...wordProfile.sentences];
-    newExampleSentencesMeaning[index].sentence.meaning = meaning;
-    setWordProfile({ ...wordProfile, sentences: newExampleSentencesMeaning });
-  };
-
-  const onDeletePress = (index: number) => {
-    if (wordProfile.sentences.length === 1) {
-      setWordProfile({ ...wordProfile, sentences: [emptySentence] });
-      return;
+  const translateHandler = async (req: {
+    word: string;
+    toLang: ToLang;
+  }): Promise<string> => {
+    const translated = await translateRequest(req, user.token ?? "");
+    if (!translated) {
+      errorHandler(new Error("Failed to translate"));
     }
-    const newExampleSentences = [...wordProfile.sentences];
-    newExampleSentences.splice(index, 1);
-    setWordProfile({ ...wordProfile, sentences: newExampleSentences });
+    return translated;
   };
-
-  const translateHandler = async (): Promise<void> => {
-    const result = await translateRequest(
-      createTranslateRequest(wordProfile.word.value, wordProfile.word.meaning),
-      user.token ?? ""
-    );
-
-    if (wordProfile.word.value.length === 0) {
-      setWordProfile({
-        ...wordProfile,
-        word: {
-          value: result,
-          meaning: wordProfile.word.meaning,
-          pronunciation: wordProfile.word.pronunciation,
-        },
-      });
-    } else {
-      setWordProfile({
-        ...wordProfile,
-        word: {
-          value: wordProfile.word.value,
-          meaning: result,
-          pronunciation: wordProfile.word.pronunciation,
-        },
-      });
-    }
-    setAiProgress(false);
-  };
-  const generateSentenceHandler = async (index: number): Promise<void> => {
-    if (wordProfile.word.value.length === 0) {
-      return;
-    }
-    const result = await generateSentence(
+  const createSentenceHandler = async (
+    word: string
+  ): Promise<{ value: string; meaning: string }> => {
+    const generated = await generateSentence(
       {
-        word: wordProfile.word.value,
+        word,
         toLang: "en",
       },
       user.token ?? ""
-    ).catch((e) => {
-      setAppError({
-        message: "Failed to create sentence" + e.toString(),
-        id: "createSentence",
-        name: "createSentence",
-      });
+    );
+    if (!generated) {
+      errorHandler(new Error("Failed to generate sentence"));
+    }
+    return {
+      value: generated.sentence,
+      meaning: generated.meaning,
+    };
+  };
+  const registerHandler = async (target: RegisteredWordProfile) => {
+    const convert = (sentence: {
+      value: string;
+      meaning: string;
+      pronunciation?: string;
+      index: number;
+    }): SentenceProfile => {
+      return {
+        sentenceId: props.updateTarget.sentences[sentence.index].sentenceId,
+        sentence: {
+          value: sentence.value,
+          meaning: sentence.meaning,
+          pronunciation: sentence.pronunciation ?? "",
+        },
+        createdAt: props.updateTarget.sentences[sentence.index].createdAt,
+        updatedAt: new Date().getSeconds(),
+      };
+    };
+    updateWordProfile({
+      word: {
+        value: target.word,
+        meaning: target.meaning,
+        pronunciation: target.pronunciation ?? "",
+      },
+      sentences: target.sentences.map((v, i) => convert({ ...v, index: i })),
+      // add old properties
+      wordId: props.updateTarget.wordId,
+      remarks: target.remarks,
+      createdAt: props.updateTarget.createdAt,
+      updatedAt: new Date().getSeconds(),
+      missCount: props.updateTarget.missCount,
+      likeRates: props.updateTarget.likeRates,
     });
-    if (!result) return;
-    changeExampleSentence(index, result.sentence);
-    changeExampleSentenceMeaning(index, result.meaning);
-    return;
   };
 
   return (
-    <div>
-      <Modal
-        open={props.open}
-        onClose={props.handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        style={{ height: "100%" }}
-      >
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Register New Word and Sentences
-          </Typography>
-          <TextFieldContainer>
-            <TextField
-              sx={textFieldStyle}
-              required
-              id="standard-required"
-              label="New Word"
-              variant="standard"
-              value={wordProfile.word.value}
-              onChange={(e) =>
-                setWordProfile({
-                  ...wordProfile,
-                  word: { ...wordProfile.word, value: e.target.value },
-                })
-              }
-            />
-            <TextField
-              sx={textFieldStyle}
-              id="standard-required"
-              label="カタカナ読み"
-              variant="standard"
-              value={wordProfile.word.pronunciation}
-              onChange={(e) =>
-                setWordProfile({
-                  ...wordProfile,
-                  word: { ...wordProfile.word, pronunciation: e.target.value },
-                })
-              }
-            />
-            <MeaningTextAndAiContainer>
-              <TextField
-                sx={textFieldStyle}
-                required
-                id="standard-required"
-                label="Meaning"
-                variant="standard"
-                value={wordProfile.word.meaning}
-                onChange={(e) =>
-                  setWordProfile({
-                    ...wordProfile,
-                    word: { ...wordProfile.word, meaning: e.target.value },
-                  })
-                }
-              />
-              {aiProgress ? (
-                <CircularProgress
-                  sx={{
-                    position: "absolute",
-                    top: 20,
-                    left: "85%",
-                  }}
-                />
-              ) : (
-                <SupportAgentIcon
-                  fontSize="large"
-                  onClick={async () => {
-                    translateHandler();
-                    setAiProgress(true);
-                  }}
-                  sx={{
-                    position: "absolute",
-                    top: 20,
-                    left: "85%",
-                    cursor: "pointer",
-                    ":hover": {
-                      opacity: 0.5,
-                    },
-                  }}
-                />
-              )}
-            </MeaningTextAndAiContainer>
-            <TextAreaField
-              style={{
-                ...textFieldStyle,
-                height: "70px",
-                borderWidth: "1px",
-              }}
-              id="standard-required"
-              label=""
-              placeholder="備考"
-              value={wordProfile.remarks}
-              onChange={(e) =>
-                setWordProfile({ ...wordProfile, remarks: e.target.value })
-              }
-            />
-            {wordProfile.sentences.map((value, index) => (
-              <ExampleSentenceField
-                key={index}
-                sentence={value.sentence.value}
-                onSentenceChange={(value) =>
-                  changeExampleSentence(index, value)
-                }
-                onDeletePress={() => {
-                  onDeletePress(index);
-                  if (wordProfile.sentences.length !== 1) {
-                    decreaseSaveButtonPosition(PER_PUSH_BUTTON);
-                  }
-                }}
-                onMeaningChange={(value) =>
-                  changeExampleSentenceMeaning(index, value)
-                }
-                meaning={value.sentence.meaning}
-                onAssistantPress={async () => generateSentenceHandler(index)}
-              />
-            ))}
-            <div
-              style={{
-                position: "absolute",
-                left: "82%",
-                top: "70%",
-                padding: "10px",
-                width: "100px",
-              }}
-              onClick={() => {
-                addEmpty();
-                increaseSaveButtonPosition(PER_PUSH_BUTTON);
-              }}
-            >
-              <Fab color="primary" aria-label="add" size="small">
-                <AddIcon />
-              </Fab>
-            </div>
-          </TextFieldContainer>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              height: "80px",
-            }}
-          >
-            <Button
-              variant="contained"
-              endIcon={<SendIcon />}
-              sx={{
-                position: "absolute",
-                left: "82%",
-                top: saveButtonPosition,
-                paddingX: "3px",
-                paddingY: "10px",
-                width: "100px",
-              }}
-              onClick={async () => {
-                update();
-              }}
-            >
-              更新する
-            </Button>
-            <Button
-              color="error"
-              variant="contained"
-              sx={{
-                position: "absolute",
-                left: "10",
-                top: saveButtonPosition,
-                paddingX: "3px",
-                paddingY: "10px",
-                width: "100px",
-              }}
-              onClick={async () => {
-                props.handleClose();
-              }}
-            >
-              キャンセル
-            </Button>
-          </div>
-        </Box>
-      </Modal>
-    </div>
+    <RegisterModal
+      open={props.open}
+      handleClose={props.handleClose}
+      registerHandler={registerHandler}
+      translateHandler={translateHandler}
+      createSentenceHandler={createSentenceHandler}
+      init={
+        {
+          word: props.updateTarget.word.value,
+          meaning: props.updateTarget.word.meaning,
+          pronunciation: props.updateTarget.word.pronunciation,
+          remarks: props.updateTarget.remarks,
+          sentences: props.updateTarget.sentences.map((sentence) => {
+            return {
+              value: sentence.sentence.value,
+              meaning: sentence.sentence.meaning,
+              pronunciation: sentence.sentence.pronunciation,
+            };
+          }),
+        } as RegisteredWordProfile
+      }
+      errorHandler={errorHandler}
+    />
   );
 };
 

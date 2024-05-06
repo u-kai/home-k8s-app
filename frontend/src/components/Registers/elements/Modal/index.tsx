@@ -88,7 +88,8 @@ export const RegisterModal = (props: ModalProps) => {
   };
 
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
-    INIT_SAVE_BUTTON_POSITION
+    INIT_SAVE_BUTTON_POSITION +
+      (wordProfile.sentences.length - 1) * PER_PUSH_BUTTON
   );
   const increaseSaveButtonPosition = () => {
     setSaveButtonPosition(saveButtonPosition + PER_PUSH_BUTTON);
@@ -144,6 +145,17 @@ export const RegisterModal = (props: ModalProps) => {
     setWordProfile({ ...wordProfile, meaning: translated });
   };
 
+  const generateSentence = async (index: number) => {
+    const sentence = await props
+      .createSentenceHandler?.(wordProfile.word)
+      .catch((e) => {
+        props.errorHandler?.(e);
+      });
+    if (sentence) {
+      changeSentence(index, sentence.value);
+      changeSentenceMeaning(index, sentence.meaning);
+    }
+  };
   return (
     <div>
       <Modal
@@ -172,6 +184,7 @@ export const RegisterModal = (props: ModalProps) => {
             Register New Word and Sentences
           </Typography>
           <WordField
+            open={props.open}
             word={{
               value: wordProfile.word,
               meaning: wordProfile.meaning,
@@ -192,12 +205,16 @@ export const RegisterModal = (props: ModalProps) => {
               setWordProfile({ ...wordProfile, remarks: value });
             }}
             translateHandler={translateHandler}
+            enterKeyDownHandler={async () => {
+              translateHandler();
+              generateSentence(0);
+            }}
             errorHandler={props.errorHandler ?? console.error}
           />
           <div
             style={{
               position: "relative",
-              top: "230px",
+              top: "240px",
             }}
           >
             {wordProfile.sentences.map((value, index) => (
@@ -214,17 +231,7 @@ export const RegisterModal = (props: ModalProps) => {
                 }}
                 onMeaningChange={(value) => changeSentenceMeaning(index, value)}
                 meaning={value.meaning}
-                onAssistantPress={async () => {
-                  const sentence = await props
-                    .createSentenceHandler?.(wordProfile.word)
-                    .catch((e) => {
-                      props.errorHandler?.(e);
-                    });
-                  if (sentence) {
-                    changeSentence(index, sentence.value);
-                    changeSentenceMeaning(index, sentence.meaning);
-                  }
-                }}
+                onAssistantPress={async () => generateSentence(index)}
               />
             ))}
           </div>

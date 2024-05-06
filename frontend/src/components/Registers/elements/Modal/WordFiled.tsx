@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { TextAreaField } from "@aws-amplify/ui-react";
 import { styled } from "styled-components";
 import { InputField } from "./InputField";
 import { InputFieldWithButton } from "./InputFieldWithButton";
 import { AISupportButton } from "./AISupportButton";
+import { TextField } from "@mui/material";
 
 type Word = {
   value: string;
@@ -13,6 +14,7 @@ type Word = {
 };
 
 export type WordFieldProps = {
+  open: boolean;
   word: Word;
   translateHandler: () => Promise<void>;
   handleWordChange: (word: string) => void;
@@ -21,23 +23,40 @@ export type WordFieldProps = {
   handleRemarksChange: (remarks: string) => void;
   width?: string;
   errorHandler: (error: Error) => void;
+  enterKeyDownHandler?: () => Promise<void>;
 };
 
 export const WordField = (props: WordFieldProps) => {
   const translateRequest = async () => {
     await props.translateHandler().catch((e) => props.errorHandler(e));
   };
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (props.open) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [props.open]);
   return (
     <Container width={props.width}>
-      <InputField
+      <TextField
+        inputRef={inputRef}
         autoFocus={true}
-        width={props.width}
         required
         id="standard-required"
         label="New Word"
         variant="standard"
         value={props.word.value}
-        handleWordChange={props.handleWordChange}
+        sx={{
+          width: props.width,
+        }}
+        onChange={(e) => props.handleWordChange(e.target.value)}
+        onKeyDown={async (e) => {
+          if (e.key === "Enter") {
+            await props.enterKeyDownHandler?.();
+          }
+        }}
       />
       <InputField
         width={props.width}

@@ -90,7 +90,7 @@ export const WordAndSentences = (props: WordAndSentencesProps) => {
                 setUpdatePushed(false);
               }}
               open={updatePushed}
-              oldWordProfile={props.wordProfile}
+              updateTarget={props.wordProfile}
             />
             <DeleteForeverIcon
               fontSize="large"
