@@ -7,7 +7,25 @@ export default {
   component: WordField,
 };
 
-const Template: StoryFn<WordFieldProps> = (args) => <WordField {...args} />;
+const Template: StoryFn<
+  Omit<
+    WordFieldProps,
+    "aiProgress" | "toggleAiProgress" | "enterKeyDownHandler"
+  >
+> = (args) => {
+  const [aiProgress, setAiProgress] = React.useState(false);
+  return (
+    <WordField
+      {...args}
+      aiProgress={aiProgress}
+      toggleAiProgress={(to) => setAiProgress(to)}
+      enterKeyDownHandler={async () => {
+        setAiProgress(true);
+        await args.translateHandler().then((v) => setAiProgress(false));
+      }}
+    />
+  );
+};
 
 export const Primary = Template.bind({});
 

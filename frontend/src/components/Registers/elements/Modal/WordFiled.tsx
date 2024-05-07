@@ -24,11 +24,17 @@ export type WordFieldProps = {
   width?: string;
   errorHandler: (error: Error) => void;
   enterKeyDownHandler?: () => Promise<void>;
+  aiProgress: boolean;
+  toggleAiProgress: (to: boolean) => void;
 };
 
 export const WordField = (props: WordFieldProps) => {
   const translateRequest = async () => {
-    await props.translateHandler().catch((e) => props.errorHandler(e));
+    props.toggleAiProgress(true);
+    await props
+      .translateHandler()
+      .then((_) => props.toggleAiProgress(false))
+      .catch((e) => props.errorHandler(e));
   };
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
@@ -74,7 +80,13 @@ export const WordField = (props: WordFieldProps) => {
         variant="standard"
         value={props.word.meaning}
         handleWordChange={props.handleMeaningChange}
-        button={<AISupportButton handleClick={translateRequest} />}
+        button={
+          <AISupportButton
+            handleClick={translateRequest}
+            aiProgress={props.aiProgress}
+            toggleAiProgress={props.toggleAiProgress}
+          />
+        }
       />
       <TextAreaField
         style={{

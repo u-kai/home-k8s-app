@@ -12,6 +12,8 @@ export type ExampleSentenceFieldProps = {
   onDeletePress: () => void;
   onAssistantPress: () => Promise<void>;
   width?: string;
+  aiProgress: boolean;
+  toggleAiProgress: (to: boolean) => void;
 };
 
 export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
@@ -44,7 +46,13 @@ export const ExampleSentenceField = (props: ExampleSentenceFieldProps) => {
         variant="standard"
         value={props.meaning}
         handleWordChange={props.onMeaningChange}
-        button={<AISupportButton handleClick={props.onAssistantPress} />}
+        button={
+          <AISupportButton
+            handleClick={props.onAssistantPress}
+            aiProgress={props.aiProgress}
+            toggleAiProgress={props.toggleAiProgress}
+          />
+        }
       />
     </Container>
   );

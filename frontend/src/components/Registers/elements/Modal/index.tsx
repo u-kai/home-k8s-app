@@ -78,13 +78,19 @@ export const RegisterModal = (props: ModalProps) => {
     });
   };
   const changeSentence = (index: number, sentence: string) => {
-    wordProfile.sentences[index].value = sentence;
-    setWordProfile({ ...wordProfile });
+    setWordProfile((prev) => {
+      const sentences = prev.sentences.slice();
+      sentences[index] = { ...sentences[index], value: sentence };
+      return { ...prev, sentences };
+    });
   };
 
   const changeSentenceMeaning = (index: number, meaning: string) => {
-    wordProfile.sentences[index].meaning = meaning;
-    setWordProfile({ ...wordProfile });
+    setWordProfile((prev) => {
+      const sentences = prev.sentences.slice();
+      sentences[index] = { ...sentences[index], meaning };
+      return { ...prev, sentences };
+    });
   };
 
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
@@ -100,6 +106,11 @@ export const RegisterModal = (props: ModalProps) => {
   const backToInitPosition = () => {
     setSaveButtonPosition(INIT_SAVE_BUTTON_POSITION);
   };
+
+  const [wordTranslateAiProgress, setWordTranslateAiProgress] =
+    useState<boolean>(false);
+  const [generateSentenceAiProgresses, setGenerateSentenceAiProgresses] =
+    useState<boolean[]>(wordProfile.sentences.map(() => false));
 
   const [cancel, setCancel] = useState<boolean>(false);
 
@@ -142,7 +153,8 @@ export const RegisterModal = (props: ModalProps) => {
       setWordProfile({ ...wordProfile, word: translated });
       return;
     }
-    setWordProfile({ ...wordProfile, meaning: translated });
+    console.log("translated", translated);
+    setWordProfile((prev) => ({ ...prev, meaning: translated }));
   };
 
   const generateSentence = async (index: number) => {
@@ -206,10 +218,20 @@ export const RegisterModal = (props: ModalProps) => {
             }}
             translateHandler={translateHandler}
             enterKeyDownHandler={async () => {
-              translateHandler();
-              generateSentence(0);
+              setWordTranslateAiProgress(true);
+              setGenerateSentenceAiProgresses((prev) => prev.map(() => true));
+
+              translateHandler().then((_) =>
+                setWordTranslateAiProgress((prev) => !prev)
+              );
+
+              generateSentence(0).then((_) =>
+                setGenerateSentenceAiProgresses((prev) => prev.map(() => false))
+              );
             }}
             errorHandler={props.errorHandler ?? console.error}
+            aiProgress={wordTranslateAiProgress}
+            toggleAiProgress={(to) => setWordTranslateAiProgress(to)}
           />
           <div
             style={{
@@ -232,6 +254,12 @@ export const RegisterModal = (props: ModalProps) => {
                 onMeaningChange={(value) => changeSentenceMeaning(index, value)}
                 meaning={value.meaning}
                 onAssistantPress={async () => generateSentence(index)}
+                aiProgress={generateSentenceAiProgresses[index]}
+                toggleAiProgress={(to) => {
+                  const progresses = generateSentenceAiProgresses.slice();
+                  progresses[index] = to;
+                  setGenerateSentenceAiProgresses(progresses);
+                }}
               />
             ))}
           </div>

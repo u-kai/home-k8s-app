@@ -4,12 +4,13 @@ import React from "react";
 
 export type AISupportButtonProps = {
   handleClick: () => Promise<void>;
+  toggleAiProgress: (to: boolean) => void;
+  aiProgress: boolean;
 };
 export const AISupportButton = (props: AISupportButtonProps) => {
-  const [aiProgress, setAiProgress] = React.useState(false);
   return (
     <>
-      {aiProgress ? (
+      {props.aiProgress ? (
         <CircularProgress />
       ) : (
         <SupportAgentIcon
@@ -21,8 +22,8 @@ export const AISupportButton = (props: AISupportButtonProps) => {
           }}
           fontSize="large"
           onClick={async () => {
-            setAiProgress(true);
-            props.handleClick().then(() => setAiProgress(false));
+            props.toggleAiProgress(true);
+            props.handleClick().then(() => props.toggleAiProgress(false));
           }}
         />
       )}

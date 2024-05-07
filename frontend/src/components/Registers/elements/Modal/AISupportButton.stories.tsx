@@ -7,9 +7,19 @@ export default {
   component: AISupportButton,
 };
 
-const Template: StoryFn<AISupportButtonProps> = (args) => (
-  <AISupportButton {...args} />
-);
+const Template: StoryFn<AISupportButtonProps> = (
+  args: Omit<AISupportButtonProps, "toggleAiProgress" | "aiProgress">
+) => {
+  const [aiProgress, setAiProgress] = React.useState(false);
+
+  return (
+    <AISupportButton
+      {...args}
+      toggleAiProgress={(to: boolean) => setAiProgress(to)}
+      aiProgress={aiProgress}
+    />
+  );
+};
 
 export const Primary = Template.bind({});
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

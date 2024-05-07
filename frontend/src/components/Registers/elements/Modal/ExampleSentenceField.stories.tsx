@@ -7,9 +7,18 @@ export default {
   component: ExampleSentenceField,
 };
 
-const Template: StoryFn<ExampleSentenceFieldProps> = (args) => (
-  <ExampleSentenceField {...args} />
-);
+const Template: StoryFn<
+  Omit<ExampleSentenceFieldProps, "aiProgress" | "toggleAiProgress">
+> = (args) => {
+  const [aiProgress, setAiProgress] = React.useState(false);
+  return (
+    <ExampleSentenceField
+      {...args}
+      aiProgress={aiProgress}
+      toggleAiProgress={(to) => setAiProgress(to)}
+    />
+  );
+};
 
 export const Primary = Template.bind({});
 
