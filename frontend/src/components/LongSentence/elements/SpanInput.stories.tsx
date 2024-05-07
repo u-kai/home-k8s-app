@@ -22,4 +22,6 @@ Primary.args = {
   handleWordClick: async (word: string) => {
     console.log(word);
   },
+  width: "300px",
+  height: "200px",
 };

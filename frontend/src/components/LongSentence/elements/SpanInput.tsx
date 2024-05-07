@@ -12,6 +12,7 @@ export const SpanInput = (props: {
   handleChange: (value: string) => void;
 }) => {
   const words = props.value.split(" ");
+  const [focused, setFocused] = useState(false);
   return (
     <Container
       width={props.width || DEFAULT_WIDTH}
@@ -20,15 +21,18 @@ export const SpanInput = (props: {
       <TextArea
         value={props.value}
         onChange={(e) => props.handleChange(e.target.value)}
+        placeholder={focused ? "" : "Type here"}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
       <TextAreaWrapper>
-        {words.length === 0 && <Caret left={0}></Caret>}
+        {focused && words.length === 0 && <Caret left={0}></Caret>}
         {words.map((word, index) => (
           <>
             <Word key={index} onClick={() => props.handleWordClick(word)}>
               {word}
             </Word>
-            {index === words.length - 1 && <Caret left={-4}></Caret>}
+            {focused && index === words.length - 1 && <Caret left={-4}></Caret>}
           </>
         ))}
       </TextAreaWrapper>
@@ -45,12 +49,26 @@ const Container = styled.div<{ width: string; height: string }>`
 
 const TextArea = styled.textarea`
   position: absolute;
-  border: 1px solid black;
+  border: 1px solid #ccc; /* より薄いグレーの枠線 */
+  border-radius: 8px; /* 角の丸みを加える */
   z-index: 1;
-  color: transparent;
-  resize: none;
+  color: transparent; /* 色は透明のまま */
+  background-color: rgba(255, 255, 255, 0.5); /* より薄い半透明の背景色 */
+  resize: none; /* リサイズ不可 */
   height: 100%;
   width: 100%;
+  padding: 10px; /* 内部の余白 */
+  outline: none; /* アウトラインを削除 */
+  &:hover,
+  &:focus {
+    border-color: #888; /* ホバーまたはフォーカス時の枠線の色を濃いめのグレーに */
+    background-color: rgba(
+      255,
+      255,
+      255,
+      0.7
+    ); /* ホバーまたはフォーカス時の背景色を少し濃く */
+  }
 `;
 
 const TextAreaWrapper = styled.div`

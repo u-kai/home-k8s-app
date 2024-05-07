@@ -13,7 +13,6 @@ type Props = {
 };
 
 export const MultilineText = (props: Props) => {
-  const words = props.value.split(" ").filter(Boolean);
   return (
     <Box
       component="form"
