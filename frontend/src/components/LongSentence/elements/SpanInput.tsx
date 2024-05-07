@@ -8,17 +8,18 @@ export const SpanInput = (props: {
   handleWordClick: (word: string) => Promise<void>;
   width?: string;
   height?: string;
+  value: string;
+  handleChange: (value: string) => void;
 }) => {
-  const [inputText, setInputText] = useState("");
-  const words = inputText.split(" ");
+  const words = props.value.split(" ");
   return (
     <Container
       width={props.width || DEFAULT_WIDTH}
       height={props.height || DEFAULT_HEIGHT}
     >
       <TextArea
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
+        value={props.value}
+        onChange={(e) => props.handleChange(e.target.value)}
       />
       <TextAreaWrapper>
         {words.length === 0 && <Caret left={0}></Caret>}

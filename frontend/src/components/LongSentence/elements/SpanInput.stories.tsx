@@ -11,7 +11,10 @@ const Template: StoryFn<{
   handleWordClick: (word: string) => Promise<void>;
   width?: string;
   height?: string;
-}> = (args) => <SpanInput {...args} />;
+}> = (args) => {
+  const [text, setText] = React.useState("");
+  return <SpanInput {...args} value={text} handleChange={(v) => setText(v)} />;
+};
 
 export const Primary = Template.bind({});
 
