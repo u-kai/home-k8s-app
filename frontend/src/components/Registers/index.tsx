@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { styled } from "styled-components";
 import { RegisterModal } from "./elements/Modal/index";
-import { RegisterButtons } from "./elements/RegisterButton";
 import { UserContext } from "../../contexts/user";
 import { AppErrorContext } from "../../contexts/error";
 import { RegisteredWordProfile } from "./elements/Modal";
@@ -12,6 +11,7 @@ import {
 } from "../../clients/translate";
 import { useWordBook } from "../../hooks/useWordBooks";
 import { Sentence } from "../../contexts/wordbook";
+import { AddButton } from "../Button/AddButton";
 
 export const Registers = () => {
   const [open, setOpen] = React.useState(false);
@@ -76,7 +76,7 @@ export const Registers = () => {
   };
   return (
     <Container>
-      <RegisterButtons handler={() => setOpen((prev) => !prev)} />
+      <AddButton handler={() => setOpen((prev) => !prev)} />
       <RegisterModal
         open={open}
         handleClose={() => setOpen(false)}
