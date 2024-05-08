@@ -5,7 +5,7 @@ import { ErrorAlert } from "./components/Alers/ErrorAlert";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { List } from "./components/List";
-import { LongSentenceBoxes } from "./components/LongSentence";
+import { LongSentenceTranslateComponent } from "./components/LongSentence";
 import { PlayAudios } from "./components/PlayAudios";
 import { Registers } from "./components/Registers";
 import { Search } from "./components/Search";
@@ -47,7 +47,12 @@ export const Home = (props: Props) => {
           <List />
         </ListContainer>
         <LongSentenceBoxesContainer>
-          <LongSentenceBoxes />
+          <LongSentenceTranslateComponent
+            handleWordClick={async (word) => {
+              console.log(word);
+            }}
+            height="200px"
+          />
         </LongSentenceBoxesContainer>
       </VerticalContainer>
       <Footer />
@@ -60,6 +65,7 @@ const VerticalContainer = styled.div`
   flex-direction: column;
   width: 100%;
   height: 10%;
+  position: absolute;
 `;
 
 const HeaderAndAlertContainer = styled.div`
@@ -94,6 +100,7 @@ export const Wrapper = styled.div`
   overflow-x: hidden;
   overflow-y: hidden;
   position: relative;
+  z-index: -99;
 `;
 
 const UpperContainer = styled.div`
@@ -129,8 +136,7 @@ const ListContainer = styled.div`
 `;
 const LongSentenceBoxesContainer = styled.div`
   position: absolute;
-  bottom: 50px;
-  left: 22%;
+  top: 500px;
   width: 100%;
 `;
 
