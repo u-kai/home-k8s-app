@@ -21,14 +21,16 @@ export const Frame = (props: FrameProps) => {
 };
 
 const Container = styled.div`
-  position: relative;
+  position: absolute;
   display: grid;
   grid-template-rows: 10% 50% 25% 5%;
   height: 100vh;
   width: 100%;
+  z-index: -99;
 `;
 
 const HeaderContainer = styled.div`
+  z-index: -3;
   width: 100%;
   margin-bottom: 10px;
 `;
@@ -38,9 +40,14 @@ const WordbookContainer = styled.div`
 `;
 
 const TranslateSentenceContainer = styled.div`
+  position: relative;
   width: 80%;
-  margin: 10px auto;
+  height: 100%;
+  margin: 0 auto;
+  padding-top: 10px;
+  z-index: -3;
 `;
 const FooterContainer = styled.div`
+  padding-top: 10px;
   width: 100%;
 `;

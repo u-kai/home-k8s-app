@@ -3,6 +3,7 @@ import { StoryFn } from "@storybook/react";
 import { Frame } from "./Frame";
 import { FrameProps } from "./Frame";
 import { styled } from "styled-components";
+import { LongSentenceTranslateComponent } from "./components/LongSentence";
 export default {
   title: "Example/Frame",
   component: Frame,
@@ -30,15 +31,14 @@ const Wordbook = styled.div`
   border: 1px solid black;
 `;
 
-const TranslateSentence = styled.div`
-  width: 100%;
-  height: 100%;
-  border: 1px solid black;
-`;
-
 Primary.args = {
   header: <Header>Header</Header>,
   footer: <Footer>Footer</Footer>,
   wordbook: <Wordbook>Wordbook</Wordbook>,
-  translateSentence: <TranslateSentence>TranslateSentence</TranslateSentence>,
+  translateSentence: (
+    <LongSentenceTranslateComponent
+      handleWordClick={async (word: string) => {}}
+      height="100%"
+    />
+  ),
 };

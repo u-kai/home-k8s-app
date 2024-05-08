@@ -49,8 +49,10 @@ export const LongSentenceTranslate = (props: LongSentenceTranslateProps) => {
 };
 
 const HorizontalContainer = styled.div`
+  position: relative;
+  z-index: -2;
   display: flex;
   justify-content: space-between;
   width: 100%;
-  height: 0;
+  height: 100%;
 `;
