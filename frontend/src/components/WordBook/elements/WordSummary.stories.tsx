@@ -3,7 +3,7 @@ import { StoryFn } from "@storybook/react";
 import { WordSummary } from "./WordSummary";
 import { WordSummaryProps } from "./WordSummary";
 export default {
-  title: "Example/WordSummary",
+  title: "WordBook/WordSummary",
   component: WordSummary,
 };
 

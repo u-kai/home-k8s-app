@@ -5,7 +5,7 @@ import { AccordionProps } from "./Accordion";
 import { WordSummary } from "./WordSummary";
 import { WordDetail } from "./WordDetail";
 export default {
-  title: "Example/Accordions",
+  title: "WordBook/Accordions",
   component: Accordion,
 };
 
@@ -20,6 +20,7 @@ Primary.args = {
       playAudio={() => {
         console.log("play audio");
       }}
+      rate={3}
       handleDelete={async () => console.log("delete")}
       handleEdit={async () => console.log("edit")}
       handleRateChange={async (rate: number) => console.log(rate)}

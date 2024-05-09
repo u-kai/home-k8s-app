@@ -3,7 +3,7 @@ import { StoryFn } from "@storybook/react";
 import { DeleteIcon } from "./DeleteIcon";
 import { DeleteIconProps } from "./DeleteIcon";
 export default {
-  title: "Example/DeleteIcon",
+  title: "WordBook/DeleteIcon",
   component: DeleteIcon,
 };
 

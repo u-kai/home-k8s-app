@@ -3,7 +3,7 @@ import { StoryFn } from "@storybook/react";
 import { WordDetail } from "./WordDetail";
 import { WordDetailProps } from "./WordDetail";
 export default {
-  title: "Example/WordDetail",
+  title: "WordBook/WordDetail",
   component: WordDetail,
 };
 

@@ -3,7 +3,7 @@ import { StoryFn } from "@storybook/react";
 import { Sentence } from "./Sentence";
 import { SentenceProps } from "./Sentence";
 export default {
-  title: "Example/Sentence",
+  title: "WordBook/Sentence",
   component: Sentence,
 };
 
