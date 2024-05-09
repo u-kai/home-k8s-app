@@ -5,7 +5,7 @@ import { AccordionProps } from "./Accordion";
 import { WordSummary } from "./WordSummary";
 import { WordDetail } from "./WordDetail";
 export default {
-  title: "WordBook/Accordions",
+  title: "WordBook/Accordion",
   component: Accordion,
 };
 
