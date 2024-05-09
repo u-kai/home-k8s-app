@@ -5,6 +5,7 @@ import { FrameProps } from "./Frame";
 import { styled } from "styled-components";
 import { LongSentenceTranslateComponent } from "./components/LongSentence";
 import { AppFooter } from "./components/Footer/elements/Footer";
+import { Header } from "./components/Header";
 export default {
   title: "Example/Frame",
   component: Frame,
@@ -14,18 +15,6 @@ const Template: StoryFn<FrameProps> = (args) => <Frame {...args} />;
 
 export const Primary = Template.bind({});
 
-const Header = styled.div`
-  width: 100%;
-  height: 100%;
-  border: 1px solid black;
-`;
-
-const Footer = styled.div`
-  width: 100%;
-  height: 100%;
-  border: 1px solid black;
-`;
-
 const Wordbook = styled.div`
   width: 100%;
   height: 100%;
@@ -33,7 +22,7 @@ const Wordbook = styled.div`
 `;
 
 Primary.args = {
-  header: <Header>Header</Header>,
+  header: <Header logout={async () => console.log("logout")} />,
   footer: <AppFooter />,
   wordbook: <Wordbook>Wordbook</Wordbook>,
   translateSentence: (

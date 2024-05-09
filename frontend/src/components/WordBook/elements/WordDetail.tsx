@@ -1,4 +1,5 @@
 import React from "react";
+import { styled } from "styled-components";
 import { Sentence } from "./Sentence";
 
 export type WordDetailProps = {
@@ -16,14 +17,20 @@ export const WordDetail = (props: WordDetailProps) => {
       <div>{props.wordMeaning}</div>
       {props.sentences.map((sentence, index) => {
         return (
-          <Sentence
-            key={index}
-            sentence={sentence.sentence}
-            meaning={sentence.meaning}
-            playAudio={props.playAudio}
-          />
+          <SentenceContainer>
+            <Sentence
+              key={index}
+              sentence={sentence.sentence}
+              meaning={sentence.meaning}
+              playAudio={props.playAudio}
+            />
+          </SentenceContainer>
         );
       })}
     </div>
   );
 };
+
+const SentenceContainer = styled.div`
+  margin-top: 10px;
+`;
