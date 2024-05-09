@@ -4,6 +4,7 @@ import { Frame } from "./Frame";
 import { FrameProps } from "./Frame";
 import { styled } from "styled-components";
 import { LongSentenceTranslateComponent } from "./components/LongSentence";
+import { AppFooter } from "./components/Footer/elements/Footer";
 export default {
   title: "Example/Frame",
   component: Frame,
@@ -33,7 +34,7 @@ const Wordbook = styled.div`
 
 Primary.args = {
   header: <Header>Header</Header>,
-  footer: <Footer>Footer</Footer>,
+  footer: <AppFooter />,
   wordbook: <Wordbook>Wordbook</Wordbook>,
   translateSentence: (
     <LongSentenceTranslateComponent
