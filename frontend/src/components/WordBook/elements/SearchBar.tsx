@@ -8,12 +8,13 @@ import { Box } from "@mui/system";
 
 export type SearchBarProps = {
   placeholder?: string;
+  value: string;
+  onChange: (value: string) => void;
   search: (value: string) => void;
   keyDown?: (event: React.KeyboardEvent) => void;
 };
 
 export const SearchBar = (props: SearchBarProps) => {
-  const [value, setValue] = React.useState("");
   const placeholder = props.placeholder || "Search word...";
   return (
     <Box
@@ -44,8 +45,8 @@ export const SearchBar = (props: SearchBarProps) => {
             flexShrink: 1,
           }}
           placeholder={placeholder}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          value={props.value}
+          onChange={(e) => props.onChange(e.target.value)}
           onKeyDown={props.keyDown}
           type="text"
         />
