@@ -14,7 +14,7 @@ const Template: StoryFn<SearchBarWithSuggestProps> = (args) => (
 export const Primary = Template.bind({});
 
 Primary.args = {
-  allWords: ["test", "hello", "tennis", "hr"],
+  allWords: ["test", "hello", "tennis", "hr", "test2", "test3"],
   decideWord: (word: string) => {
     console.log(word);
   },
