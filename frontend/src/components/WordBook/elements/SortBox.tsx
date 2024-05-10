@@ -8,11 +8,13 @@ export type TopOrBottom = "top" | "bottom";
 const reverse = (topOrBottom: TopOrBottom) =>
   topOrBottom === "top" ? "bottom" : "top";
 
-export type SortButtonProps = {
-  sortTypeToSortFn: { [key: string]: (topOrBottom: TopOrBottom) => void };
+type SortTypeToSortFn = { [key: string]: (topOrBottom: TopOrBottom) => void };
+
+export type SortBoxProps = {
+  sortTypeToSortFn: SortTypeToSortFn;
 };
 
-export const SortButton = (props: SortButtonProps) => {
+export const SortBox = (props: SortBoxProps) => {
   return (
     <SortMenuContainer>
       {Object.keys(props.sortTypeToSortFn).map((key, index) => (
