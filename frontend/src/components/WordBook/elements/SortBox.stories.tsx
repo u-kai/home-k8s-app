@@ -12,10 +12,24 @@ const Template: StoryFn<SortBoxProps> = (args) => <SortBox {...args} />;
 export const Primary = Template.bind({});
 
 Primary.args = {
-  sortTypeToSortFn: {
-    Created: (t) => console.log("Created", t),
-    Updated: (t) => console.log("Updated", t),
-    Name: (t) => console.log("Name", t),
-    Type: (t) => console.log("Type", t),
+  Crated: {
+    f: (tb) => {
+      console.log(tb);
+    },
+  },
+  Updated: {
+    f: (tb) => {
+      console.log(tb);
+    },
+  },
+  Word: {
+    f: (tb) => {
+      console.log(tb);
+    },
+  },
+  Like: {
+    f: (tb) => {
+      console.log(tb);
+    },
   },
 };
