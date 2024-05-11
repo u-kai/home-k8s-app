@@ -7,6 +7,7 @@ export type SearchBarWithSuggestProps = {
   search: (word: string) => void;
   allWords: string[];
   decideWord: (word: string) => void;
+  maxHeight?: string;
 };
 
 const getSuggestions = (all: string[], search: string): string[] => {
@@ -62,6 +63,7 @@ export const SearchBarWithSuggest = (props: SearchBarWithSuggestProps) => {
           focusIndex={focusIndex}
           onClick={props.decideWord}
           suggestions={getSuggestions(props.allWords, searchedValue)}
+          maxHeight={props.maxHeight}
         />
       </SuggestionsContainer>
     </Container>

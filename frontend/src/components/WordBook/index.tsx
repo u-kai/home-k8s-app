@@ -38,10 +38,11 @@ export const WordBook = (props: WordBookProps) => {
           search={(word) => {
             console.log(word);
           }}
-          allWords={["apple", "banana", "cherry"]}
+          allWords={Array(100).fill("apple") as string[]}
           decideWord={(word) => {
             console.log(word);
           }}
+          maxHeight={"300px"}
         />
         <AddButtonContainer>
           <AddButton handler={() => console.log("add")} />
@@ -71,19 +72,20 @@ const Container = styled.div<{ height: string }>`
   height: ${(props) => props.height};
 `;
 const SearchBarContainer = styled.div`
-  grid-column: 2/3;
-  grid-row: 1/2;
+  position: relative;
+  z-index: 100;
+  grid-column: 2;
   display: flex;
   direction: row;
-  align-items: center;
 `;
 
 const AddButtonContainer = styled.div`
   margin-left: 10px;
-  margin-top: 10px;
+  margin-top: 20px;
 `;
 
 const WordBookContainer = styled.div`
+  position: relative;
   grid-column: 1/5;
   grid-row: 3;
 `;

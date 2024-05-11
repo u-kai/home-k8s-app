@@ -5,11 +5,12 @@ export type SuggestionsProps = {
   suggestions: string[];
   focusIndex: number;
   onClick: (suggestion: string) => void;
+  maxHeight?: string;
 };
 
 export const Suggestions = (props: SuggestionsProps) => {
   return (
-    <SuggestionsContainer>
+    <SuggestionsContainer maxHeight={props.maxHeight ?? "300px"}>
       {props.suggestions.map((suggestion, index) => (
         <SuggestionContainer
           key={index}
@@ -23,11 +24,13 @@ export const Suggestions = (props: SuggestionsProps) => {
   );
 };
 
-const SuggestionsContainer = styled.div`
+const SuggestionsContainer = styled.div<{ maxHeight: string }>`
   width: 100%;
   border: 1px solid #e0e0e0;
   border-radius: 5px;
   background-color: #ffffff;
+  max-height: ${(props) => props.maxHeight};
+  overflow-y: scroll;
 `;
 const SuggestionContainer = styled.div<{ focus: boolean }>`
   padding: 10px;

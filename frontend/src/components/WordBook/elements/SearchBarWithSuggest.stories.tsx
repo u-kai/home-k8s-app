@@ -8,7 +8,10 @@ export default {
 };
 
 const Template: StoryFn<SearchBarWithSuggestProps> = (args) => (
-  <SearchBarWithSuggest {...args} />
+  <div>
+    <div>hello</div>
+    <SearchBarWithSuggest {...args} />
+  </div>
 );
 
 export const Primary = Template.bind({});
