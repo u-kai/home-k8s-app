@@ -21,11 +21,32 @@ const Wordbook = styled.div`
   height: 100%;
   border: 1px solid black;
 `;
+const testWord = {
+  word: "test",
+  wordMeaning: "testMeaning",
+  sentences: [
+    {
+      sentence: "this is a test sentence",
+      meaning: "これはテストの文です",
+    },
+    {
+      sentence: "this is a test sentence",
+      meaning: "これはテストの文です",
+    },
+  ],
+  rate: 3,
+  handleDelete: async () => {},
+  handleEdit: async () => {},
+  handleRateChange: async (rate: number) => {},
+  playAudio: async () => {},
+};
+
+const tests = Array(100).fill(testWord);
 
 Primary.args = {
   header: <Header logout={async () => console.log("logout")} />,
   footer: <AppFooter />,
-  wordbook: <WordBook />,
+  wordbook: <WordBook wordBooks={tests} />,
   translateSentence: (
     <LongSentenceTranslateComponent
       handleWordClick={async (word: string) => {}}

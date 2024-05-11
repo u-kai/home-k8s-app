@@ -8,59 +8,41 @@ import { WordAccordionProps } from "./elements/Accordion";
 
 export type WordBookProps = {
   height?: string;
+  onAddClick?: () => void;
+  wordBooks: WordAccordionProps[];
+  sort?: {
+    [key: string]: (tb: TopOrBottom) => void;
+  };
 };
 
 export const WordBook = (props: WordBookProps) => {
-  const wordbook: WordAccordionProps = {
-    rate: 3,
-    word: "apple",
-    wordMeaning: "りんご",
-    sentences: [
-      {
-        sentence: "This is an apple.",
-        meaning: "これはりんごです。",
-      },
-      {
-        sentence: "I like apple.",
-        meaning: "私はりんごが好きです。",
-      },
-    ],
-    playAudio: () => console.log("play audio"),
-    handleDelete: async () => console.log("delete"),
-    handleEdit: async () => console.log("edit"),
-    handleRateChange: async (rate: number) => console.log(rate),
-  };
-  const wordbooks = Array(100).fill(wordbook);
+  const allWords = props.wordBooks.map((wordBook) => wordBook.word);
   return (
-    <Container height={props.height ?? "100%"}>
-      <SearchBarContainer>
-        <SearchBarWithSuggest
-          search={(word) => {
-            console.log(word);
-          }}
-          allWords={Array(100).fill("apple") as string[]}
-          decideWord={(word) => {
-            console.log(word);
-          }}
-          maxHeight={"300px"}
-        />
-        <AddButtonContainer>
-          <AddButton handler={() => console.log("add")} />
-        </AddButtonContainer>
-      </SearchBarContainer>
-      <SortBoxContainer>
-        <SortBox
-          {...{
-            Created: (tb: TopOrBottom) => console.log("Created"),
-            Updated: (tb: TopOrBottom) => console.log("Updated"),
-            Rate: (tb: TopOrBottom) => console.log("Rate"),
-          }}
-        />
-      </SortBoxContainer>
-      <WordBookContainer>
-        <WordBookBox wordbooks={wordbooks} height={"100%"} />
-      </WordBookContainer>
-    </Container>
+    <>
+      <Container height={props.height ?? "100%"}>
+        <SearchBarContainer>
+          <SearchBarWithSuggest
+            search={(word) => {
+              console.log(word);
+            }}
+            allWords={allWords}
+            decideWord={(word) => {
+              console.log(word);
+            }}
+            maxHeight={"300px"}
+          />
+          <AddButtonContainer>
+            <AddButton handler={() => props.onAddClick?.()} />
+          </AddButtonContainer>
+        </SearchBarContainer>
+        <SortBoxContainer>
+          <SortBox {...props.sort} />
+        </SortBoxContainer>
+        <WordBookContainer>
+          <WordBookBox wordbooks={props.wordBooks} height={"100%"} />
+        </WordBookContainer>
+      </Container>
+    </>
   );
 };
 
