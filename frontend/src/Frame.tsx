@@ -23,9 +23,9 @@ export const Frame = (props: FrameProps) => {
 const Container = styled.div`
   position: absolute;
   display: grid;
-  grid-template-rows: 10% 60% 18% 2%;
-  height: 100vh;
+  grid-template-rows: 10% 60% 17% 3%;
   width: 100%;
+  height: 100%;
   z-index: -99;
 `;
 
@@ -44,10 +44,9 @@ const TranslateSentenceContainer = styled.div`
   width: 70%;
   height: 100%;
   margin: 0 auto;
-  padding-top: 10px;
   z-index: -3;
 `;
 const FooterContainer = styled.div`
-  padding-top: 10px;
+  margin-top: 2px;
   width: 100%;
 `;
