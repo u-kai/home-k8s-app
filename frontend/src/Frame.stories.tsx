@@ -6,6 +6,7 @@ import { styled } from "styled-components";
 import { LongSentenceTranslateComponent } from "./components/LongSentence";
 import { AppFooter } from "./components/Footer/elements/Footer";
 import { Header } from "./components/Header";
+import { WordBook } from "./components/WordBook";
 export default {
   title: "Example/Frame",
   component: Frame,
@@ -24,7 +25,7 @@ const Wordbook = styled.div`
 Primary.args = {
   header: <Header logout={async () => console.log("logout")} />,
   footer: <AppFooter />,
-  wordbook: <Wordbook>Wordbook</Wordbook>,
+  wordbook: <WordBook />,
   translateSentence: (
     <LongSentenceTranslateComponent
       handleWordClick={async (word: string) => {}}

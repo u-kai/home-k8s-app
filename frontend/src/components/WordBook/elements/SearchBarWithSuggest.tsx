@@ -71,6 +71,7 @@ export const SearchBarWithSuggest = (props: SearchBarWithSuggestProps) => {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
+  width: 100%;
 `;
 
 const SuggestionsContainer = styled.div`

@@ -11,4 +11,6 @@ const Template: StoryFn<WordBookProps> = (args) => <WordBook {...args} />;
 
 export const Primary = Template.bind({});
 
-Primary.args = {};
+Primary.args = {
+  height: "400px",
+};

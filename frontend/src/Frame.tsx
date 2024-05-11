@@ -23,7 +23,7 @@ export const Frame = (props: FrameProps) => {
 const Container = styled.div`
   position: absolute;
   display: grid;
-  grid-template-rows: 10% 50% 25% 5%;
+  grid-template-rows: 10% 65% 13% 2%;
   height: 100vh;
   width: 100%;
   z-index: -99;
