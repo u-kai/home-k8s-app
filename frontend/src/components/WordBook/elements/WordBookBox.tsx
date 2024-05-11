@@ -3,12 +3,13 @@ import { styled } from "styled-components";
 import { WordAccordion, WordAccordionProps } from "./Accordion";
 
 export type WordBookBoxProps = {
+  height?: string;
   wordbooks: WordAccordionProps[];
 };
 
 export const WordBookBox = (props: WordBookBoxProps) => {
   return (
-    <Container>
+    <Container height={props.height ?? "400px"}>
       {props.wordbooks.map((props, index) => {
         return <WordAccordion key={index} {...props} />;
       })}
@@ -16,4 +17,7 @@ export const WordBookBox = (props: WordBookBoxProps) => {
   );
 };
 
-const Container = styled.div``;
+const Container = styled.div<{ height: string }>`
+  overflow-y: scroll;
+  height: ${(props) => props.height};
+`;

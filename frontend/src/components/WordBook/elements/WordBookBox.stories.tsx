@@ -7,7 +7,9 @@ export default {
   component: WordBookBox,
 };
 
-const Template: StoryFn<WordBookBoxProps> = (args) => <WordBookBox {...args} />;
+const Template: StoryFn<WordBookBoxProps> = (args) => (
+  <WordBookBox {...args} height={"400px"} />
+);
 
 export const Primary = Template.bind({});
 
@@ -33,4 +35,4 @@ const testProps = {
   ],
 };
 
-Primary.args = { wordbooks: Array(10).fill(testProps) };
+Primary.args = { wordbooks: Array(100).fill(testProps) };

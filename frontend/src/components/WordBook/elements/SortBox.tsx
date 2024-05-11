@@ -10,9 +10,7 @@ const reverse = (topOrBottom: TopOrBottom) =>
   topOrBottom === "top" ? "bottom" : "top";
 
 export type SortBoxProps = {
-  [key: string]: {
-    f: (topOrBottom: TopOrBottom) => void;
-  };
+  [key: string]: (topOrBottom: TopOrBottom) => void;
 };
 
 export const SortBox = (props: SortBoxProps) => {
@@ -30,7 +28,7 @@ export const SortBox = (props: SortBoxProps) => {
   const newF = (key: string) => (topOrBottom: TopOrBottom) => {
     setOpen(false);
     setSortTypesState((prev) => ({ ...prev, [key]: topOrBottom }));
-    props[key].f(topOrBottom);
+    props[key](topOrBottom);
   };
 
   const childProps = Object.keys(props)
@@ -44,14 +42,30 @@ export const SortBox = (props: SortBoxProps) => {
 
   return (
     <Container>
-      <SortButton onClick={() => setOpen((prev) => !prev)} />
-      {open ? <SortMenu {...childProps} /> : null}
+      <SortButtonContainer>
+        <SortButton onClick={() => setOpen((prev) => !prev)} />
+      </SortButtonContainer>
+      <MenuContainer>
+        {open ? <SortMenu {...childProps} /> : null}
+      </MenuContainer>
     </Container>
   );
 };
 
 const Container = styled.div`
-  width: 200px;
+  position: relative;
+`;
+
+const SortButtonContainer = styled.div`
+  position: absolute;
+  right: 0;
+  top: 0;
+`;
+const MenuContainer = styled.div`
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
 `;
 
 type SortMenuProps = {
@@ -75,6 +89,13 @@ const SortMenu = (props: SortMenuProps) => {
     </SortMenuContainer>
   );
 };
+const SortMenuContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 5px;
+  padding: 5px;
+`;
 
 const SortItem = (props: {
   name: string;
@@ -89,7 +110,7 @@ const SortItem = (props: {
       style={{ display: "flex", justifyContent: "space-between" }}
     >
       {props.name}
-      <div>
+      <div style={{ marginLeft: 10 }}>
         {props.topOrBottom === "top" ? (
           <VerticalAlignTopIcon></VerticalAlignTopIcon>
         ) : (
@@ -99,11 +120,3 @@ const SortItem = (props: {
     </MenuItem>
   );
 };
-
-const SortMenuContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  border-radius: 5px;
-  padding: 5px;
-`;
