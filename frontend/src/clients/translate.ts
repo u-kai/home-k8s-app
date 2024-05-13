@@ -1,9 +1,9 @@
 import {
   authorizationHeader,
-  backendUrl,
   fetchJsonWithCors,
   isFailed,
   sseWithCors,
+  backendUrl,
 } from "./fetch";
 
 export type ToLang = "ja" | "en";

@@ -5,6 +5,7 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import { AppErrorContext } from "../../../contexts/error";
 
 const customIcons: {
   [index: string]: {
@@ -46,6 +47,7 @@ export type RatesProps = {
 
 export const Rates = (props: RatesProps) => {
   const [rate, setRate] = React.useState(props.initRate);
+  const { setAppError } = React.useContext(AppErrorContext);
   return (
     <Rating
       name="highlight-selected-only"
@@ -53,7 +55,14 @@ export const Rates = (props: RatesProps) => {
       IconContainerComponent={IconContainer}
       highlightSelectedOnly
       onChange={(_, newValue) => {
-        props.onChange(Number(newValue));
+        props.onChange(Number(newValue)).catch((e) => {
+          console.error(e);
+          setAppError({
+            message: "評価の変更に失敗しました",
+            id: "Rates",
+            name: "onChange",
+          });
+        });
         setRate(Number(newValue));
       }}
     />

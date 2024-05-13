@@ -1,11 +1,11 @@
 import React from "react";
 import { styled } from "styled-components";
+import { speech } from "../../../clients/speech";
 import { PlayAudioButton } from "./PlayAudioButton";
 
 export type SentenceProps = {
   sentence: string;
   meaning: string;
-  playAudio: (sentence: string) => void;
 };
 
 export const Sentence = (props: SentenceProps) => {
@@ -16,7 +16,7 @@ export const Sentence = (props: SentenceProps) => {
         <div>{props.meaning}</div>
       </SentenceContainer>
       <ButtonContainer>
-        <PlayAudioButton onClick={() => props.playAudio(props.sentence)} />
+        <PlayAudioButton onClick={() => speech(props.sentence)} />
       </ButtonContainer>
     </HorizontalContainer>
   );

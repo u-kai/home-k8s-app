@@ -6,7 +6,6 @@ import { Sentence } from "./Sentence";
 export type WordDetailProps = {
   wordMeaning: string;
   sentences: SentenceProfile[];
-  playAudio: () => void;
 };
 
 export const WordDetail = (props: WordDetailProps) => {
@@ -20,7 +19,6 @@ export const WordDetail = (props: WordDetailProps) => {
               key={index}
               sentence={sentence.value}
               meaning={sentence.meaning}
-              playAudio={props.playAudio}
             />
           </SentenceContainer>
         );

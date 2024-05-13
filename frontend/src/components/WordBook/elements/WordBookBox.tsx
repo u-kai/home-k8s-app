@@ -9,14 +9,13 @@ import { WordAccordion } from "./Accordion";
 
 export type WordBookBoxProps = {
   height?: string;
-  playAudio: () => void;
   updateWordProfile: UpdateWordProfile;
   deleteWordProfile: DeleteWordProfile;
 };
 
 export const WordBookBox = (props: WordBookBoxProps) => {
   const { wordbook } = useWordBook();
-  const { playAudio, updateWordProfile, deleteWordProfile } = props;
+  const { updateWordProfile, deleteWordProfile } = props;
   return (
     <Container height={props.height ?? "400px"}>
       {wordbook.map((props, index) => {
@@ -24,7 +23,6 @@ export const WordBookBox = (props: WordBookBoxProps) => {
           <WordAccordion
             key={index}
             profile={props}
-            playAudio={playAudio}
             updateWordProfile={updateWordProfile}
             deleteWordProfile={deleteWordProfile}
           />

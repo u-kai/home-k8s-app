@@ -14,7 +14,4 @@ export const Primary = Template.bind({});
 Primary.args = {
   sentence: "This is a test sentence.",
   meaning: "これはテスト文です。",
-  playAudio: (sentence: string) => {
-    console.log(sentence);
-  },
 };

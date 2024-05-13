@@ -1,5 +1,3 @@
-import process from "process";
-
 type Method = "GET" | "POST" | "PUT" | "DELETE";
 type FetchProps<T> = {
   url: string;
@@ -8,6 +6,12 @@ type FetchProps<T> = {
   headers?: { [key: string]: string };
 };
 
+export const backendUrl = (path: string) => {
+  if (location.host === "www.kaiandkai.com") {
+    return `https://api.kaiandkai.com${path}`;
+  }
+  return `http://dev.kaiandkai.com${path}`;
+};
 export type Result<T> = T | Error;
 export const isSuccessful = <T>(result: Result<T>): result is T => {
   return !(result instanceof Error);
@@ -70,30 +74,4 @@ export const authorizationHeader = (
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
-};
-
-export const backendUrl = (path: string) => {
-  if (location.host === "www.kaiandkai.com") {
-    return `https://api.kaiandkai.com${path}`;
-  }
-  return `http://dev.kaiandkai.com${path}`;
-};
-
-export const speak = (word: string) => {
-  const synth = window.speechSynthesis;
-  const voices = synth
-    .getVoices()
-    .filter((v) => v.lang !== undefined && v.lang === "en-US");
-  if (voices.length === 0) {
-    console.log("No voices found");
-    return;
-  }
-  const voice = voices[0];
-  if (voice.lang !== "en-US") {
-    console.log("No en-US voice found");
-    return;
-  }
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.voice = voice;
-  synth.speak(utterance);
 };

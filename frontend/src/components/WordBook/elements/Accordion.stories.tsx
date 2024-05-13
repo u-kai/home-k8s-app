@@ -27,7 +27,6 @@ const args: WordAccordionProps = {
   profile: mockWord,
   updateWordProfile: mockUpdateWordProfile,
   deleteWordProfile: mockDeleteWordProfile,
-  playAudio: () => {},
 };
 
 Primary.args = args;

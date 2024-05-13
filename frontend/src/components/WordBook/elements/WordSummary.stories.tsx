@@ -26,5 +26,4 @@ export const Primary = Template.bind({});
 Primary.args = {
   updateWordProfile: mockUpdateWordProfile,
   deleteWordProfile: mockDeleteWordProfile,
-  playAudio: async () => {},
 };

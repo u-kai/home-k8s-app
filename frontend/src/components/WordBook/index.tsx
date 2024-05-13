@@ -13,7 +13,6 @@ import { ModalContext } from "../../contexts/modalWord";
 
 export type WordBookProps = {
   height?: string;
-  playAudio: () => void;
   updateWordProfile: UpdateWordProfile;
   deleteWordProfile: DeleteWordProfile;
 };

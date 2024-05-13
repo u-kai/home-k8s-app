@@ -16,10 +16,11 @@ import {
 import { UserContext } from "../../../contexts/user";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { ModalContext } from "../../../contexts/modalWord";
+import { speech } from "../../../clients/speech";
+import { AppErrorContext } from "../../../contexts/error";
 
 export type WordSummaryProps = {
   profile: WordProfile;
-  playAudio: () => void;
   updateWordProfile: UpdateWordProfile;
   deleteWordProfile: DeleteWordProfile;
 };
@@ -29,6 +30,7 @@ export const WordSummary = (props: WordSummaryProps) => {
   const { updateWordProfile, deleteWordProfile } = useWordBook();
   const { user } = useContext(UserContext);
   const { modalWordDispatch } = useContext(ModalContext);
+  const { setAppError } = useContext(AppErrorContext);
 
   const onRateChange = async (rate: number) => {
     const newProfile = { ...profile, likeRates: toLikeRates(rate) };
@@ -47,7 +49,9 @@ export const WordSummary = (props: WordSummaryProps) => {
       <HorizontalContainer>
         <WordContainer>{profile.word.value}</WordContainer>
         <PlayAudioButtonContainer>
-          <PlayAudioButton onClick={props.playAudio}></PlayAudioButton>
+          <PlayAudioButton
+            onClick={() => speech(profile.word.value)}
+          ></PlayAudioButton>
         </PlayAudioButtonContainer>
         <RatesContainer>
           <Rates
@@ -76,7 +80,16 @@ export const WordSummary = (props: WordSummaryProps) => {
           open={open}
           setOpen={setOpen}
           word={profile.word.value}
-          deleteHandler={async () => handleDelete()}
+          deleteHandler={async () =>
+            handleDelete().catch((e) => {
+              console.error(e);
+              setAppError({
+                message: "削除に失敗しました",
+                id: "deleteWordProfile",
+                name: "handleDelete",
+              });
+            })
+          }
         />
       )}
     </>

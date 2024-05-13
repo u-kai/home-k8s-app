@@ -13,7 +13,6 @@ import {
 
 export type WordAccordionProps = {
   profile: WordProfile;
-  playAudio: () => void;
   updateWordProfile: UpdateWordProfile;
   deleteWordProfile: DeleteWordProfile;
 };
@@ -25,18 +24,11 @@ export const WordAccordion = (props: WordAccordionProps) => {
       summary={
         <WordSummary
           profile={props.profile}
-          playAudio={props.playAudio}
           updateWordProfile={props.updateWordProfile}
           deleteWordProfile={props.deleteWordProfile}
         />
       }
-      detail={
-        <WordDetail
-          wordMeaning={word.meaning}
-          sentences={sentences}
-          playAudio={props.playAudio}
-        />
-      }
+      detail={<WordDetail wordMeaning={word.meaning} sentences={sentences} />}
     />
   );
 };

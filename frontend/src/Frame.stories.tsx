@@ -53,7 +53,6 @@ Primary.args = {
   footer: <AppFooter />,
   wordbook: (
     <WordBook
-      playAudio={() => {}}
       updateWordProfile={mockUpdateWordProfile}
       deleteWordProfile={mockDeleteWordProfile}
     />

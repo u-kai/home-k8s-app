@@ -20,6 +20,7 @@ import {
   useWordBook,
   fetchAllWordProfiles,
 } from "./hooks/useWordBooks";
+import { AppErrorContext } from "./contexts/error";
 
 export const Home = () => {
   const [meaningBuffer, setMeaningBuffer] = React.useState("");
@@ -27,9 +28,17 @@ export const Home = () => {
   const { modalWordDispatch } = useContext(ModalContext);
   const { fetchAll } = useWordBook();
   const { user } = useContext(UserContext);
+  const { setAppError } = useContext(AppErrorContext);
 
   useEffect(() => {
-    fetchAll(fetchAllWordProfiles(user.token ?? ""));
+    fetchAll(fetchAllWordProfiles(user.token ?? "")).catch((e) => {
+      console.error(e);
+      setAppError({
+        message: "単語帳の取得に失敗しました",
+        id: "Home",
+        name: "useEffect",
+      });
+    });
   }, [user.token]);
 
   return (
@@ -38,7 +47,6 @@ export const Home = () => {
         header={<Header logout={async () => console.log("logout")} />}
         wordbook={
           <WordBook
-            playAudio={async () => console.log("play")}
             updateWordProfile={updateWordProfile(user.token ?? "")}
             deleteWordProfile={deleteWordProfile(user.token ?? "")}
           />
@@ -60,7 +68,14 @@ export const Home = () => {
                   toLang: "ja",
                 },
                 user.token ?? ""
-              );
+              ).catch((e) => {
+                console.error(e);
+                setAppError({
+                  message: "翻訳に失敗しました",
+                  id: "LongSentenceTranslate",
+                  name: "sseTranslateSentence",
+                });
+              });
             }}
             handleWordClick={async (word: string) => {
               modalWordDispatch({
@@ -91,7 +106,17 @@ export const Home = () => {
       />
       <RegisterModal
         translateHandler={async (req: { word: string; toLang: ToLang }) => {
-          const response = await translateRequest(req, user.token ?? "");
+          const response = await translateRequest(req, user.token ?? "").catch(
+            (e) => {
+              console.error(e);
+              setAppError({
+                message: "翻訳に失敗しました",
+                id: "RegisterModal",
+                name: "translateHandler",
+              });
+            }
+          );
+          if (!response) return "";
           return response;
         }}
         createSentenceHandler={async (word: string) => {
@@ -102,7 +127,17 @@ export const Home = () => {
             word,
             toLang: "en",
           };
-          const response = await generateSentence(req, user.token ?? "");
+          const response = await generateSentence(req, user.token ?? "").catch(
+            (e) => {
+              console.error(e);
+              setAppError({
+                message: "例文の生成に失敗しました",
+                id: "RegisterModal",
+                name: "createSentenceHandler",
+              });
+            }
+          );
+          if (!response) return { value: "", meaning: "" };
           return {
             value: response.sentence,
             meaning: response.meaning,

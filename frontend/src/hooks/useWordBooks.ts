@@ -7,10 +7,10 @@ import {
 } from "../contexts/wordbook";
 import {
   authorizationHeader,
-  backendUrl,
   fetchJsonWithCors,
   isFailed,
   Result,
+  backendUrl,
 } from "../clients/fetch";
 
 export type RegisterWordRequest = {

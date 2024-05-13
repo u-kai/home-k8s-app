@@ -2,11 +2,11 @@ import { Button, ListItem } from "@mui/material";
 import React from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import styled from "styled-components";
+import { speech } from "../../../clients/speech";
 
 export type WordBarProps = {
   pronunciation?: string;
   word: string;
-  play?: (value: string) => void;
   wordSize?: string;
 };
 
@@ -15,7 +15,7 @@ export const WordBar = (props: WordBarProps) => {
     <ListItem
       secondaryAction={
         <Button>
-          <PlayCircleIcon onClick={() => props.play?.(props.word)} />
+          <PlayCircleIcon onClick={() => speech(props.word)} />
         </Button>
       }
       sx={{ height: 50, zIndex: 1, width: "100%" }}
