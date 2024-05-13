@@ -21,13 +21,15 @@ import {
   fetchAllWordProfiles,
 } from "./hooks/useWordBooks";
 import { AppErrorContext } from "./contexts/error";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 
 export const Home = () => {
   const [meaningBuffer, setMeaningBuffer] = React.useState("");
   const [sentenceBuffer, setSentenceBuffer] = React.useState("");
   const { modalWordDispatch } = useContext(ModalContext);
   const { fetchAll } = useWordBook();
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
+  const { signOut } = useAuthenticator();
   const { setAppError } = useContext(AppErrorContext);
 
   useEffect(() => {
@@ -44,7 +46,14 @@ export const Home = () => {
   return (
     <>
       <Frame
-        header={<Header logout={async () => console.log("logout")} />}
+        header={
+          <Header
+            logout={async () => {
+              signOut();
+              setUser((prev) => ({ ...prev, token: undefined }));
+            }}
+          />
+        }
         wordbook={
           <WordBook
             updateWordProfile={updateWordProfile(user.token ?? "")}

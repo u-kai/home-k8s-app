@@ -5,7 +5,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import Button from "@mui/material/Button";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { styled } from "styled-components";
 
@@ -94,6 +93,8 @@ const Suggestion = styled.div<{ focused: boolean }>`
   border-radius: 2px;
   cursor: pointer;
   height: 40px;
+  position: relative;
+  z-index: 100;
 `;
 
 const SuggestionContainer = styled.div<{ width: number }>`
