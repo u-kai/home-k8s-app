@@ -72,6 +72,7 @@
     "@storybook/react-vite": "^8.0.8",
     "@storybook/test": "^8.0.8",
     "eslint-plugin-storybook": "^0.8.0",
-    "storybook": "^8.0.8"
+    "storybook": "^8.0.8",
+    "vitest": "^1.6.0"
   }
 }

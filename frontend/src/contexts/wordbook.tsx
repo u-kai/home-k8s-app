@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useState } from "react";
+import { LikeRates } from "../hooks/useWordBooks";
 
 export type WordBook = WordProfile[];
 
@@ -6,7 +7,7 @@ export type WordProfile = {
   wordId: string;
   word: Word;
   missCount: number;
-  likeRates: string;
+  likeRates: LikeRates;
   remarks: string;
   createdAt: number;
   updatedAt: number;

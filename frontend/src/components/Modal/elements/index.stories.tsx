@@ -1,21 +1,26 @@
 import React from "react";
 import { StoryFn } from "@storybook/react";
 import { RegisterModal, ModalProps } from "./index";
-import { ToLang } from "../../../../clients/translate";
+import { ToLang } from "../../../clients/translate";
+import { ModalContextProvider } from "../../../contexts/modalWord";
+import { WordBookContextProvider } from "../../../contexts/wordbook";
 export default {
   title: "Example/RegisterModal",
   component: RegisterModal,
 };
 
-const Template: StoryFn<ModalProps> = (args) => <RegisterModal {...args} />;
-
+const Template: StoryFn<ModalProps> = (args) => (
+  <ModalContextProvider>
+    <WordBookContextProvider>
+      <RegisterModal {...args} />
+    </WordBookContextProvider>
+  </ModalContextProvider>
+);
 export const Primary = Template.bind({});
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 Primary.args = {
-  handleClose: () => {},
-  open: true,
   translateHandler: async (req: {
     word: string;
     toLang: ToLang;

@@ -5,38 +5,35 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { WordDetail } from "./WordDetail";
 import { WordSummary } from "./WordSummary";
+import { WordProfile } from "../../../contexts/wordbook";
+import {
+  DeleteWordProfile,
+  UpdateWordProfile,
+} from "../../../hooks/useWordBooks";
 
 export type WordAccordionProps = {
-  word: string;
-  rate: number;
+  profile: WordProfile;
   playAudio: () => void;
-  handleRateChange: (rate: number) => Promise<void>;
-  handleEdit: () => Promise<void>;
-  handleDelete: () => Promise<void>;
-  wordMeaning: string;
-  sentences: {
-    sentence: string;
-    meaning: string;
-  }[];
+  updateWordProfile: UpdateWordProfile;
+  deleteWordProfile: DeleteWordProfile;
 };
 
 export const WordAccordion = (props: WordAccordionProps) => {
+  const { word, sentences } = props.profile;
   return (
     <Accordion
       summary={
         <WordSummary
-          word={props.word}
-          rate={props.rate}
+          profile={props.profile}
           playAudio={props.playAudio}
-          handleRateChange={props.handleRateChange}
-          handleEdit={props.handleEdit}
-          handleDelete={props.handleDelete}
+          updateWordProfile={props.updateWordProfile}
+          deleteWordProfile={props.deleteWordProfile}
         />
       }
       detail={
         <WordDetail
-          wordMeaning={props.wordMeaning}
-          sentences={props.sentences}
+          wordMeaning={word.meaning}
+          sentences={sentences}
           playAudio={props.playAudio}
         />
       }

@@ -3,16 +3,21 @@ import { StoryFn } from "@storybook/react";
 import { Frame } from "./Frame";
 import { FrameProps } from "./Frame";
 import { styled } from "styled-components";
-import { LongSentenceTranslateComponent } from "./components/LongSentence";
+import { LongSentenceTranslate } from "./components/LongSentence/elements/index";
 import { AppFooter } from "./components/Footer/elements/Footer";
 import { Header } from "./components/Header";
 import { WordBook } from "./components/WordBook";
+import { mockDeleteWordProfile, mockUpdateWordProfile } from "./contexts/mock";
 export default {
   title: "Example/Frame",
   component: Frame,
 };
 
-const Template: StoryFn<FrameProps> = (args) => <Frame {...args} />;
+const Template: StoryFn<FrameProps> = (args) => (
+  <div style={{ height: "100vh" }}>
+    <Frame {...args} />
+  </div>
+);
 
 export const Primary = Template.bind({});
 
@@ -46,9 +51,19 @@ const tests = Array(100).fill(testWord);
 Primary.args = {
   header: <Header logout={async () => console.log("logout")} />,
   footer: <AppFooter />,
-  wordbook: <WordBook wordBooks={tests} />,
+  wordbook: (
+    <WordBook
+      playAudio={() => {}}
+      updateWordProfile={mockUpdateWordProfile}
+      deleteWordProfile={mockDeleteWordProfile}
+    />
+  ),
   translateSentence: (
-    <LongSentenceTranslateComponent
+    <LongSentenceTranslate
+      sseTranslateSentence={async (
+        sentence: string,
+        setFn: (chunk: string) => void
+      ) => {}}
       handleWordClick={async (word: string) => {}}
       height="100%"
     />

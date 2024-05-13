@@ -29,9 +29,13 @@ export const LongSentenceTranslate = (props: LongSentenceTranslateProps) => {
           if (isKeyDownEnter(event)) {
             // 毎回新しい結果を表示するために初期化
             setResult("");
-            await props.sseTranslateSentence(sentence, (chunk) => {
-              setResult((prev) => prev + chunk);
-            });
+            await props
+              .sseTranslateSentence(sentence, (chunk) => {
+                setResult((prev) => prev + chunk);
+              })
+              .catch((e) => {
+                console.error(e);
+              });
             return;
           }
           setSentence(event);

@@ -12,6 +12,5 @@ const Template: StoryFn<SuggestionsProps> = (args) => <Suggestions {...args} />;
 export const Primary = Template.bind({});
 
 Primary.args = {
-  suggestions: ["test", "test2"],
   focusIndex: 0,
 };

@@ -1,17 +1,34 @@
 import React from "react";
 import { styled } from "styled-components";
-import { WordAccordion, WordAccordionProps } from "./Accordion";
+import {
+  DeleteWordProfile,
+  UpdateWordProfile,
+  useWordBook,
+} from "../../../hooks/useWordBooks";
+import { WordAccordion } from "./Accordion";
 
 export type WordBookBoxProps = {
   height?: string;
-  wordbooks: WordAccordionProps[];
+  playAudio: () => void;
+  updateWordProfile: UpdateWordProfile;
+  deleteWordProfile: DeleteWordProfile;
 };
 
 export const WordBookBox = (props: WordBookBoxProps) => {
+  const { wordbook } = useWordBook();
+  const { playAudio, updateWordProfile, deleteWordProfile } = props;
   return (
     <Container height={props.height ?? "400px"}>
-      {props.wordbooks.map((props, index) => {
-        return <WordAccordion key={index} {...props} />;
+      {wordbook.map((props, index) => {
+        return (
+          <WordAccordion
+            key={index}
+            profile={props}
+            playAudio={playAudio}
+            updateWordProfile={updateWordProfile}
+            deleteWordProfile={deleteWordProfile}
+          />
+        );
       })}
     </Container>
   );

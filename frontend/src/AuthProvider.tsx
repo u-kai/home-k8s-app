@@ -96,13 +96,5 @@ const AuthenticatorWrapper = () => {
 
 export const AuthProvider = () => {
   const { user } = useContext(UserContext);
-  return (
-    <>
-      {user.token ? (
-        <Home logout={async () => console.log("d")} />
-      ) : (
-        <AuthenticatorWrapper />
-      )}
-    </>
-  );
+  return <>{user.token ? <Home /> : <AuthenticatorWrapper />}</>;
 };

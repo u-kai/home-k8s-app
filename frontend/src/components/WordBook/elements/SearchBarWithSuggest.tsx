@@ -1,24 +1,23 @@
 import React from "react";
 import { styled } from "styled-components";
+import { WordProfile } from "../../../contexts/wordbook";
+import { useWordBook } from "../../../hooks/useWordBooks";
 import { SearchBar } from "./SearchBar";
 import { Suggestions } from "./Suggests";
 
 export type SearchBarWithSuggestProps = {
-  search: (word: string) => void;
-  allWords: string[];
-  decideWord: (word: string) => void;
   maxHeight?: string;
 };
 
-const getSuggestions = (all: string[], search: string): string[] => {
+const getSuggestions = (all: WordProfile[], search: string): WordProfile[] => {
   if (search === "") {
     return [];
   }
   const words = all.filter((word) => {
-    return word.includes(search);
+    return word.word.value.includes(search);
   });
-  const sortFn = (search: string, a: string, b: string) => {
-    return a.indexOf(search) - b.indexOf(search);
+  const sortFn = (search: string, a: WordProfile, b: WordProfile) => {
+    return a.word.value.indexOf(search) - b.word.value.indexOf(search);
   };
   return words.sort((a, b) => sortFn(search, a, b));
 };
@@ -26,6 +25,7 @@ const getSuggestions = (all: string[], search: string): string[] => {
 export const SearchBarWithSuggest = (props: SearchBarWithSuggestProps) => {
   const [searchedValue, setSearchedValue] = React.useState<string>("");
   const [focusIndex, setFocusIndex] = React.useState<number>(-1);
+  const { wordbook, wordToTop } = useWordBook();
   const reset = () => {
     setFocusIndex(-1);
     setSearchedValue("");
@@ -33,27 +33,25 @@ export const SearchBarWithSuggest = (props: SearchBarWithSuggestProps) => {
   const keyDown = (e: React.KeyboardEvent<Element>) => {
     if (e.key === "ArrowDown") {
       setFocusIndex(
-        (prev) =>
-          (prev + 1) % getSuggestions(props.allWords, searchedValue).length
+        (prev) => (prev + 1) % getSuggestions(wordbook, searchedValue).length
       );
     } else if (e.key === "ArrowUp") {
       setFocusIndex(
         (prev) =>
-          (prev - 1 + getSuggestions(props.allWords, searchedValue).length) %
-          getSuggestions(props.allWords, searchedValue).length
+          (prev - 1 + getSuggestions(wordbook, searchedValue).length) %
+          getSuggestions(wordbook, searchedValue).length
       );
     }
     if (e.key === "Enter") {
-      props.decideWord(
-        getSuggestions(props.allWords, searchedValue)[focusIndex]
-      );
+      wordToTop(getSuggestions(wordbook, searchedValue)[focusIndex].wordId);
       reset();
     }
   };
   return (
     <Container>
       <SearchBar
-        search={props.search}
+        // TODO
+        search={() => {}}
         keyDown={keyDown}
         value={searchedValue}
         onChange={(v) => setSearchedValue(v)}
@@ -61,8 +59,7 @@ export const SearchBarWithSuggest = (props: SearchBarWithSuggestProps) => {
       <SuggestionsContainer>
         <Suggestions
           focusIndex={focusIndex}
-          onClick={props.decideWord}
-          suggestions={getSuggestions(props.allWords, searchedValue)}
+          suggestions={getSuggestions(wordbook, searchedValue)}
           maxHeight={props.maxHeight}
         />
       </SuggestionsContainer>

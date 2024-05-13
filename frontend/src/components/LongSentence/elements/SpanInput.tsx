@@ -53,30 +53,6 @@ const Container = styled.div<{ width: string; height: string }>`
   z-index: -2;
 `;
 
-//const TextArea = styled.textarea`
-//  position: absolute;
-//  border: 1px solid #ccc; /* より薄いグレーの枠線 */
-//  border-radius: 8px; /* 角の丸みを加える */
-//  z-index: 1;
-//  color: transparent; /* 色は透明のまま */
-//  background-color: rgba(255, 255, 255, 0.5); /* より薄い半透明の背景色 */
-//  resize: none; /* リサイズ不可 */
-//  height: 100%;
-//  width: 100%;
-//  padding: 10px; /* 内部の余白 */
-//  outline: none; /* アウトラインを削除 */
-//  &:hover,
-//  &:focus {
-//    border-color: #888; /* ホバーまたはフォーカス時の枠線の色を濃いめのグレーに */
-//    background-color: rgba(
-//      255,
-//      255,
-//      255,
-//      0.7
-//    ); /* ホバーまたはフォーカス時の背景色を少し濃く */
-//  }
-//`;
-
 const TextAreaWrapper = styled.div`
   position: absolute;
   z-index: 1;
@@ -84,7 +60,6 @@ const TextAreaWrapper = styled.div`
   top: 0;
   white-space: pre-wrap;
   max-width: 100%;
-  overflow: hidden;
 `;
 
 const Word = styled.span`

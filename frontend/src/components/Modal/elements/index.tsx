@@ -1,37 +1,29 @@
 import Modal from "@mui/material/Modal";
 import { Fab, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import { ExampleSentenceField } from "./ExampleSentenceField";
 import AddIcon from "@mui/icons-material/Add";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { ToLang } from "../../../../clients/translate";
+import { ToLang } from "../../../clients/translate";
 import { WordField } from "./WordFiled";
+import { ModalContext, isWordProfile } from "../../../contexts/modalWord";
+import {
+  RegisterWordProfile,
+  UpdateWordProfile,
+  useWordBook,
+} from "../../../hooks/useWordBooks";
 
 export type ModalProps = {
-  open: boolean;
-  handleClose: () => void;
-  registerHandler: (target: RegisteredWordProfile) => Promise<void>;
   translateHandler?: (req: { word: string; toLang: ToLang }) => Promise<string>;
   createSentenceHandler?: (
     word: string
   ) => Promise<{ value: string; meaning: string }>;
-  init?: RegisteredWordProfile;
+  registerWordProfile: RegisterWordProfile;
+  updateWordProfile: UpdateWordProfile;
   errorHandler?: (error: Error) => void;
-};
-
-export type RegisteredWordProfile = {
-  word: string;
-  meaning: string;
-  pronunciation?: string;
-  remarks: string;
-  sentences: {
-    value: string;
-    meaning: string;
-    pronunciation?: string;
-  }[];
 };
 
 const createTranslateRequest = (
@@ -52,51 +44,22 @@ const createTranslateRequest = (
 
 const INIT_SAVE_BUTTON_POSITION = 400;
 const PER_PUSH_BUTTON = 105;
-
-const INIT_SENTENCE = {
-  value: "",
-  meaning: "",
-};
-
-const INIT_WORD_PROFILE: RegisteredWordProfile = {
-  word: "",
-  meaning: "",
-  pronunciation: "",
-  remarks: "",
-  sentences: [INIT_SENTENCE],
-};
 const INPUT_WIDTH = "400px";
 
 export const RegisterModal = (props: ModalProps) => {
-  const [wordProfile, setWordProfile] = useState<RegisteredWordProfile>(
-    props.init ?? INIT_WORD_PROFILE
-  );
-  const addNewSentence = () => {
-    setWordProfile({
-      ...wordProfile,
-      sentences: [...wordProfile.sentences, INIT_SENTENCE],
-    });
-  };
-  const changeSentence = (index: number, sentence: string) => {
-    setWordProfile((prev) => {
-      const sentences = prev.sentences.slice();
-      sentences[index] = { ...sentences[index], value: sentence };
-      return { ...prev, sentences };
-    });
-  };
-
-  const changeSentenceMeaning = (index: number, meaning: string) => {
-    setWordProfile((prev) => {
-      const sentences = prev.sentences.slice();
-      sentences[index] = { ...sentences[index], meaning };
-      return { ...prev, sentences };
-    });
-  };
-
+  const { modalWord, modalWordDispatch } = useContext(ModalContext);
+  const { registerWordProfile, updateWordProfile } = useWordBook();
   const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
     INIT_SAVE_BUTTON_POSITION +
-      (wordProfile.sentences.length - 1) * PER_PUSH_BUTTON
+      (modalWord.word.sentences.length - 1) * PER_PUSH_BUTTON
   );
+  useEffect(() => {
+    setSaveButtonPosition(
+      INIT_SAVE_BUTTON_POSITION +
+        (modalWord.word.sentences.length - 1) * PER_PUSH_BUTTON
+    );
+  }, [modalWord.open, modalWord.word.sentences.length]);
+
   const increaseSaveButtonPosition = () => {
     setSaveButtonPosition(saveButtonPosition + PER_PUSH_BUTTON);
   };
@@ -110,16 +73,38 @@ export const RegisterModal = (props: ModalProps) => {
   const [wordTranslateAiProgress, setWordTranslateAiProgress] =
     useState<boolean>(false);
   const [generateSentenceAiProgresses, setGenerateSentenceAiProgresses] =
-    useState<boolean[]>(wordProfile.sentences.map(() => false));
+    useState<boolean[]>(modalWord.word.sentences.map(() => false));
 
   const [cancel, setCancel] = useState<boolean>(false);
 
   const register = async () => {
-    props
-      .registerHandler(wordProfile)
+    const word = modalWord.word;
+
+    // existing word
+    if (isWordProfile(word)) {
+      updateWordProfile(props.updateWordProfile, word)
+        .then(() => {
+          modalWordDispatch({
+            type: "close",
+          });
+          backToInitPosition();
+        })
+        .catch((e) => {
+          props.errorHandler?.(e);
+        });
+      return;
+    }
+    registerWordProfile(props.registerWordProfile, {
+      word: word.word.value,
+      meaning: word.word.meaning,
+      pronunciation: word.word.pronunciation,
+      remarks: word.remarks,
+      sentences: word.sentences,
+    })
       .then(() => {
-        props.handleClose();
-        allClear();
+        modalWordDispatch({
+          type: "close",
+        });
         backToInitPosition();
       })
       .catch((e) => {
@@ -127,52 +112,62 @@ export const RegisterModal = (props: ModalProps) => {
       });
   };
 
-  const onDeleteSentence = (index: number) => {
-    if (wordProfile.sentences.length === 1) {
-      wordProfile.sentences[0] = INIT_SENTENCE;
-      setWordProfile({ ...wordProfile });
-      return;
-    }
-    setWordProfile((prev) => {
-      const sentences = prev.sentences.filter((_, i) => i !== index);
-      return { ...prev, sentences };
-    });
-  };
-
-  const allClear = () => {
-    setWordProfile(INIT_WORD_PROFILE);
-  };
-
   const translateHandler = async () => {
-    const req = createTranslateRequest(wordProfile.word, wordProfile.meaning);
+    const wordValue = modalWord.word.word.value;
+    const meaningValue = modalWord.word.word.meaning;
+    const req = createTranslateRequest(wordValue, meaningValue);
     const translated = await props.translateHandler?.(req).catch((e) => {
       props.errorHandler?.(e);
     });
     if (!translated) return;
-    if (wordProfile.word === "") {
-      setWordProfile({ ...wordProfile, word: translated });
+    if (wordValue === "") {
+      modalWordDispatch({
+        type: "setWordValue",
+        payload: {
+          ...modalWord.word,
+          setWordValue: translated,
+        },
+      });
       return;
     }
-    console.log("translated", translated);
-    setWordProfile((prev) => ({ ...prev, meaning: translated }));
+    modalWordDispatch({
+      type: "setWordMeaning",
+      payload: {
+        ...modalWord.word,
+        setWordMeaning: translated,
+      },
+    });
   };
 
   const generateSentence = async (index: number) => {
     const sentence = await props
-      .createSentenceHandler?.(wordProfile.word)
+      .createSentenceHandler?.(modalWord.word.word.value)
       .catch((e) => {
         props.errorHandler?.(e);
       });
     if (sentence) {
-      changeSentence(index, sentence.value);
-      changeSentenceMeaning(index, sentence.meaning);
+      modalWordDispatch({
+        type: "setSentenceValue",
+        payload: {
+          setSentenceValue: {
+            index,
+            value: sentence.value,
+            meaning: sentence.meaning,
+          },
+        },
+      });
     }
   };
   return (
     <div>
       <Modal
-        open={props.open}
-        onClose={props.handleClose}
+        open={modalWord.open}
+        onClose={() => {
+          modalWordDispatch({
+            type: "close",
+          });
+          backToInitPosition();
+        }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         style={{ height: "100%" }}
@@ -196,25 +191,35 @@ export const RegisterModal = (props: ModalProps) => {
             Register New Word and Sentences
           </Typography>
           <WordField
-            open={props.open}
+            open={modalWord.open}
             word={{
-              value: wordProfile.word,
-              meaning: wordProfile.meaning,
-              remarks: wordProfile.remarks,
-              pronunciation: wordProfile.pronunciation,
+              value: modalWord.word.word.value,
+              meaning: modalWord.word.word.meaning,
+              remarks: modalWord.word.remarks,
+              pronunciation: modalWord.word.word.pronunciation,
             }}
             width={INPUT_WIDTH}
             handleWordChange={(value) => {
-              setWordProfile({ ...wordProfile, word: value });
+              modalWordDispatch({
+                type: "setWordValue",
+                payload: {
+                  setWordValue: value,
+                },
+              });
             }}
             handleMeaningChange={(value) => {
-              setWordProfile({ ...wordProfile, meaning: value });
+              modalWordDispatch({
+                type: "setWordMeaning",
+                payload: {
+                  setWordMeaning: value,
+                },
+              });
             }}
-            handlePronunciationChange={(value) => {
-              setWordProfile({ ...wordProfile, pronunciation: value });
+            handlePronunciationChange={(_value) => {
+              console.log("TODO:pronunciation change");
             }}
             handleRemarksChange={(value) => {
-              setWordProfile({ ...wordProfile, remarks: value });
+              console.log("TODO:remarks change");
             }}
             translateHandler={translateHandler}
             enterKeyDownHandler={async () => {
@@ -239,20 +244,55 @@ export const RegisterModal = (props: ModalProps) => {
               top: "240px",
             }}
           >
-            {wordProfile.sentences.map((value, index) => (
+            {modalWord.word.sentences.map((sentence, index) => (
               <ExampleSentenceField
                 key={index}
                 width={INPUT_WIDTH}
-                sentence={value.value}
-                onSentenceChange={(value) => changeSentence(index, value)}
+                sentence={
+                  "sentence" in sentence
+                    ? sentence.sentence.value
+                    : sentence.value
+                }
+                onSentenceChange={(value) =>
+                  modalWordDispatch({
+                    type: "setSentenceValue",
+                    payload: {
+                      setSentenceValue: {
+                        index,
+                        value,
+                      },
+                    },
+                  })
+                }
                 onDeletePress={() => {
-                  onDeleteSentence(index);
-                  if (wordProfile.sentences.length !== 1) {
+                  modalWordDispatch({
+                    type: "deleteSentence",
+                    payload: {
+                      deleteSentence: {
+                        index,
+                      },
+                    },
+                  });
+                  if (modalWord.word.sentences.length !== 1) {
                     decreaseSaveButtonPosition();
                   }
                 }}
-                onMeaningChange={(value) => changeSentenceMeaning(index, value)}
-                meaning={value.meaning}
+                onMeaningChange={(value) =>
+                  modalWordDispatch({
+                    type: "setSentenceValue",
+                    payload: {
+                      setSentenceValue: {
+                        index,
+                        meaning: value,
+                      },
+                    },
+                  })
+                }
+                meaning={
+                  "meaning" in sentence
+                    ? sentence.meaning
+                    : sentence.sentence.meaning
+                }
                 onAssistantPress={async () => generateSentence(index)}
                 aiProgress={generateSentenceAiProgresses[index]}
                 toggleAiProgress={(to) => {
@@ -272,7 +312,9 @@ export const RegisterModal = (props: ModalProps) => {
               width: "100px",
             }}
             onClick={() => {
-              addNewSentence();
+              modalWordDispatch({
+                type: "addNewSentence",
+              });
               increaseSaveButtonPosition();
             }}
           >
@@ -321,8 +363,9 @@ export const RegisterModal = (props: ModalProps) => {
           open={cancel}
           setOpen={setCancel}
           deleteHandler={async () => {
-            allClear();
-            props.handleClose();
+            modalWordDispatch({
+              type: "close",
+            });
             backToInitPosition();
           }}
         />

@@ -1,45 +1,54 @@
-import React from "react";
+import React, { useContext } from "react";
 import { AddButton } from "../Button/AddButton";
 import { styled } from "styled-components";
 import { SearchBarWithSuggest } from "./elements/SearchBarWithSuggest";
-import { SortBox, TopOrBottom } from "./elements/SortBox";
+import { SortBox } from "./elements/SortBox";
 import { WordBookBox } from "./elements/WordBookBox";
-import { WordAccordionProps } from "./elements/Accordion";
+import {
+  DeleteWordProfile,
+  UpdateWordProfile,
+  useWordBook,
+} from "../../hooks/useWordBooks";
+import { ModalContext } from "../../contexts/modalWord";
 
 export type WordBookProps = {
   height?: string;
-  onAddClick?: () => void;
-  wordBooks: WordAccordionProps[];
-  sort?: {
-    [key: string]: (tb: TopOrBottom) => void;
-  };
+  playAudio: () => void;
+  updateWordProfile: UpdateWordProfile;
+  deleteWordProfile: DeleteWordProfile;
 };
 
 export const WordBook = (props: WordBookProps) => {
-  const allWords = props.wordBooks.map((wordBook) => wordBook.word);
+  const { sortByWord, sortByCreatedAt, sortByLikeRates, sortByUpdatedAt } =
+    useWordBook();
+  const { modalWordDispatch } = useContext(ModalContext);
   return (
     <>
       <Container height={props.height ?? "100%"}>
         <SearchBarContainer>
-          <SearchBarWithSuggest
-            search={(word) => {
-              console.log(word);
-            }}
-            allWords={allWords}
-            decideWord={(word) => {
-              console.log(word);
-            }}
-            maxHeight={"300px"}
-          />
+          <SearchBarWithSuggest maxHeight={"300px"} />
           <AddButtonContainer>
-            <AddButton handler={() => props.onAddClick?.()} />
+            <AddButton
+              handler={() =>
+                modalWordDispatch({
+                  type: "open",
+                })
+              }
+            />
           </AddButtonContainer>
         </SearchBarContainer>
         <SortBoxContainer>
-          <SortBox {...props.sort} />
+          <SortBox
+            {...{
+              Word: (tp) => sortByWord(tp),
+              Like: (tp) => sortByLikeRates(tp),
+              CreatedAt: (tp) => sortByCreatedAt(tp),
+              UpdatedAt: (tp) => sortByUpdatedAt(tp),
+            }}
+          />
         </SortBoxContainer>
         <WordBookContainer>
-          <WordBookBox wordbooks={props.wordBooks} height={"100%"} />
+          <WordBookBox height={"100%"} {...props} />
         </WordBookContainer>
       </Container>
     </>

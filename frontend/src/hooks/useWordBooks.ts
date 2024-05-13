@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import { UserContext } from "../contexts/user";
 import {
   Sentence,
   SentenceProfile,
@@ -29,7 +28,7 @@ export type UpdateWordRequest = {
   pronunciation?: string;
   remarks: string;
   missCount: number;
-  likeRates: string;
+  likeRates: LikeRates;
   sentences: {
     sentenceId: string;
     value: string;
@@ -41,39 +40,33 @@ export type UpdateWordRequest = {
 const wordbookUrl = (path: string) => {
   return backendUrl(`/wordbook${path}`);
 };
-export const useWordBook = () => {
-  const { wordbook, setWordBook } = useContext(WordBookContext);
-  const { user } = useContext(UserContext);
-  const authHeader = authorizationHeader(user.token ?? "");
-  // API Requests
-  // Fetch All is called when the page is loaded.
-  // It fetches all the word profiles from the server and set the wordbook state.
-  const fetchAll = async (): Promise<Result<void>> => {
-    if (wordbook.length > 0) {
-      return;
-    }
+
+export type FetchAll = () => Promise<Result<WordProfile[]>>;
+
+export const fetchAllWordProfiles = (token: string): FetchAll => {
+  return async () => {
     const response: Result<{ result: WordProfile[] }> = await fetchJsonWithCors<
       null,
       { result: WordProfile[] }
     >({
       url: wordbookUrl("/words"),
       method: "GET",
-      headers: authHeader,
+      headers: authorizationHeader(token),
     });
 
     if (isFailed(response)) {
       return new Error("Failed to fetch wordbook." + response.toString());
     }
-    setWordBook(response.result);
+    return response.result;
   };
+};
 
-  const registerWordProfile = async (
-    req: RegisterWordRequest
-  ): Promise<Result<void>> => {
-    const duplicate = wordbook.find((word) => word.word.value === req.word);
-    if (duplicate) {
-      return new Error("The word is already registered.");
-    }
+export type RegisterWordProfile = (
+  req: RegisterWordRequest
+) => Promise<Result<WordProfile>>;
+
+export const registerWordProfile = (token: string): RegisterWordProfile => {
+  return async (req: RegisterWordRequest) => {
     const response = await fetchJsonWithCors<
       RegisterWordRequest,
       { result: WordProfile }
@@ -81,19 +74,23 @@ export const useWordBook = () => {
       url: wordbookUrl("/registerWord"),
       method: "POST",
       body: req,
-      headers: authHeader,
+      headers: authorizationHeader(token),
     });
     if (isFailed(response)) {
       return new Error(
         "Failed to register word profile." + response.toString()
       );
     }
-    setWordBook([response.result, ...wordbook]);
+    return response.result;
   };
+};
 
-  const updateWordProfile = async (
-    wordProfile: WordProfile
-  ): Promise<Result<void>> => {
+export type UpdateWordProfile = (
+  wordProfile: WordProfile
+) => Promise<Result<WordProfile>>;
+
+export const updateWordProfile = (token: string): UpdateWordProfile => {
+  return async (wordProfile: WordProfile) => {
     const req: UpdateWordRequest = {
       wordId: wordProfile.wordId,
       word: wordProfile.word.value,
@@ -118,29 +115,92 @@ export const useWordBook = () => {
       url: wordbookUrl("/updateWord"),
       method: "POST",
       body: req,
-      headers: authHeader,
+      headers: authorizationHeader(token),
     });
     if (isFailed(response)) {
       return new Error("Failed to update word profile." + response.toString());
     }
+    return response.result;
+  };
+};
+
+export type DeleteWordProfile = (req: {
+  userId: string;
+  wordId: string;
+}) => Promise<Result<void>>;
+
+export const deleteWordProfile = (token: string): DeleteWordProfile => {
+  return async (req: { userId: string; wordId: string }) => {
+    const response = await fetchJsonWithCors<
+      { wordId: string; userId: string },
+      { result: string }
+    >({
+      url: wordbookUrl("/deleteWord"),
+      method: "POST",
+      body: req,
+      headers: authorizationHeader(token),
+    });
+    if (isFailed(response)) {
+      return new Error("Failed to delete word profile." + response.toString());
+    }
+  };
+};
+
+export const useWordBook = () => {
+  const { wordbook, setWordBook } = useContext(WordBookContext);
+  // API Requests
+  // Fetch All is called when the page is loaded.
+  // It fetches all the word profiles from the server and set the wordbook state.
+  const fetchAll = async (client: FetchAll): Promise<Result<void>> => {
+    if (wordbook.length > 0) {
+      return;
+    }
+    const response = await client();
+    if (isFailed(response)) {
+      return new Error("Failed to fetch wordbook." + response.toString());
+    }
+    setWordBook(response);
+  };
+
+  const registerWordProfile = async (
+    client: RegisterWordProfile,
+    req: RegisterWordRequest
+  ): Promise<Result<void>> => {
+    const duplicate = wordbook.find((word) => word.word.value === req.word);
+    if (duplicate) {
+      return new Error("The word is already registered.");
+    }
+    const response = await client(req);
+    if (isFailed(response)) {
+      return new Error(
+        "Failed to register word profile." + response.toString()
+      );
+    }
+    setWordBook([response, ...wordbook]);
+  };
+
+  const updateWordProfile = async (
+    client: UpdateWordProfile,
+    wordProfile: WordProfile
+  ): Promise<Result<void>> => {
+    const response = await client(wordProfile);
+    if (isFailed(response)) {
+      return new Error("Failed to update word profile." + response.toString());
+    }
     const newWordBook = wordbook.map((word) => {
-      if (word.wordId === response.result.wordId) {
-        return response.result;
+      if (word.wordId === response.wordId) {
+        return response;
       }
       return word;
     });
     setWordBook(newWordBook);
   };
 
-  const deleteWordProfile = async (req: {
-    wordId: string;
-  }): Promise<Result<void>> => {
-    const response = await fetchJsonWithCors({
-      url: wordbookUrl("/deleteWord"),
-      method: "POST",
-      body: { ...req, userId: user.id },
-      headers: authHeader,
-    });
+  const deleteWordProfile = async (
+    client: DeleteWordProfile,
+    req: { wordId: string; userId: string }
+  ): Promise<Result<void>> => {
+    const response = await client(req);
     if (isFailed(response)) {
       return new Error("Failed to delete word profile." + response.toString());
     }
@@ -149,30 +209,6 @@ export const useWordBook = () => {
     return;
   };
 
-  // use search input
-  type Suggestion = {
-    wordId: string;
-    value: string;
-  };
-  const getSuggestions = (search: string): Suggestion[] => {
-    if (search === "") {
-      return [];
-    }
-    const words = wordbook.filter((word) => {
-      return word.word.value.includes(search);
-    });
-    const sortFn = (search: string, a: WordProfile, b: WordProfile) => {
-      return a.word.value.indexOf(search) - b.word.value.indexOf(search);
-    };
-    return words
-      .sort((a, b) => sortFn(search, a, b))
-      .map((word) => {
-        return {
-          wordId: word.wordId,
-          value: word.word.value,
-        };
-      });
-  };
   // use search input end
   const wordToTop = (wordId: string) => {
     const word = wordbook.find((word) => word.wordId === wordId);
@@ -229,7 +265,6 @@ export const useWordBook = () => {
     });
     setWordBook(sorted);
   };
-
   const sortByWord = (topOrBottom: TopOrBottom) => {
     const sortTopFn = (a: WordProfile, b: WordProfile) => {
       return a.word.value.localeCompare(b.word.value);
@@ -248,7 +283,6 @@ export const useWordBook = () => {
   return {
     wordbook,
     wordToTop,
-    getSuggestions,
     fetchAll,
     sortByCreatedAt,
     sortByLikeRates,

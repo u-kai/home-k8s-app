@@ -1,23 +1,24 @@
 import React, { useContext } from "react";
 import { styled } from "styled-components";
-import { RegisterModal } from "./elements/Modal/index";
+import { RegisterModal } from "./elements/index";
 import { UserContext } from "../../contexts/user";
 import { AppErrorContext } from "../../contexts/error";
-import { RegisteredWordProfile } from "./elements/Modal";
 import {
   generateSentence,
   ToLang,
   translateRequest,
 } from "../../clients/translate";
-import { useWordBook } from "../../hooks/useWordBooks";
-import { Sentence } from "../../contexts/wordbook";
+import {
+  useWordBook,
+  registerWordProfile as registerClient,
+  updateWordProfile as updateClient,
+} from "../../hooks/useWordBooks";
 import { AddButton } from "../Button/AddButton";
 
 export const Registers = () => {
   const [open, setOpen] = React.useState(false);
   const { user } = useContext(UserContext);
   const { setAppError } = useContext(AppErrorContext);
-  const { registerWordProfile } = useWordBook();
   const errorHandler = (error: Error) => {
     setAppError({
       name: error.name,
@@ -54,33 +55,12 @@ export const Registers = () => {
       meaning: generated.meaning,
     };
   };
-  const registerHandler = async (target: RegisteredWordProfile) => {
-    const convert = (sentence: {
-      value: string;
-      meaning: string;
-      pronunciation?: string;
-    }): Sentence => {
-      return {
-        value: sentence.value,
-        meaning: sentence.meaning,
-        pronunciation: sentence.pronunciation ?? "",
-      };
-    };
-    registerWordProfile({
-      word: target.word,
-      meaning: target.meaning,
-      pronunciation: target.pronunciation ?? "",
-      remarks: target.remarks,
-      sentences: target.sentences.map(convert),
-    });
-  };
   return (
     <Container>
       <AddButton handler={() => setOpen((prev) => !prev)} />
       <RegisterModal
-        open={open}
-        handleClose={() => setOpen(false)}
-        registerHandler={registerHandler}
+        registerWordProfile={registerClient(user.token ?? "")}
+        updateWordProfile={updateClient(user.token ?? "")}
         translateHandler={translateHandler}
         createSentenceHandler={createSentenceHandler}
         errorHandler={errorHandler}
