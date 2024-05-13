@@ -117,11 +117,16 @@ const WordContainer = styled.div`
     width: 30%;
   }
   @media (max-width: 520px) {
-    width: 50%;
+    min-width: 50%;
     font-size: 14px;
   }
 `;
-const PlayAudioButtonContainer = styled.div``;
+const PlayAudioButtonContainer = styled.div`
+  @media (max-width: 520px) {
+    transform: scale(0.8);
+    width: 30px;
+  }
+`;
 const RatesContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -131,5 +136,15 @@ const RatesContainer = styled.div`
     display: none;
   }
 `;
-const EditIconContainer = styled.div``;
-const DeleteIconContainer = styled.div``;
+const EditIconContainer = styled.div`
+  @media (max-width: 520px) {
+    transform: scale(0.8);
+    width: 30px;
+  }
+`;
+const DeleteIconContainer = styled.div`
+  @media (max-width: 520px) {
+    transform: scale(0.8);
+    width: 30px;
+  }
+`;
