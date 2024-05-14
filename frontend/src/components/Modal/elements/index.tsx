@@ -314,17 +314,12 @@ const ModalBox = styled(Box)`
   left: 50%;
   transform: translate(-50%, -50%);
   width: 80%;
-  height: 70%;
+  height: 550px;
   background-color: white;
   border: 2px solid #000;
   overflow: scroll;
-  @media (max-width: 376px) and (max-height: 692px) {
+  @media (max-width: 430px) and (max-height: 932px) {
     width: 85%;
-    height: 80%;
-  }
-  @media (max-width: 820px) and (max-height: 1180px) {
-    width: 85%;
-    height: 50%;
   }
 `;
 
@@ -344,7 +339,7 @@ const AddButtonContainer = styled.div`
   position: relative;
   top: 110px;
   left: 90%;
-  @media (max-width: 376px) and (max-height: 692px) {
+  @media (max-height: 844px) {
     top: 100px;
     left: 85%;
   }
