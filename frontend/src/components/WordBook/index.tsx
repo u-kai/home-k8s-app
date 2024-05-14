@@ -60,6 +60,9 @@ const Container = styled.div<{ height: string }>`
   grid-template-rows: 10% 8% 82%;
   width: 100%;
   height: ${(props) => props.height};
+  @media (max-width: 376px) and (max-height: 692px) {
+    grid-template-rows: 15% 10% 75%;
+  }
 `;
 const SearchBarContainer = styled.div`
   position: relative;
@@ -67,6 +70,9 @@ const SearchBarContainer = styled.div`
   grid-column: 2;
   display: flex;
   direction: row;
+  @media (max-width: 376px) and (max-height: 692px) {
+    grid-column: 1/5;
+  }
 `;
 
 const AddButtonContainer = styled.div`

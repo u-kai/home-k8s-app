@@ -61,6 +61,10 @@ export const SearchBarWithSuggest = (props: SearchBarWithSuggestProps) => {
           focusIndex={focusIndex}
           suggestions={getSuggestions(wordbook, searchedValue)}
           maxHeight={props.maxHeight}
+          onClick={(wordId: string) => {
+            wordToTop(wordId);
+            reset();
+          }}
         />
       </SuggestionsContainer>
     </Container>

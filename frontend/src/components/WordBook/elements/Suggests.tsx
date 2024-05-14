@@ -1,23 +1,22 @@
 import React from "react";
 import { styled } from "styled-components";
 import { WordProfile } from "../../../contexts/wordbook";
-import { useWordBook } from "../../../hooks/useWordBooks";
 
 export type SuggestionsProps = {
   suggestions: WordProfile[];
   focusIndex: number;
   maxHeight?: string;
+  onClick: (wordId: string) => void;
 };
 
 export const Suggestions = (props: SuggestionsProps) => {
-  const { wordToTop } = useWordBook();
   return (
     <SuggestionsContainer maxheight={props.maxHeight ?? "300px"}>
       {props.suggestions.map((suggestion, index) => (
         <SuggestionContainer
           key={index}
           focus={props.focusIndex === index}
-          onClick={() => wordToTop(suggestion.wordId)}
+          onClick={() => props.onClick(suggestion.wordId)}
         >
           {suggestion.word.value}
         </SuggestionContainer>
