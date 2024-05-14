@@ -70,7 +70,7 @@ const SearchBarContainer = styled.div`
   grid-column: 2;
   display: flex;
   direction: row;
-  @media (max-width: 376px) and (max-height: 692px) {
+  @media (max-width: 700px) {
     grid-column: 1/5;
   }
 `;
@@ -87,6 +87,7 @@ const WordBookContainer = styled.div`
 `;
 
 const SortBoxContainer = styled.div`
+  padding-top: 8px;
   grid-column: 4;
   grid-row: 2;
   left: 100%;

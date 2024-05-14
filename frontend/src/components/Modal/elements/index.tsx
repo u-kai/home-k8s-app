@@ -146,7 +146,7 @@ export const RegisterModal = (props: ModalProps) => {
         }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-        style={{ height: "100%" }}
+        style={{ height: "100%", width: "100%" }}
       >
         <ModalBox>
           <Typography

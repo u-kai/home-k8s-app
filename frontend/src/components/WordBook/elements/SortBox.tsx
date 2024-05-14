@@ -41,7 +41,9 @@ export const SortBox = (props: SortBoxProps) => {
     .reduce((acc, cur) => ({ ...acc, ...cur }), {});
 
   return (
-    <Container>
+    // !prevだと閉じている時に自動で開いてしまうため、常にfalseを返すようにしている
+    // button clickでtoggleするようにする
+    <Container onMouseLeave={() => setOpen(false)}>
       <SortButtonContainer>
         <SortButton onClick={() => setOpen((prev) => !prev)} />
       </SortButtonContainer>
