@@ -15,6 +15,9 @@ import {
   UpdateWordProfile,
   useWordBook,
 } from "../../../hooks/useWordBooks";
+import { styled } from "styled-components";
+import { SendButton } from "../../Button/SendButton";
+import { CancelButton } from "../../Button/CancelButton";
 
 export type ModalProps = {
   translateHandler?: (req: { word: string; toLang: ToLang }) => Promise<string>;
@@ -42,33 +45,9 @@ const createTranslateRequest = (
   };
 };
 
-const INIT_SAVE_BUTTON_POSITION = 400;
-const PER_PUSH_BUTTON = 105;
-const INPUT_WIDTH = "400px";
-
 export const RegisterModal = (props: ModalProps) => {
   const { modalWord, modalWordDispatch } = useContext(ModalContext);
   const { registerWordProfile, updateWordProfile } = useWordBook();
-  const [saveButtonPosition, setSaveButtonPosition] = useState<number>(
-    INIT_SAVE_BUTTON_POSITION +
-      (modalWord.word.sentences.length - 1) * PER_PUSH_BUTTON
-  );
-  useEffect(() => {
-    setSaveButtonPosition(
-      INIT_SAVE_BUTTON_POSITION +
-        (modalWord.word.sentences.length - 1) * PER_PUSH_BUTTON
-    );
-  }, [modalWord.open, modalWord.word.sentences.length]);
-
-  const increaseSaveButtonPosition = () => {
-    setSaveButtonPosition(saveButtonPosition + PER_PUSH_BUTTON);
-  };
-  const decreaseSaveButtonPosition = () => {
-    setSaveButtonPosition(saveButtonPosition - PER_PUSH_BUTTON);
-  };
-  const backToInitPosition = () => {
-    setSaveButtonPosition(INIT_SAVE_BUTTON_POSITION);
-  };
 
   const [wordTranslateAiProgress, setWordTranslateAiProgress] =
     useState<boolean>(false);
@@ -87,7 +66,6 @@ export const RegisterModal = (props: ModalProps) => {
           modalWordDispatch({
             type: "close",
           });
-          backToInitPosition();
         })
         .catch((e) => {
           props.errorHandler?.(e);
@@ -105,7 +83,6 @@ export const RegisterModal = (props: ModalProps) => {
         modalWordDispatch({
           type: "close",
         });
-        backToInitPosition();
       })
       .catch((e) => {
         props.errorHandler?.(e);
@@ -166,197 +143,155 @@ export const RegisterModal = (props: ModalProps) => {
           modalWordDispatch({
             type: "close",
           });
-          backToInitPosition();
         }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         style={{ height: "100%" }}
       >
-        <Box
-          sx={{
-            position: "absolute" as "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 650,
-            height: 470,
-            bgcolor: "white",
-            border: "2px solid #000",
-            overflowY: "scroll",
-            paddingX: 4,
-            paddingY: 2,
-          }}
-        >
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Register New Word and Sentences
-          </Typography>
-          <WordField
-            open={modalWord.open}
-            word={{
-              value: modalWord.word.word.value,
-              meaning: modalWord.word.word.meaning,
-              remarks: modalWord.word.remarks,
-              pronunciation: modalWord.word.word.pronunciation,
-            }}
-            width={INPUT_WIDTH}
-            handleWordChange={(value) => {
-              modalWordDispatch({
-                type: "setWordValue",
-                payload: {
-                  setWordValue: value,
-                },
-              });
-            }}
-            handleMeaningChange={(value) => {
-              modalWordDispatch({
-                type: "setWordMeaning",
-                payload: {
-                  setWordMeaning: value,
-                },
-              });
-            }}
-            handlePronunciationChange={(_value) => {
-              console.log("TODO:pronunciation change");
-            }}
-            handleRemarksChange={(value) => {
-              console.log("TODO:remarks change");
-            }}
-            translateHandler={translateHandler}
-            enterKeyDownHandler={async () => {
-              setWordTranslateAiProgress(true);
-              setGenerateSentenceAiProgresses((prev) => prev.map(() => true));
-
-              translateHandler().then((_) =>
-                setWordTranslateAiProgress((prev) => !prev)
-              );
-
-              generateSentence(0).then((_) =>
-                setGenerateSentenceAiProgresses((prev) => prev.map(() => false))
-              );
-            }}
-            errorHandler={props.errorHandler ?? console.error}
-            aiProgress={wordTranslateAiProgress}
-            toggleAiProgress={(to) => setWordTranslateAiProgress(to)}
-          />
-          <div
-            style={{
-              position: "relative",
-              top: "240px",
-            }}
+        <ModalBox>
+          <Typography
+            id="modal-modal-title"
+            variant="h6"
+            component="h2"
+            sx={{ margin: 2 }}
           >
-            {modalWord.word.sentences.map((sentence, index) => (
-              <ExampleSentenceField
-                key={index}
-                width={INPUT_WIDTH}
-                sentence={
-                  "sentence" in sentence
-                    ? sentence.sentence.value
-                    : sentence.value
-                }
-                onSentenceChange={(value) =>
-                  modalWordDispatch({
-                    type: "setSentenceValue",
-                    payload: {
-                      setSentenceValue: {
-                        index,
-                        value,
-                      },
-                    },
-                  })
-                }
-                onDeletePress={() => {
-                  modalWordDispatch({
-                    type: "deleteSentence",
-                    payload: {
-                      deleteSentence: {
-                        index,
-                      },
-                    },
-                  });
-                  if (modalWord.word.sentences.length !== 1) {
-                    decreaseSaveButtonPosition();
-                  }
-                }}
-                onMeaningChange={(value) =>
-                  modalWordDispatch({
-                    type: "setSentenceValue",
-                    payload: {
-                      setSentenceValue: {
-                        index,
-                        meaning: value,
-                      },
-                    },
-                  })
-                }
-                meaning={
-                  "meaning" in sentence
-                    ? sentence.meaning
-                    : sentence.sentence.meaning
-                }
-                onAssistantPress={async () => generateSentence(index)}
-                aiProgress={generateSentenceAiProgresses[index]}
-                toggleAiProgress={(to) => {
-                  const progresses = generateSentenceAiProgresses.slice();
-                  progresses[index] = to;
-                  setGenerateSentenceAiProgresses(progresses);
-                }}
-              />
-            ))}
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              left: "82%",
-              top: "70%",
-              padding: "10px",
-              width: "100px",
-            }}
+            Register New Word
+          </Typography>
+          <WordFieldContainer>
+            <WordField
+              open={modalWord.open}
+              word={{
+                value: modalWord.word.word.value,
+                meaning: modalWord.word.word.meaning,
+                remarks: modalWord.word.remarks,
+                pronunciation: modalWord.word.word.pronunciation,
+              }}
+              handleWordChange={(value) => {
+                modalWordDispatch({
+                  type: "setWordValue",
+                  payload: {
+                    setWordValue: value,
+                  },
+                });
+              }}
+              handleMeaningChange={(value) => {
+                modalWordDispatch({
+                  type: "setWordMeaning",
+                  payload: {
+                    setWordMeaning: value,
+                  },
+                });
+              }}
+              handlePronunciationChange={(_value) => {
+                console.log("TODO:pronunciation change");
+              }}
+              handleRemarksChange={(value) => {
+                console.log("TODO:remarks change");
+              }}
+              translateHandler={translateHandler}
+              enterKeyDownHandler={async () => {
+                setWordTranslateAiProgress(true);
+                setGenerateSentenceAiProgresses((prev) => prev.map(() => true));
+
+                translateHandler().then((_) =>
+                  setWordTranslateAiProgress((prev) => !prev)
+                );
+
+                generateSentence(0).then((_) =>
+                  setGenerateSentenceAiProgresses((prev) =>
+                    prev.map(() => false)
+                  )
+                );
+              }}
+              errorHandler={props.errorHandler ?? console.error}
+              aiProgress={wordTranslateAiProgress}
+              toggleAiProgress={(to) => setWordTranslateAiProgress(to)}
+            />
+          </WordFieldContainer>
+          <AddButtonContainer
             onClick={() => {
               modalWordDispatch({
                 type: "addNewSentence",
               });
-              increaseSaveButtonPosition();
             }}
           >
             <Fab color="primary" aria-label="add" size="small">
               <AddIcon />
             </Fab>
-          </div>
-          <Button
-            variant="contained"
-            endIcon={<SendIcon />}
-            sx={{
-              position: "absolute",
-              left: "82%",
-              top: saveButtonPosition,
-              paddingX: "3px",
-              paddingY: "10px",
-              width: "100px",
-            }}
-            onClick={async () => {
-              register();
-            }}
-          >
-            保存する
-          </Button>
-          <Button
-            color="error"
-            variant="contained"
-            sx={{
-              position: "absolute",
-              left: "10",
-              top: saveButtonPosition,
-              paddingX: "3px",
-              paddingY: "10px",
-              width: "100px",
-            }}
-            onClick={async () => {
-              setCancel(true);
-            }}
-          >
-            キャンセル
-          </Button>
-        </Box>
+          </AddButtonContainer>
+          <ExampleSentencesFieldContainer>
+            {modalWord.word.sentences.map((sentence, index) => (
+              <ExampleSentenceFieldContainer>
+                <ExampleSentenceField
+                  key={index}
+                  sentence={
+                    "sentence" in sentence
+                      ? sentence.sentence.value
+                      : sentence.value
+                  }
+                  onSentenceChange={(value) =>
+                    modalWordDispatch({
+                      type: "setSentenceValue",
+                      payload: {
+                        setSentenceValue: {
+                          index,
+                          value,
+                        },
+                      },
+                    })
+                  }
+                  onDeletePress={() => {
+                    modalWordDispatch({
+                      type: "deleteSentence",
+                      payload: {
+                        deleteSentence: {
+                          index,
+                        },
+                      },
+                    });
+                  }}
+                  onMeaningChange={(value) =>
+                    modalWordDispatch({
+                      type: "setSentenceValue",
+                      payload: {
+                        setSentenceValue: {
+                          index,
+                          meaning: value,
+                        },
+                      },
+                    })
+                  }
+                  meaning={
+                    "meaning" in sentence
+                      ? sentence.meaning
+                      : sentence.sentence.meaning
+                  }
+                  onAssistantPress={async () => generateSentence(index)}
+                  aiProgress={generateSentenceAiProgresses[index]}
+                  toggleAiProgress={(to) => {
+                    const progresses = generateSentenceAiProgresses.slice();
+                    progresses[index] = to;
+                    setGenerateSentenceAiProgresses(progresses);
+                  }}
+                />
+              </ExampleSentenceFieldContainer>
+            ))}
+          </ExampleSentencesFieldContainer>
+          <ButtonContainer>
+            <CancelButton
+              handleClick={async () => {
+                setCancel(true);
+              }}
+              text="キャンセル"
+            />
+            <SendButton
+              handleClick={async () => {
+                register();
+              }}
+              text="保存する"
+            />
+          </ButtonContainer>
+        </ModalBox>
       </Modal>
       {cancel ? (
         <DeleteConfirmModal
@@ -366,10 +301,75 @@ export const RegisterModal = (props: ModalProps) => {
             modalWordDispatch({
               type: "close",
             });
-            backToInitPosition();
           }}
         />
       ) : null}
     </div>
   );
 };
+
+const ModalBox = styled(Box)`
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 70%;
+  background-color: white;
+  border: 2px solid #000;
+  overflow: scroll;
+  @media (max-width: 376px) and (max-height: 692px) {
+    width: 85%;
+    height: 80%;
+  }
+  @media (max-width: 820px) and (max-height: 1180px) {
+    width: 85%;
+    height: 50%;
+  }
+`;
+
+const WordFieldContainer = styled.div`
+  position: relative;
+  z-index: -1;
+  width: 80%;
+  height: 30%;
+  margin: 0 auto;
+  @media (max-width: 376px) and (max-height: 692px) {
+    height: 27%;
+    width: 70%;
+  }
+`;
+
+const AddButtonContainer = styled.div`
+  position: relative;
+  top: 110px;
+  left: 90%;
+  @media (max-width: 376px) and (max-height: 692px) {
+    top: 100px;
+    left: 85%;
+  }
+`;
+
+const ExampleSentencesFieldContainer = styled.div`
+  position: relative;
+  z-index: -1;
+  width: 80%;
+  margin: 0 auto;
+  top: 110px;
+  @media (max-width: 376px) and (max-height: 692px) {
+    width: 70%;
+  }
+`;
+const ExampleSentenceFieldContainer = styled.div`
+  margin-bottom: 10px;
+`;
+const ButtonContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 80%;
+  height: 40px;
+  top: 120px;
+  margin: 0 auto;
+`;

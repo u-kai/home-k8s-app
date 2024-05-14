@@ -108,7 +108,6 @@ export const WordField = (props: WordFieldProps) => {
 const Container = styled.div<{ width?: string; height?: string }>`
   position: absolute;
   width: ${(props) => props.width ?? "100%"};
-  height: ${(props) => props.height ?? "100%"};
   z-index: -2;
   display: flex;
   flex-direction: column;

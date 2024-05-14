@@ -8,17 +8,18 @@ export type InputFieldWithButtonProps = {
 
 export const InputFieldWithButton = (props: InputFieldWithButtonProps) => {
   return (
-    <Container>
+    <Container width={props.width}>
       <InputField {...props} />
       <ButtonContainer left={props.width}>{props.button}</ButtonContainer>
     </Container>
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<{ width?: string }>`
   display: flex;
   flex-direction: row;
   position: relative;
+  width: ${(props) => props.width ?? "100%"};
 `;
 
 const ButtonContainer = styled.div<{ left?: string }>`

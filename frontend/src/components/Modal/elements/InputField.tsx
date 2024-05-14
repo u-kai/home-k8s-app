@@ -19,7 +19,7 @@ export const InputField = (props: InputFieldProps) => {
     <TextField
       autoFocus={props.autoFocus}
       autoComplete="off"
-      sx={{ width: props.width, marginTop: "3px" }}
+      sx={{ width: props.width ?? "100%", marginTop: "3px" }}
       required={props.required}
       id={props.id}
       label={props.label}
