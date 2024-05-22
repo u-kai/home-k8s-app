@@ -12,7 +12,7 @@ const Template: StoryFn<RatesProps> = (args) => <Rates {...args} />;
 export const Primary = Template.bind({});
 
 Primary.args = {
-  initRate: 4,
+  rate: 4,
   onChange: async (rate: number) => {
     console.log(rate);
   },

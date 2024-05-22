@@ -41,17 +41,16 @@ function IconContainer(props: IconContainerProps) {
 }
 
 export type RatesProps = {
-  initRate: number;
+  rate: number;
   onChange: (rate: number) => Promise<void>;
 };
 
 export const Rates = (props: RatesProps) => {
-  const [rate, setRate] = React.useState(props.initRate);
   const { setAppError } = React.useContext(AppErrorContext);
   return (
     <Rating
       name="highlight-selected-only"
-      value={rate}
+      value={props.rate}
       IconContainerComponent={IconContainer}
       highlightSelectedOnly
       onChange={(_, newValue) => {
@@ -63,7 +62,6 @@ export const Rates = (props: RatesProps) => {
             name: "onChange",
           });
         });
-        setRate(Number(newValue));
       }}
     />
   );

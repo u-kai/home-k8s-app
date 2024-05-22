@@ -55,7 +55,7 @@ export const WordSummary = (props: WordSummaryProps) => {
         </PlayAudioButtonContainer>
         <RatesContainer>
           <Rates
-            initRate={fromLikeRates(profile.likeRates)}
+            rate={fromLikeRates(profile.likeRates)}
             onChange={onRateChange}
           />
         </RatesContainer>
