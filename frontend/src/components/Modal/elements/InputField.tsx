@@ -12,11 +12,13 @@ export type InputFieldProps = {
   variant?: string;
   onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   ref?: React.Ref<HTMLInputElement>;
+  isError?: boolean;
 };
 
 export const InputField = (props: InputFieldProps) => {
   return (
     <TextField
+      error={props.isError}
       autoFocus={props.autoFocus}
       autoComplete="off"
       sx={{ width: props.width ?? "100%", marginTop: "3px" }}

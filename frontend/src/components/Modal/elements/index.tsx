@@ -58,7 +58,6 @@ export const RegisterModal = (props: ModalProps) => {
 
   const register = async () => {
     const word = modalWord.word;
-
     // existing word
     if (isWordProfile(word)) {
       updateWordProfile(props.updateWordProfile, word)
@@ -72,6 +71,7 @@ export const RegisterModal = (props: ModalProps) => {
         });
       return;
     }
+    // new word
     registerWordProfile(props.registerWordProfile, {
       word: word.word.value,
       meaning: word.word.meaning,
