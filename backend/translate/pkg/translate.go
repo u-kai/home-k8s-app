@@ -27,11 +27,12 @@ func TranslateSentenceStream(ctx context.Context, sentence, lang string, model o
 			Content: translateSentencePrompt(sentence, lang),
 		},
 	}
+	close(errStream)
 	return client.StreamChat(ctx, messages, model)
 }
 
 func translateSentencePrompt(sentence, lang string) string {
-	return fmt.Sprintf("以下の文章を%sに翻訳してください。返答の形式としては、略した文章のみにしてください.\ns", lang, sentence)
+	return fmt.Sprintf("以下の文章を%sに翻訳してください。返答の形式としては、略した文章のみにしてください.\n%s", lang, sentence)
 }
 
 func Translate(ctx context.Context, word, lang string, model openai.ChatGPTModel) (string, error) {

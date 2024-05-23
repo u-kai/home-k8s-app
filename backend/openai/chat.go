@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	//"fmt"
+	"fmt"
 )
 
 type chatStreamLine string
@@ -65,7 +65,7 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 	}
 	req, err := c.createRequest(chatReq)
 	if err != nil {
-		errStream <- err
+		errStream <- fmt.Errorf("failed to create StreamChat request: %w", err)
 		close(out)
 		close(errStream)
 		return out, errStream
@@ -73,7 +73,7 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 	req.Header.Set("Accept", "text/event-stream")
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		errStream <- err
+		errStream <- fmt.Errorf("failed to do StreamChat request: %w", err)
 		close(out)
 		close(errStream)
 		return out, errStream
@@ -89,7 +89,9 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 		for {
 			select {
 			case <-ctx.Done():
-				errStream <- ctx.Err()
+				if ctx.Err() != nil {
+					errStream <- fmt.Errorf("context error: %w", ctx.Err())
+				}
 				return
 			default:
 				if err := scanner.Err(); err != nil {
@@ -104,7 +106,7 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 					}
 					content, err := chatLine.toContent()
 					if err != nil {
-						errStream <- err
+						errStream <- fmt.Errorf("failed to parse chat stream line: %w", err)
 						return
 					}
 					out <- content
@@ -118,9 +120,10 @@ func (c *Client) StreamChat(ctx context.Context, messages []ChatMessage, model C
 type ChatGPTModel string
 
 const (
-	Gpt4Trubo     ChatGPTModel = "gpt-4-turbo"
+	Gpt4o         ChatGPTModel = "gpt-4o"
+	Gpt4Turbo     ChatGPTModel = "gpt-4-turbo"
 	Gpt4          ChatGPTModel = "gpt-4"
-	Gpt3Dot5Trubo ChatGPTModel = "gpt-3.5-turbo"
+	Gpt3Dot5Turbo ChatGPTModel = "gpt-3.5-turbo"
 )
 
 type ChatStreamResponse struct {

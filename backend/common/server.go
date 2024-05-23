@@ -199,7 +199,7 @@ func CreatePostSSEHandler[Req any, Resp json.Marshaler](h PostSSEHandler[Req, Re
 				f.Flush()
 				logBuffer += sendData
 			case err, ok := <-errStream:
-				if !ok {
+				if !ok || err == nil {
 					return
 				}
 				slog.Error("Error in SSEHandler", "error", err.Error())

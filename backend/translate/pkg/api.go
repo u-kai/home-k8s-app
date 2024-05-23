@@ -5,6 +5,8 @@ import (
 	"ele/common"
 	"ele/openai"
 	"encoding/json"
+	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -12,17 +14,20 @@ type AIModel string
 
 const (
 	Premium AIModel = "premium"
+	Greater AIModel = "greater"
 	Normal  AIModel = "normal"
 )
 
 func convertToChatGPTModel(model AIModel) openai.ChatGPTModel {
 	switch model {
 	case Premium:
-		return openai.Gpt4
+		return openai.Gpt4Turbo
+	case Greater:
+		return openai.Gpt4o
 	case Normal:
-		return openai.Gpt3Dot5Trubo
+		return openai.Gpt3Dot5Turbo
 	default:
-		return openai.Gpt3Dot5Trubo
+		return openai.Gpt3Dot5Turbo
 	}
 }
 
@@ -121,7 +126,7 @@ func TranslateHandler(ctx context.Context) http.HandlerFunc {
 		model := convertToChatGPTModel(AIModel(req.AIModel))
 		res, err := Translate(ctx, req.Word, req.ToLang, model)
 		if err != nil {
-			return TranslateResponse{}, err
+			return TranslateResponse{}, fmt.Errorf("failed to translate: %w", err)
 		}
 		return TranslateResponse{Result: res}, nil
 	})
@@ -152,9 +157,15 @@ func TranslateSentenceStreamHandler(ctx context.Context) http.HandlerFunc {
 			for {
 				select {
 				case <-ctx.Done():
-					newErrStream <- ctx.Err()
+					if ctx.Err() != nil {
+						newErrStream <- ctx.Err()
+					}
 					return
-				case err := <-errStream:
+				case err, ok := <-errStream:
+					if !ok {
+						slog.Info("Translate Sentence Stream closed successfully")
+						return
+					}
 					newErrStream <- err
 					return
 				case res, ok := <-stringStream:

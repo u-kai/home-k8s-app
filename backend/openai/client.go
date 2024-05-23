@@ -14,8 +14,8 @@ type Client struct {
 	httpClient *http.Client
 }
 
-func NewClient(apiKey string) *Client {
-	return &Client{httpClient: &http.Client{}, apiKey: apiKey}
+func NewClient(apiKey string, httpClient *http.Client) *Client {
+	return &Client{httpClient: httpClient, apiKey: apiKey}
 }
 
 func FromEnv() (*Client, error) {
@@ -23,7 +23,7 @@ func FromEnv() (*Client, error) {
 	if gptKey == "" {
 		return nil, errors.New("no API key")
 	}
-	return NewClient(gptKey), nil
+	return NewClient(gptKey, &http.Client{}), nil
 }
 
 func (c *Client) createRequest(gptReq OpenAIRequest) (*http.Request, error) {
