@@ -26,18 +26,18 @@ export const LongSentenceTranslate = (props: LongSentenceTranslateProps) => {
         value={sentence}
         handleChange={async (event) => {
           // ここでenterが押された時の処理を行う
-          if (isKeyDownEnter(event)) {
-            // 毎回新しい結果を表示するために初期化
-            setResult("");
-            await props
-              .sseTranslateSentence(sentence, (chunk) => {
-                setResult((prev) => prev + chunk);
-              })
-              .catch((e) => {
-                console.error(e);
-              });
-            return;
-          }
+          // if (isKeyDownEnter(event)) {
+          //   // 毎回新しい結果を表示するために初期化
+          //   setResult("");
+          //   await props
+          //     .sseTranslateSentence(sentence, (chunk) => {
+          //       setResult((prev) => prev + chunk);
+          //     })
+          //     .catch((e) => {
+          //       console.error(e);
+          //     });
+          //   return;
+          // }
           setSentence(event);
         }}
         handleWordClick={async (word) => {

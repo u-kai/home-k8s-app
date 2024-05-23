@@ -7,4 +7,5 @@ use (
 	./user
 	./image
 	./openai
+	./diary
 )

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { keyframes, styled } from "styled-components";
 import { TextArea } from "./components";
 
@@ -12,35 +12,75 @@ export const SpanInput = (props: {
   placeholder?: string;
   handleChange: (value: string) => void;
   handleWordClick: (word: string) => Promise<void>;
+  handleEnter?: () => void;
 }) => {
+  // splitは空文字に対しては第一要素が空文字の配列を返すため、配列の長さは常に1以上
   const words = props.value.split(" ");
+  const width = props.width || DEFAULT_WIDTH;
+  const height = props.height || DEFAULT_HEIGHT;
   const placeholder = props.placeholder || "Type here";
   const [focused, setFocused] = useState(false);
+  const [focusedCharIndex, setFocusedCharIndex] = useState(0);
+
   return (
-    <Container
-      width={props.width || DEFAULT_WIDTH}
-      height={props.height || DEFAULT_HEIGHT}
-    >
-      <TextArea
-        value={props.value}
-        onChange={(e) => props.handleChange(e.target.value)}
-        placeholder={focused ? "" : placeholder}
-        onFocus={() => setFocused(true)}
+    <Container width={width} height={height}>
+      <TextAreaWrapper
+        onClick={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        color="transparent"
-      />
-      <TextAreaWrapper>
-        {focused && words.length === 0 && <Caret left={0}></Caret>}
-        {words.map((word, index) => (
-          <React.Fragment key={"fragment" + index}>
-            <Word key={index} onClick={() => props.handleWordClick(word)}>
-              {word}
-            </Word>
-            {focused && index === words.length - 1 && (
-              <Caret key={"caret" + index} left={-4}></Caret>
-            )}
-          </React.Fragment>
-        ))}
+        tabIndex={0}
+        onPaste={(e) => {
+          e.preventDefault();
+          const text = e.clipboardData.getData("text/plain");
+          props.handleChange(props.value + text);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") {
+            setFocusedCharIndex((prev) => prev + 1);
+          } else if (e.key === "ArrowLeft") {
+            setFocusedCharIndex((prev) => prev - 1);
+          } else if (e.key === "Enter") {
+            props.handleEnter && props.handleEnter();
+          } else if (e.key === "Backspace") {
+            // 現在フォーカスしている文字を削除
+            //const value =
+            //  props.value.slice(0, focusedCharIndex) +
+            //  props.value.slice(focusedCharIndex + 1);
+
+            const value = props.value.slice(0, -1);
+            props.handleChange(value);
+            setFocusedCharIndex((prev) => prev - 1);
+          } else if (e.key.length === 1) {
+            //const value =
+            //  props.value.slice(0, focusedCharIndex) +
+            //  e.key +
+            //  props.value.slice(focusedCharIndex);
+            const value = props.value + e.key;
+            props.handleChange(value);
+            setFocusedCharIndex((prev) => prev + 1);
+          }
+        }}
+      >
+        {
+          // {!focused && words[0].length === 0 ? (
+          //    <Placeholder>{placeholder}</Placeholder>
+          //  ) : null}
+          //  {words.map((word, index) => (
+          //    <React.Fragment key={"fragment" + index}>
+          //      <Word
+          //        width={width}
+          //        key={index}
+          //        onClick={() => props.handleWordClick(word)}
+          //        onFocus={() => console.log("focus", word)}
+          //        onSelect={() => console.log("select", word)}
+          //      >
+          //        {word}
+          //      </Word>
+          //      {focused && index === words.length - 1 && (
+          //        <Caret key={"caret" + index} left={-4}></Caret>
+          //      )}
+          //    </React.Fragment>
+          //  ))}
+        }
       </TextAreaWrapper>
     </Container>
   );
@@ -53,21 +93,28 @@ const Container = styled.div<{ width: string; height: string }>`
   z-index: -2;
 `;
 
+const Placeholder = styled.span`
+  color: #a9a9a9;
+`;
+
 const TextAreaWrapper = styled.div`
   position: absolute;
-  z-index: 1;
+  z-index: 0;
   left: 0;
   top: 0;
   white-space: pre-wrap;
-  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  border: 1px solid black;
 `;
 
-const Word = styled.span`
+const Word = styled.span<{ width: string }>`
   margin: 1px 4px;
   cursor: pointer;
   display: inline-block;
+  /* max-width: ${(props) => props.width};*/
   &:hover {
-    height: 90%;
     background-color: #ead9ff;
     text-decoration: underline;
   }
