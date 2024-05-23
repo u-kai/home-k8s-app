@@ -115,16 +115,17 @@ export const Home = () => {
       />
       <RegisterModal
         translateHandler={async (req: { word: string; toLang: ToLang }) => {
-          const response = await translateRequest(req, user.token ?? "").catch(
-            (e) => {
-              console.error(e);
-              setAppError({
-                message: "翻訳に失敗しました",
-                id: "RegisterModal",
-                name: "translateHandler",
-              });
-            }
-          );
+          const response = await translateRequest(
+            { ...req, aiModel: "greater" },
+            user.token ?? ""
+          ).catch((e) => {
+            console.error(e);
+            setAppError({
+              message: "翻訳に失敗しました",
+              id: "RegisterModal",
+              name: "translateHandler",
+            });
+          });
           if (!response) return "";
           return response;
         }}

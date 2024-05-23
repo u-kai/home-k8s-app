@@ -10,6 +10,7 @@ export type ToLang = "ja" | "en";
 export type GeneratedSentence = {
   result: string;
   meaning: string;
+  aiModel: "greater";
 };
 
 const translateUrl = (path: string) => {
@@ -19,6 +20,7 @@ const translateUrl = (path: string) => {
 export type TranslateRequest = {
   word: string;
   toLang: ToLang;
+  aiModel: "greater";
 };
 
 export const translateRequest = async (

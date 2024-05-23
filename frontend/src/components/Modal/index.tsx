@@ -9,7 +9,6 @@ import {
   translateRequest,
 } from "../../clients/translate";
 import {
-  useWordBook,
   registerWordProfile as registerClient,
   updateWordProfile as updateClient,
 } from "../../hooks/useWordBooks";
@@ -31,7 +30,10 @@ export const Registers = () => {
     word: string;
     toLang: ToLang;
   }): Promise<string> => {
-    const translated = await translateRequest(req, user.token ?? "");
+    const translated = await translateRequest(
+      { ...req, aiModel: "greater" },
+      user.token ?? ""
+    );
     if (!translated) {
       errorHandler(new Error("Failed to translate"));
     }
