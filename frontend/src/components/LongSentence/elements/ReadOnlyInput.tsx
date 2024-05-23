@@ -1,6 +1,6 @@
 import React from "react";
 import { styled } from "styled-components";
-import { TextArea } from "./components";
+import { TextField } from "@mui/material";
 
 export type ReadOnlyInputProps = {
   value: string;
@@ -11,11 +11,12 @@ export type ReadOnlyInputProps = {
 export const ReadOnlyInput = (props: ReadOnlyInputProps) => {
   return (
     <TextAreaContainer width={props.width} height={props.height}>
-      <TextArea
+      <TextField
         value={props.value}
         placeholder="Translate Result"
-        color="black"
-        readOnly
+        rows={5}
+        sx={{ width: "100%", height: "100%" }}
+        multiline
       />
     </TextAreaContainer>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { SpanInput } from "./SpanInput";
+import { LongSentenceArea } from "./LongSentenceArea";
 import { ReadOnlyInput } from "./ReadOnlyInput";
 
 export type LongSentenceTranslateProps = {
@@ -17,28 +17,23 @@ export const LongSentenceTranslate = (props: LongSentenceTranslateProps) => {
   const [result, setResult] = useState("");
   const WIDTH = "calc(50%)";
   const height = props.height || "200px";
-  const isKeyDownEnter = (keyData: string) => {
-    return keyData.slice(-1) === "\n";
-  };
   return (
     <HorizontalContainer>
-      <SpanInput
+      <LongSentenceArea
         value={sentence}
         handleChange={async (event) => {
-          // ここでenterが押された時の処理を行う
-          // if (isKeyDownEnter(event)) {
-          //   // 毎回新しい結果を表示するために初期化
-          //   setResult("");
-          //   await props
-          //     .sseTranslateSentence(sentence, (chunk) => {
-          //       setResult((prev) => prev + chunk);
-          //     })
-          //     .catch((e) => {
-          //       console.error(e);
-          //     });
-          //   return;
-          // }
           setSentence(event);
+        }}
+        handleEnter={async () => {
+          // 毎回新しい結果を表示するために初期化
+          setResult("");
+          await props
+            .sseTranslateSentence(sentence, (chunk) => {
+              setResult((prev) => prev + chunk);
+            })
+            .catch((e) => {
+              console.error(e);
+            });
         }}
         handleWordClick={async (word) => {
           props.handleWordClick(word);
