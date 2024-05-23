@@ -60,7 +60,7 @@ func translatePrompt(word, lang string) string {
 }
 
 func sentenceLimit(text string) int {
-	const DEFAULT_SENTENCE_LIMIT = 500
+	const DEFAULT_SENTENCE_LIMIT = 5000
 	if os.Getenv("SENTENCE_LIMIT") == "" {
 		return DEFAULT_SENTENCE_LIMIT
 	}
