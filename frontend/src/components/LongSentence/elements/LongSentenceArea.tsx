@@ -43,10 +43,15 @@ export const LongSentenceArea = (props: {
             input.selectionStart,
             input.selectionEnd
           );
-          // ユーザーのミスで空白を選択してしまう場合がある
-          if (selectedText.trim().length > 0) {
-            props.handleWordClick(selectedText);
+          // 3 words以上選択された場合は一括削除のための選択とみなし、ハンドラーを呼ばない
+          if (selectedText.split(" ").length > 3) {
+            return;
           }
+          // ユーザーのミスで空白を選択してしまう場合がある
+          if (selectedText.length === 0) {
+            return;
+          }
+          props.handleWordClick(selectedText);
           // この実行をしないと再度このハンドラーが呼ばれて、無限ループになる
           input.setSelectionRange(0, 0);
         }}
