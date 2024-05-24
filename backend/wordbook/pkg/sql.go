@@ -68,7 +68,7 @@ func insertSentenceProfileSql(wordId WordId, sentence SentenceProfile) (
 	WordId,
 	SentenceId,
 	SentenceValue,
-	Meaning,
+	SentenceMeaning,
 	Pronunciation,
 	int64,
 	int64,
@@ -95,7 +95,7 @@ func updateWordProfileSql(word WordProfile) (
 func updateSentenceProfileSql(sentence SentenceProfile) (
 	SQL,
 	SentenceValue,
-	Meaning,
+	SentenceMeaning,
 	Pronunciation,
 	int64,
 	SentenceId,

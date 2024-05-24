@@ -54,7 +54,7 @@ func TestUpdateWordProfile(t *testing.T) {
 					News: []wordbook.NewSentence{
 						{
 							Value:         wordbook.SentenceValue("sentence"),
-							Meaning:       wordbook.Meaning("meaning"),
+							Meaning:       wordbook.SentenceMeaning("meaning"),
 							Pronunciation: wordbook.Pronunciation("pronunciation"),
 						},
 					},
@@ -73,7 +73,7 @@ func TestUpdateWordProfile(t *testing.T) {
 						SentenceId: fakeSentenceId(),
 						Sentence: wordbook.Sentence{
 							Value:         wordbook.SentenceValue("sentence"),
-							Meaning:       wordbook.Meaning("meaning"),
+							Meaning:       wordbook.SentenceMeaning("meaning"),
 							Pronunciation: wordbook.Pronunciation("pronunciation"),
 						},
 						CreatedAt: fakeNowNew(),
@@ -113,6 +113,32 @@ func TestWord(t *testing.T) {
 			}
 			if word.String() != tt.expectedString {
 				t.Errorf("expected %v, got %v", tt.expectedString, word)
+			}
+		})
+	}
+}
+
+func TestSentenceMeaning(t *testing.T) {
+	for _, tt := range []struct {
+		name        string
+		input       string
+		expected    wordbook.SentenceMeaning
+		expectedErr error
+	}{
+		{"valid case meaning is not en", "私は元気です", wordbook.SentenceMeaning("私は元気です"), nil},
+		{"valid case meaning containe byte char other than alfabet", "私は元気です!.123", wordbook.SentenceMeaning("私は元気です!.123"), nil},
+		{"valid case containe en in jp", "私は元気ですi'm fine", wordbook.SentenceMeaning("私は元気ですi'm fine"), nil},
+		{"valid case sentence length 1000", strings.Repeat("私", 1000), wordbook.SentenceMeaning(strings.Repeat("私", 1000)), nil},
+		{"invalid case meaning is en", "i'm fine", wordbook.SentenceMeaning(""), wordbook.ErrInvalidSentence{Invalid: "i'm fine"}},
+		{"empty", "", wordbook.SentenceMeaning(""), wordbook.ErrEmptyWord{}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			meaning, err := wordbook.NewSentenceMeaning(tt.input)
+			if err != tt.expectedErr {
+				t.Errorf("expected %v, got %v", tt.expectedErr, err)
+			}
+			if meaning != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, meaning)
 			}
 		})
 	}

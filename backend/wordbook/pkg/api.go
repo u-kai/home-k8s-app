@@ -141,7 +141,7 @@ func toUpdatedSentenceProfileSource(sentences []updateSentenceProfileApiSchema) 
 			if err != nil {
 				return UpdatedSentencesProfile{}, err
 			}
-			meaning, err := NewMeaning(sentence.Meaning)
+			meaning, err := NewSentenceMeaning(sentence.Meaning)
 			if err != nil {
 				return UpdatedSentencesProfile{}, err
 			}
@@ -164,7 +164,7 @@ func toUpdatedSentenceProfileSource(sentences []updateSentenceProfileApiSchema) 
 		if err != nil {
 			return UpdatedSentencesProfile{}, err
 		}
-		meaning, err := NewMeaning(sentence.Meaning)
+		meaning, err := NewSentenceMeaning(sentence.Meaning)
 		if err != nil {
 			return UpdatedSentencesProfile{}, err
 		}
@@ -239,7 +239,7 @@ func (s RegisterWordProfileApiSchema) toRegisterWordProfileSource(userId user.Us
 		if err != nil {
 			return RegisterWordProfileSource{}, err
 		}
-		meaning, err := NewMeaning(sentence.Meaning)
+		meaning, err := NewSentenceMeaning(sentence.Meaning)
 		if err != nil {
 			return RegisterWordProfileSource{}, err
 		}

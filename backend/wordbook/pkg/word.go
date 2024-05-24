@@ -91,11 +91,27 @@ func NewMeaning(value string) (Meaning, error) {
 
 func containAlfabet(value string) bool {
 	for _, r := range value {
-		if 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' {
+		if charIsAlfabet(r) {
 			return true
 		}
 	}
 	return false
+}
+
+func allEn(value string) bool {
+	for _, r := range value {
+		if !charIsEn(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func charIsEn(r rune) bool {
+	return byte(r) < 128
+}
+func charIsAlfabet(r rune) bool {
+	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z'
 }
 
 // Pronunciation is always a Japanese word and optional
@@ -187,11 +203,11 @@ func NewWord(value WordValue, meaning Meaning, pronunciation Pronunciation) Word
 type SentenceValue string
 
 type ErrInvalidSentence struct {
-	invalid string
+	Invalid string
 }
 
 func (e ErrInvalidSentence) Error() string {
-	return fmt.Sprintf("sentence is not a English sentence: %s", e.invalid)
+	return fmt.Sprintf("sentence is not a English sentence: %s", e.Invalid)
 }
 
 type TooManySentenceLengthError struct {
@@ -205,24 +221,40 @@ func (e TooManySentenceLengthError) Error() string {
 	return fmt.Sprintf("sentence length is too many: %s...", e.Sentence[0:30])
 }
 
+const MAX_SENTENCE_LENGTH = 3000
+
 func NewSentenceValue(value string) (SentenceValue, error) {
-	const MAX_LENGTH = 500
 	if value == "" {
 		return SentenceValue(""), ErrEmptyWord{}
 	}
 	if !containAlfabet(value) {
-		return SentenceValue(""), ErrInvalidSentence{invalid: value}
+		return SentenceValue(""), ErrInvalidSentence{Invalid: value}
 	}
-	if len(value) > MAX_LENGTH {
+	if len(value) > MAX_SENTENCE_LENGTH {
 		return SentenceValue(""), NewTooManyWordLengthError(value)
 	}
 	return SentenceValue(value), nil
 }
 
 type Sentence struct {
-	Value         SentenceValue `json:"value"`
-	Meaning       `json:"meaning"`
+	Value         SentenceValue   `json:"value"`
+	Meaning       SentenceMeaning `json:"meaning"`
 	Pronunciation `json:"pronunciation"`
+}
+
+type SentenceMeaning string
+
+func NewSentenceMeaning(value string) (SentenceMeaning, error) {
+	if value == "" {
+		return SentenceMeaning(""), ErrEmptyWord{}
+	}
+	if allEn(value) {
+		return SentenceMeaning(""), ErrInvalidSentence{Invalid: value}
+	}
+	if len(value) > MAX_SENTENCE_LENGTH {
+		return SentenceMeaning(""), NewTooManyMeaningLengthError(value)
+	}
+	return SentenceMeaning(value), nil
 }
 
 type SentenceId string
@@ -295,8 +327,8 @@ func (req UpdatedSentencesProfile) len() int {
 }
 
 type NewSentence struct {
-	Value SentenceValue
-	Meaning
+	Value   SentenceValue
+	Meaning SentenceMeaning
 	Pronunciation
 }
 

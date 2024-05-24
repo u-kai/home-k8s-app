@@ -42,7 +42,7 @@ func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
 			if err != nil {
 				return nil, err
 			}
-			sentenceMeaning, err := NewMeaning(meaning)
+			sentenceMeaning, err := NewSentenceMeaning(meaning)
 			if err != nil {
 				return nil, err
 			}
