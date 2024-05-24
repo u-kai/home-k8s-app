@@ -58,12 +58,14 @@ export const translateSentence = async (
   await sseWithCors<{
     sentence: string;
     toLang: ToLang;
+    aiModel: "greater";
   }>({
     url: translateUrl("sentence"),
     method: "POST",
     body: {
       sentence: request.sentence,
       toLang: request.toLang,
+      aiModel: request.aiModel,
     },
     headers: authHeader,
     f: (data) => request.sseHandler(data),
@@ -73,6 +75,7 @@ export const translateSentence = async (
 export type GeneratedSentenceRequest = {
   word: string;
   toLang: ToLang;
+  aiModel: "greater";
 };
 
 export type GenerateSentenceResponse = {
@@ -104,6 +107,7 @@ export const generateSentence = async (
 
 export type ReviewSentenceRequest = {
   sentence: string;
+  aiModel: "greater";
   sseHandler: (data: string) => void;
 };
 export const reviewSentence = async (
@@ -111,10 +115,11 @@ export const reviewSentence = async (
   token: string
 ): Promise<void> => {
   const authHeader = authorizationHeader(token);
-  await sseWithCors<{ sentence: string }>({
+  await sseWithCors<{ sentence: string; aiModel: string }>({
     url: translateUrl("sentence/review"),
     method: "POST",
     body: {
+      aiModel: request.aiModel,
       sentence: request.sentence,
     },
     headers: authHeader,

@@ -46,6 +46,7 @@ export const Registers = () => {
       {
         word,
         toLang: "en",
+        aiModel: "greater",
       },
       user.token ?? ""
     );

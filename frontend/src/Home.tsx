@@ -138,16 +138,17 @@ export const Home = () => {
             word,
             toLang: "en",
           };
-          const response = await generateSentence(req, user.token ?? "").catch(
-            (e) => {
-              console.error(e);
-              setAppError({
-                message: "例文の生成に失敗しました",
-                id: "RegisterModal",
-                name: "createSentenceHandler",
-              });
-            }
-          );
+          const response = await generateSentence(
+            { ...req, aiModel: "greater" },
+            user.token ?? ""
+          ).catch((e) => {
+            console.error(e);
+            setAppError({
+              message: "例文の生成に失敗しました",
+              id: "RegisterModal",
+              name: "createSentenceHandler",
+            });
+          });
           if (!response) return { value: "", meaning: "" };
           return {
             value: response.sentence,
