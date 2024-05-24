@@ -75,6 +75,7 @@ export const Home = () => {
                     setMeaningBuffer((prev) => prev + data);
                   },
                   toLang: "ja",
+                  aiModel: "greater",
                 },
                 user.token ?? ""
               ).catch((e) => {

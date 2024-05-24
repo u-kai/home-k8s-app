@@ -46,6 +46,7 @@ export const translateRequest = async (
 export type TranslateSentenceRequest = {
   sentence: string;
   toLang: ToLang;
+  aiModel: "greater";
   sseHandler: (data: string) => void;
 };
 
