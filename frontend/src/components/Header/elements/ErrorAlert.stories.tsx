@@ -3,7 +3,7 @@ import { ErrorAlert } from "./ErrorAlert";
 import { StoryFn } from "@storybook/react";
 
 export default {
-  title: "Example/ErrorAlert",
+  title: "Header/ErrorAlert",
   component: ErrorAlert,
 };
 

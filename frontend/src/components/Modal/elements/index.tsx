@@ -18,6 +18,7 @@ import {
 import { styled } from "styled-components";
 import { SendButton } from "../../Button/SendButton";
 import { CancelButton } from "../../Button/CancelButton";
+import { isSuccessful } from "../../../clients/fetch";
 
 export type ModalProps = {
   translateHandler?: (req: { word: string; toLang: ToLang }) => Promise<string>;
@@ -61,7 +62,10 @@ export const RegisterModal = (props: ModalProps) => {
     // existing word
     if (isWordProfile(word)) {
       updateWordProfile(props.updateWordProfile, word)
-        .then(() => {
+        .then((res) => {
+          if (!isSuccessful(res)) {
+            props.errorHandler?.(res);
+          }
           modalWordDispatch({
             type: "close",
           });
@@ -79,7 +83,10 @@ export const RegisterModal = (props: ModalProps) => {
       remarks: word.remarks,
       sentences: word.sentences,
     })
-      .then(() => {
+      .then((res) => {
+        if (!isSuccessful(res)) {
+          props.errorHandler?.(res);
+        }
         modalWordDispatch({
           type: "close",
         });

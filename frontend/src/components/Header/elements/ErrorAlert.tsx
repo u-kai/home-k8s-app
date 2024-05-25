@@ -1,10 +1,9 @@
 import { Alert, AlertTitle } from "@mui/material";
 import React, { useContext, useEffect } from "react";
-import { AppErrorContext } from "../../contexts/error";
+import { AppErrorContext } from "../../../contexts/error";
 
 type Props = {
   timeOut: number;
-  errorMessage?: string;
 };
 
 export const ErrorAlert = (props: Props) => {
@@ -15,14 +14,14 @@ export const ErrorAlert = (props: Props) => {
         setAppError(undefined);
       }, props.timeOut);
     }
-  }, [appError, setAppError]);
+  }, [appError]);
 
   return (
     <>
       {appError !== undefined ? (
         <Alert severity="error">
           <AlertTitle>Error</AlertTitle>
-          {props.errorMessage ?? appError.message}
+          {appError.message}
         </Alert>
       ) : null}
     </>

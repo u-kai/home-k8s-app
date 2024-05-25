@@ -155,7 +155,14 @@ export const Home = () => {
             meaning: response.meaning,
           };
         }}
-        errorHandler={(error: Error) => console.log(error)}
+        errorHandler={(error: Error) => {
+          console.error("register Error", error);
+          setAppError({
+            name: error.name,
+            message: error.message,
+            id: "RegisterModal",
+          });
+        }}
         registerWordProfile={registerWordProfile(user.token ?? "")}
         updateWordProfile={updateWordProfile(user.token ?? "")}
       />
