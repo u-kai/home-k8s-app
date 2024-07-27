@@ -49,6 +49,8 @@ func CreatePostHandler[Req any, Resp json.Marshaler](h PostHandler[Req, Resp]) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := new(Req)
 		err := json.NewDecoder(r.Body).Decode(req)
+		defer r.Body.Close()
+
 		slog.Info("Request", "req", req)
 		if err != nil {
 			slog.Error("Failed to decode request body", "error", err.Error())
@@ -105,6 +107,7 @@ func CreatePostHandlerWithIDToken[Req any, Resp json.Marshaler](h PostHandlerWit
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := new(Req)
 		err := json.NewDecoder(r.Body).Decode(req)
+		defer r.Body.Close()
 		slog.Info("Request", "req", req)
 		if err != nil {
 			slog.Error("Failed to decode request body", "error", err.Error())
@@ -162,6 +165,7 @@ func CreatePostSSEHandler[Req any, Resp json.Marshaler](h PostSSEHandler[Req, Re
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := new(Req)
 		err := json.NewDecoder(r.Body).Decode(req)
+		defer r.Body.Close()
 		if err != nil {
 			slog.Error("Failed to decode request body", "error", err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)

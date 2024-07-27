@@ -39,7 +39,7 @@ func GenerateImageFromDALLE(ctx context.Context, req GenerateImageRequest) (Imag
 		return Image{}, err
 	}
 
-	createImageReq := openai.DALLE3Request
+	createImageReq := new(openai.DALLE3Request)
 	client.CreateImage(createImageReq)
 	return Image{}, nil
 }
