@@ -8,7 +8,7 @@ ARG TARGETOS TARGETARCH
 
 RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -ldflags="-s -w" -o main ./wordbook/main.go
 
-FROM alpine:latest
+FROM --platform=$BUILDPLATFORM alpine:latest
 
 WORKDIR /app
 
