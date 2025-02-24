@@ -47,6 +47,10 @@ type PostHandler[Req any, Resp json.Marshaler] func(req *Req) (Resp, error)
 
 func CreatePostHandler[Req any, Resp json.Marshaler](h PostHandler[Req, Resp]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		for k, v := range r.Header {
+			slog.Info("Header", "key", k, "value", v)
+			w.Header().Set(k, v[0])
+		}
 		req := new(Req)
 		err := json.NewDecoder(r.Body).Decode(req)
 		defer r.Body.Close()
@@ -77,6 +81,11 @@ type GetHandlerWithAuthorization[Resp json.Marshaler] func(query Query, idToken 
 
 func CreateGetHandlerWithIDToken[Req Query, Resp json.Marshaler](h GetHandlerWithAuthorization[Resp]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		for k, v := range r.Header {
+			slog.Info("Header", "key", k, "value", v)
+			w.Header().Set(k, v[0])
+		}
+
 		query := make(Query)
 		for k, v := range r.URL.Query() {
 			query[k] = v
@@ -105,6 +114,10 @@ type PostHandlerWithAuthorization[Req any, Resp json.Marshaler] func(req *Req, i
 
 func CreatePostHandlerWithIDToken[Req any, Resp json.Marshaler](h PostHandlerWithAuthorization[Req, Resp]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		for k, v := range r.Header {
+			slog.Info("Header", "key", k, "value", v)
+			w.Header().Set(k, v[0])
+		}
 		req := new(Req)
 		err := json.NewDecoder(r.Body).Decode(req)
 		defer r.Body.Close()
@@ -163,6 +176,10 @@ type PostSSEHandler[Req any, Resp json.Marshaler] func(req *Req) (<-chan Resp, <
 
 func CreatePostSSEHandler[Req any, Resp json.Marshaler](h PostSSEHandler[Req, Resp]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		for k, v := range r.Header {
+			slog.Info("Header", "key", k, "value", v)
+			w.Header().Set(k, v[0])
+		}
 		req := new(Req)
 		err := json.NewDecoder(r.Body).Decode(req)
 		defer r.Body.Close()
