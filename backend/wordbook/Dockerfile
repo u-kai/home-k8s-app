@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o main ./wordbook/main.go
+ARG TARGETOS TARGETARCH
+
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -o main ./wordbook/main.go
 
 FROM alpine:latest
 
