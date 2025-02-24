@@ -1,4 +1,4 @@
-FROM golang:1.22 as builder
+FROM --platform=$BUILDPLATFORM golang:1.22 as builder
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ COPY . .
 
 ARG TARGETOS TARGETARCH
 
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -o main ./wordbook/main.go
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -ldflags="-s -w" -o main ./wordbook/main.go
 
 FROM alpine:latest
 
