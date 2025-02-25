@@ -7,8 +7,10 @@ import (
 
 	"database/sql"
 
+	"github.com/XSAM/otelsql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type MySQLClient struct {
@@ -31,7 +33,7 @@ func FromEnv() *MySQLClient {
 }
 
 func (c *MySQLClient) Open() (*sql.DB, error) {
-	return sql.Open("mysql", c.user+":"+c.password+"@tcp("+c.host+":"+c.port+")/"+c.database)
+	return otelsql.Open("mysql", c.user+":"+c.password+"@tcp("+c.host+":"+c.port+")/"+c.database, otelsql.WithAttributes(attribute.String("db.system", "mysql")))
 }
 
 type ID interface {
