@@ -5,10 +5,12 @@ import (
 	"ele/common"
 	wordbook "ele/wordbook/pkg"
 	"log"
+	"net/http"
 	"os"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
@@ -53,10 +55,15 @@ func main() {
 	traceShutdown := initTracer()
 	defer traceShutdown()
 	server := common.DefaultELEServer("wordbook")
-	server.RegisterHandler("/words", wordbook.FetchWordProfileHandler(ctx, tracer))
-	server.RegisterHandler("/deleteWord", wordbook.DeleteWordHandler(ctx))
+	server.RegisterHandler("/words", func(w http.ResponseWriter, r *http.Request) {
+		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+		ctx, span := tracer.Start(ctx, "Handle Request")
+		defer span.End()
+		wordbook.FetchWordProfileHandler(ctx, tracer)(w, r)
+	})
+	server.RegisterHandler("/deleteWord", wordbook.DeleteWordHandler(ctx, tracer))
 	server.RegisterHandler("/registerWord", wordbook.RegisterWordHandler(ctx))
-	server.RegisterHandler("/updateWord", wordbook.UpdateWordHandler(ctx))
+	server.RegisterHandler("/updateWord", wordbook.UpdateWordHandler(ctx, tracer))
 	logger.Info("Starting Wordbook server...")
 	server.Start()
 }

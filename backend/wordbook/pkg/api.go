@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -31,11 +30,9 @@ func FetchWordProfileHandler(c context.Context, tracer trace.Tracer) http.Handle
 		}
 		defer db.Close()
 		userId := user.UserIdFromIDToken(idToken)
-		ctx, span := tracer.Start(ctx, "FetchWordProfileHandler", trace.WithAttributes(
-			attribute.String("x-request-id", ctx.Value("x-request-id").(string)),
-		))
+		ctx, span := tracer.Start(ctx, "FetchWordProfileHandler")
 		defer span.End()
-		wordProfile, err := FetchWordProfileFromDBByUserId(ctx, db, userId)
+		wordProfile, err := FetchWordProfileFromDBByUserId(ctx, tracer, db, userId)
 		if err != nil {
 			return FetchWordProfileResponse{}, err
 		}
@@ -68,7 +65,7 @@ func (u UpdateWordProfileResult) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func UpdateWordHandler(ctx context.Context) http.HandlerFunc {
+func UpdateWordHandler(ctx context.Context, tracer trace.Tracer) http.HandlerFunc {
 	return common.CreatePostHandlerWithIDToken(func(req *UpdateWordProfileApiSchema, idToken common.IDToken) (UpdateWordProfileResult, error) {
 		updateSrc, err := req.toUpdatedWordProfileSource()
 		if err != nil {
@@ -82,7 +79,7 @@ func UpdateWordHandler(ctx context.Context) http.HandlerFunc {
 		userId := user.UserIdFromIDToken(idToken)
 
 		// wordIdを憶測で更新できる脆弱性あり
-		wordProfile, err := UpdateWordProfileByDB(ctx, db, updateSrc, userId)
+		wordProfile, err := UpdateWordProfileByDB(ctx, db, tracer, updateSrc, userId)
 		if err != nil {
 			return UpdateWordProfileResult{}, err
 		}
@@ -301,7 +298,7 @@ func (d DeleteResponse) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func DeleteWordHandler(ctx context.Context) http.HandlerFunc {
+func DeleteWordHandler(ctx context.Context, tracer trace.Tracer) http.HandlerFunc {
 	return common.CreatePostHandlerWithIDToken(func(req *DeleteWordProfileApiSchema, idToken common.IDToken) (DeleteResponse, error) {
 		userId := user.UserIdFromIDToken(idToken)
 		src, err := req.ToDeleteWordProfileSource()
@@ -313,7 +310,7 @@ func DeleteWordHandler(ctx context.Context) http.HandlerFunc {
 			return DeleteResponse{}, err
 		}
 		defer db.Close()
-		err = DeleteWordProfileByDB(ctx, db, src, userId)
+		err = DeleteWordProfileByDB(ctx, db, tracer, src, userId)
 		if err != nil {
 			return DeleteResponse{}, err
 		}

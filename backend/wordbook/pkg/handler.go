@@ -6,10 +6,12 @@ import (
 	"ele/common"
 	"ele/user"
 	"fmt"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
-func FetchWordProfileFromDBByUserId(ctx context.Context, db *sql.DB, userId user.UserId) ([]WordProfile, error) {
-	return fetchWordProfileFromUserIdByDB(db)(ctx, userId)
+func FetchWordProfileFromDBByUserId(ctx context.Context, tracer trace.Tracer, db *sql.DB, userId user.UserId) ([]WordProfile, error) {
+	return fetchWordProfileFromUserIdByDB(db, tracer)(ctx, userId)
 }
 
 type registerWordProfile func(user.UserId, WordProfile) (WordProfile, error)
@@ -105,13 +107,14 @@ func UpdateWordProfile(
 func UpdateWordProfileByDB(
 	ctx context.Context,
 	db *sql.DB,
+	tracer trace.Tracer,
 	src UpdatedWordProfileSource,
 	userId user.UserId,
 ) (WordProfile, error) {
 	return UpdateWordProfile(
 		ctx,
 		src,
-		fetchWordProfileFromWordIdByDB(db),
+		fetchWordProfileFromWordIdByDB(db, tracer),
 		updateWordProfileByDB(db),
 		NewSentenceId(),
 		common.Now,
@@ -136,12 +139,13 @@ func DeleteWordProfile(
 func DeleteWordProfileByDB(
 	ctx context.Context,
 	db *sql.DB,
+	tracer trace.Tracer,
 	src DeletedWordProfileSource,
 	userId user.UserId,
 ) error {
 	return DeleteWordProfile(
 		ctx,
 		src,
-		deleteWordProfileByDB(db, userId),
+		deleteWordProfileByDB(db, tracer, userId),
 	)
 }

@@ -5,16 +5,20 @@ import (
 	"database/sql"
 	"ele/user"
 	"fmt"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type fetchWordProfileFromUserId func(context.Context, user.UserId) ([]WordProfile, error)
 
 type fetchSentencesFromWordId func(context.Context, WordId) ([]SentenceProfile, error)
 
-func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
+func fetchSentencesFromWordIdByDB(db *sql.DB, tracer trace.Tracer) fetchSentencesFromWordId {
 	return func(ctx context.Context, wordId WordId) ([]SentenceProfile, error) {
 		sql, wordId := selectSentenceProfileByWordIdSql(wordId)
-		rows, err := db.Query(sql.String(), wordId)
+		ctx, span := tracer.Start(ctx, "fetchSentencesFromWordId")
+		defer span.End()
+		rows, err := db.QueryContext(ctx, sql.String(), wordId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to select sentences query: %w", err)
 		}
@@ -67,10 +71,12 @@ func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
 	}
 }
 
-func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
+func fetchWordProfileFromUserIdByDB(db *sql.DB, tracer trace.Tracer) fetchWordProfileFromUserId {
 	return func(ctx context.Context, userId user.UserId) ([]WordProfile, error) {
 		sql, userId := selectWordProfileByUserIdSql(userId)
-		rows, err := db.Query(sql.String(), userId)
+		ctx, span := tracer.Start(ctx, "fetchWordProfileFromUserId")
+		defer span.End()
+		rows, err := db.QueryContext(ctx, sql.String(), userId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to select words query: %w", err)
 		}
@@ -101,7 +107,7 @@ func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
 				return nil, fmt.Errorf("failed to word scan: %w", err)
 			}
 			// join sentences
-			sentences, err := fetchSentencesFromWordIdByDB(db)(ctx, WordId(wordId))
+			sentences, err := fetchSentencesFromWordIdByDB(db, tracer)(ctx, WordId(wordId))
 			if err != nil {
 				return nil, err
 			}
@@ -138,15 +144,14 @@ func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
 				LikeRates: wordLikeRates,
 			}
 			result = append(result, wordProfile)
-
 		}
 		return result, nil
 	}
 }
-func fetchWordProfileFromWordIdByDB(db *sql.DB) fetchWordProfileByWordId {
+func fetchWordProfileFromWordIdByDB(db *sql.DB, tracer trace.Tracer) fetchWordProfileByWordId {
 	return func(ctx context.Context, wordId WordId) (WordProfile, error) {
 		sql, wordId := selectWordProfileByWordIdSql(wordId)
-		rows, err := db.Query(sql.String(), wordId)
+		rows, err := db.QueryContext(ctx, sql.String(), wordId)
 		if err != nil {
 			return WordProfile{}, err
 		}
@@ -167,7 +172,7 @@ func fetchWordProfileFromWordIdByDB(db *sql.DB) fetchWordProfileByWordId {
 				return WordProfile{}, fmt.Errorf("failed to words scan: %w", err)
 			}
 			// join sentences
-			sentences, err := fetchSentencesFromWordIdByDB(db)(ctx, WordId(wordId))
+			sentences, err := fetchSentencesFromWordIdByDB(db, tracer)(ctx, WordId(wordId))
 			if err != nil {
 				return WordProfile{}, err
 			}
@@ -281,9 +286,9 @@ func updateWordProfileByDB(db *sql.DB) updateWordProfile {
 	}
 }
 
-func deleteWordProfileByDB(db *sql.DB, userId user.UserId) deleteWordProfile {
+func deleteWordProfileByDB(db *sql.DB, tracer trace.Tracer, userId user.UserId) deleteWordProfile {
 	return func(ctx context.Context, wordId WordId) error {
-		wordProfile, err := fetchWordProfileFromWordIdByDB(db)(ctx, wordId)
+		wordProfile, err := fetchWordProfileFromWordIdByDB(db, tracer)(ctx, wordId)
 		if err != nil {
 			return err
 		}
