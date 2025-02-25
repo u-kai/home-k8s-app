@@ -1,14 +1,15 @@
 package wordbook
 
 import (
+	"context"
 	"database/sql"
 	"ele/common"
 	"ele/user"
 	"fmt"
 )
 
-func FetchWordProfileFromDBByUserId(db *sql.DB, userId user.UserId) ([]WordProfile, error) {
-	return fetchWordProfileFromUserIdByDB(db)(userId)
+func FetchWordProfileFromDBByUserId(ctx context.Context, db *sql.DB, userId user.UserId) ([]WordProfile, error) {
+	return fetchWordProfileFromUserIdByDB(db)(ctx, userId)
 }
 
 type registerWordProfile func(user.UserId, WordProfile) (WordProfile, error)
@@ -72,9 +73,9 @@ func RegisterWordProfileByDB(
 	)
 }
 
-type fetchWordProfileByWordId func(WordId) (WordProfile, error)
+type fetchWordProfileByWordId func(context.Context, WordId) (WordProfile, error)
 
-type updateWordProfile func(WordProfile) error
+type updateWordProfile func(context.Context, WordProfile) error
 
 type UpdatedWordProfileSource struct {
 	WordId  WordId
@@ -82,18 +83,19 @@ type UpdatedWordProfileSource struct {
 }
 
 func UpdateWordProfile(
+	ctx context.Context,
 	src UpdatedWordProfileSource,
 	fetchFn fetchWordProfileByWordId,
 	updateWordProfileFn updateWordProfile,
 	newId func() SentenceId,
 	now common.NowFunc,
 ) (WordProfile, error) {
-	old, err := fetchFn(src.WordId)
+	old, err := fetchFn(ctx, src.WordId)
 	if err != nil {
 		return WordProfile{}, err
 	}
 	new := old.NewProfile(src.Profile, newId, now)
-	err = updateWordProfileFn(new)
+	err = updateWordProfileFn(ctx, new)
 	if err != nil {
 		return WordProfile{}, err
 	}
@@ -101,11 +103,13 @@ func UpdateWordProfile(
 }
 
 func UpdateWordProfileByDB(
+	ctx context.Context,
 	db *sql.DB,
 	src UpdatedWordProfileSource,
 	userId user.UserId,
 ) (WordProfile, error) {
 	return UpdateWordProfile(
+		ctx,
 		src,
 		fetchWordProfileFromWordIdByDB(db),
 		updateWordProfileByDB(db),
@@ -114,26 +118,29 @@ func UpdateWordProfileByDB(
 	)
 }
 
-type deleteWordProfile func(WordId) error
+type deleteWordProfile func(context.Context, WordId) error
 
 type DeletedWordProfileSource struct {
 	WordId WordId
 }
 
 func DeleteWordProfile(
+	ctx context.Context,
 	src DeletedWordProfileSource,
 	deleteWordProfileFn deleteWordProfile,
 ) error {
-	return deleteWordProfileFn(src.WordId)
+	return deleteWordProfileFn(ctx, src.WordId)
 }
 
 // userIdが管理していないwordIdを削除できる脆弱性あり
 func DeleteWordProfileByDB(
+	ctx context.Context,
 	db *sql.DB,
 	src DeletedWordProfileSource,
 	userId user.UserId,
 ) error {
 	return DeleteWordProfile(
+		ctx,
 		src,
 		deleteWordProfileByDB(db, userId),
 	)

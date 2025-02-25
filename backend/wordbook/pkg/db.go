@@ -1,17 +1,18 @@
 package wordbook
 
 import (
+	"context"
 	"database/sql"
 	"ele/user"
 	"fmt"
 )
 
-type fetchWordProfileFromUserId func(user.UserId) ([]WordProfile, error)
+type fetchWordProfileFromUserId func(context.Context, user.UserId) ([]WordProfile, error)
 
-type fetchSentencesFromWordId func(WordId) ([]SentenceProfile, error)
+type fetchSentencesFromWordId func(context.Context, WordId) ([]SentenceProfile, error)
 
 func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
-	return func(wordId WordId) ([]SentenceProfile, error) {
+	return func(ctx context.Context, wordId WordId) ([]SentenceProfile, error) {
 		sql, wordId := selectSentenceProfileByWordIdSql(wordId)
 		rows, err := db.Query(sql.String(), wordId)
 		if err != nil {
@@ -67,7 +68,7 @@ func fetchSentencesFromWordIdByDB(db *sql.DB) fetchSentencesFromWordId {
 }
 
 func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
-	return func(userId user.UserId) ([]WordProfile, error) {
+	return func(ctx context.Context, userId user.UserId) ([]WordProfile, error) {
 		sql, userId := selectWordProfileByUserIdSql(userId)
 		rows, err := db.Query(sql.String(), userId)
 		if err != nil {
@@ -100,7 +101,7 @@ func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
 				return nil, fmt.Errorf("failed to word scan: %w", err)
 			}
 			// join sentences
-			sentences, err := fetchSentencesFromWordIdByDB(db)(WordId(wordId))
+			sentences, err := fetchSentencesFromWordIdByDB(db)(ctx, WordId(wordId))
 			if err != nil {
 				return nil, err
 			}
@@ -143,7 +144,7 @@ func fetchWordProfileFromUserIdByDB(db *sql.DB) fetchWordProfileFromUserId {
 	}
 }
 func fetchWordProfileFromWordIdByDB(db *sql.DB) fetchWordProfileByWordId {
-	return func(wordId WordId) (WordProfile, error) {
+	return func(ctx context.Context, wordId WordId) (WordProfile, error) {
 		sql, wordId := selectWordProfileByWordIdSql(wordId)
 		rows, err := db.Query(sql.String(), wordId)
 		if err != nil {
@@ -166,7 +167,7 @@ func fetchWordProfileFromWordIdByDB(db *sql.DB) fetchWordProfileByWordId {
 				return WordProfile{}, fmt.Errorf("failed to words scan: %w", err)
 			}
 			// join sentences
-			sentences, err := fetchSentencesFromWordIdByDB(db)(WordId(wordId))
+			sentences, err := fetchSentencesFromWordIdByDB(db)(ctx, WordId(wordId))
 			if err != nil {
 				return WordProfile{}, err
 			}
@@ -246,7 +247,7 @@ func registerWordProfileByDB(db *sql.DB) registerWordProfile {
 }
 
 func updateWordProfileByDB(db *sql.DB) updateWordProfile {
-	return func(word WordProfile) error {
+	return func(ctx context.Context, word WordProfile) error {
 		sql, wordId, wordValue, meaning, pronunciation, updatedAt, missCount, remarks, likeRates := updateWordProfileSql(word)
 		_, err := db.Exec(
 			sql.String(),
@@ -281,8 +282,8 @@ func updateWordProfileByDB(db *sql.DB) updateWordProfile {
 }
 
 func deleteWordProfileByDB(db *sql.DB, userId user.UserId) deleteWordProfile {
-	return func(wordId WordId) error {
-		wordProfile, err := fetchWordProfileFromWordIdByDB(db)(wordId)
+	return func(ctx context.Context, wordId WordId) error {
+		wordProfile, err := fetchWordProfileFromWordIdByDB(db)(ctx, wordId)
 		if err != nil {
 			return err
 		}

@@ -6,6 +6,9 @@ import (
 	"ele/user"
 	"encoding/json"
 	"net/http"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type FetchWordProfileResponse struct {
@@ -20,15 +23,19 @@ func (f FetchWordProfileResponse) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func FetchWordProfileHandler(ctx context.Context) http.HandlerFunc {
-	return common.CreateGetHandlerWithIDToken(func(query common.Query, idToken common.IDToken) (FetchWordProfileResponse, error) {
+func FetchWordProfileHandler(c context.Context, tracer trace.Tracer) http.HandlerFunc {
+	return common.CreateGetHandlerWithIDToken(func(ctx context.Context, query common.Query, idToken common.IDToken) (FetchWordProfileResponse, error) {
 		db, err := common.FromEnv().Open()
-		defer db.Close()
 		if err != nil {
 			return FetchWordProfileResponse{}, err
 		}
+		defer db.Close()
 		userId := user.UserIdFromIDToken(idToken)
-		wordProfile, err := FetchWordProfileFromDBByUserId(db, userId)
+		ctx, span := tracer.Start(ctx, "FetchWordProfileHandler", trace.WithAttributes(
+			attribute.String("x-request-id", ctx.Value("x-request-id").(string)),
+		))
+		defer span.End()
+		wordProfile, err := FetchWordProfileFromDBByUserId(ctx, db, userId)
 		if err != nil {
 			return FetchWordProfileResponse{}, err
 		}
@@ -68,14 +75,14 @@ func UpdateWordHandler(ctx context.Context) http.HandlerFunc {
 			return UpdateWordProfileResult{}, err
 		}
 		db, err := common.FromEnv().Open()
-		defer db.Close()
 		if err != nil {
 			return UpdateWordProfileResult{}, err
 		}
+		defer db.Close()
 		userId := user.UserIdFromIDToken(idToken)
 
 		// wordIdを憶測で更新できる脆弱性あり
-		wordProfile, err := UpdateWordProfileByDB(db, updateSrc, userId)
+		wordProfile, err := UpdateWordProfileByDB(ctx, db, updateSrc, userId)
 		if err != nil {
 			return UpdateWordProfileResult{}, err
 		}
@@ -207,10 +214,10 @@ func (r RegisterWordProfileResult) MarshalJSON() ([]byte, error) {
 func RegisterWordHandler(ctx context.Context) http.HandlerFunc {
 	return common.CreatePostHandlerWithIDToken(func(req *RegisterWordProfileApiSchema, idToken common.IDToken) (RegisterWordProfileResult, error) {
 		db, err := common.FromEnv().Open()
-		defer db.Close()
 		if err != nil {
 			return RegisterWordProfileResult{}, err
 		}
+		defer db.Close()
 		src, err := req.toRegisterWordProfileSource(user.UserIdFromIDToken(idToken))
 		if err != nil {
 			return RegisterWordProfileResult{}, err
@@ -306,7 +313,7 @@ func DeleteWordHandler(ctx context.Context) http.HandlerFunc {
 			return DeleteResponse{}, err
 		}
 		defer db.Close()
-		err = DeleteWordProfileByDB(db, src, userId)
+		err = DeleteWordProfileByDB(ctx, db, src, userId)
 		if err != nil {
 			return DeleteResponse{}, err
 		}
@@ -314,8 +321,8 @@ func DeleteWordHandler(ctx context.Context) http.HandlerFunc {
 			Message: "success",
 		}, nil
 	})
-
 }
+
 func (s DeleteWordProfileApiSchema) ToDeleteWordProfileSource() (DeletedWordProfileSource, error) {
 	return DeletedWordProfileSource{
 		WordId: WordId(s.WordId),
