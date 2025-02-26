@@ -22,8 +22,8 @@ func (f FetchWordProfileResponse) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func FetchWordProfileHandler(c context.Context, tracer trace.Tracer) http.HandlerFunc {
-	return common.CreateGetHandlerWithIDToken(func(ctx context.Context, query common.Query, idToken common.IDToken) (FetchWordProfileResponse, error) {
+func FetchWordProfileHandler(ctx context.Context, tracer trace.Tracer) http.HandlerFunc {
+	return common.CreateGetHandlerWithIDToken(func(query common.Query, idToken common.IDToken) (FetchWordProfileResponse, error) {
 		db, err := common.FromEnv().Open()
 		if err != nil {
 			return FetchWordProfileResponse{}, err

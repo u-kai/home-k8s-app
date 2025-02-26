@@ -5,6 +5,7 @@ import (
 	"ele/common"
 	wordbook "ele/wordbook/pkg"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -57,6 +58,7 @@ func main() {
 	server := common.DefaultELEServer("wordbook")
 	server.RegisterHandler("/words", func(w http.ResponseWriter, r *http.Request) {
 		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+		slog.InfoContext(ctx, "ctx", slog.Any("ctx", ctx), "headers", slog.Any("headers", r.Header))
 		ctx, span := tracer.Start(ctx, "Handle Request")
 		defer span.End()
 		wordbook.FetchWordProfileHandler(ctx, tracer)(w, r)

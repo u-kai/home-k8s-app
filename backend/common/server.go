@@ -1,7 +1,6 @@
 package common
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -78,7 +77,7 @@ type Query map[string][]string
 
 // Req is the type of the request body, so that it can be decoded from JSON
 // Resp is the type of the response body
-type GetHandlerWithAuthorization[Resp json.Marshaler] func(ctx context.Context, query Query, idToken IDToken) (Resp, error)
+type GetHandlerWithAuthorization[Resp json.Marshaler] func(query Query, idToken IDToken) (Resp, error)
 
 func CreateGetHandlerWithIDToken[Req Query, Resp json.Marshaler](h GetHandlerWithAuthorization[Resp]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -92,14 +91,12 @@ func CreateGetHandlerWithIDToken[Req Query, Resp json.Marshaler](h GetHandlerWit
 			query[k] = v
 		}
 		idToken, err := idTokenFromHeader(r)
-		ctx := r.Context()
 		if err != nil {
 			slog.Error("Failed to get idToken", "error", err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		ctx = context.WithValue(ctx, "x-request-id", r.Header.Get("x-request-id"))
-		resp, err := h(ctx, query, idToken)
+		resp, err := h(query, idToken)
 		if err != nil {
 			slog.Error("Failed to handle request", "error", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
