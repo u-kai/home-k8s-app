@@ -57,7 +57,10 @@ func main() {
 	defer traceShutdown()
 	server := common.DefaultELEServer("wordbook")
 	server.RegisterHandler("/words", func(w http.ResponseWriter, r *http.Request) {
+		otel.SetTextMapPropagator(propagation.TraceContext{})
 		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+		traceID := trace.SpanContextFromContext(ctx).TraceID()
+		slog.InfoContext(ctx, "Extracted Trace ID", slog.String("trace_id", traceID.String()))
 		slog.InfoContext(ctx, "ctx", slog.Any("ctx", ctx), "headers", slog.Any("headers", r.Header))
 		ctx, span := tracer.Start(ctx, "Handle Request")
 		defer span.End()
